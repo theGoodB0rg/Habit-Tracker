@@ -18,6 +18,22 @@ A modern Android habit tracking application built with Jetpack Compose and Clean
 - Home screen widget integration
 - Comprehensive data export options
 
+## Screenshots
+
+<div align="center">
+
+| Main Dashboard | Habit Management |
+|:---:|:---:|
+| ![Main Screen](docs/screenshots/app-main-screen.png) | ![Habit Interface](docs/screenshots/habit-tracking-interface.png) |
+| **Home Dashboard** - Material 3 design with today's habits overview | **Habit Management** - Timer functionality and streak tracking |
+
+| AI-Powered Insights | Progress Analytics |
+|:---:|:---:|
+| ![Smart Tips](docs/screenshots/smart-tips-system.png) | ![Progress View](docs/screenshots/habit-progress-view.png) |
+| **Smart Coaching** - Intelligent behavioral tips | **Analytics Dashboard** - Comprehensive progress tracking |
+
+</div>
+
 ## Technical Features
 
 ### Architecture
