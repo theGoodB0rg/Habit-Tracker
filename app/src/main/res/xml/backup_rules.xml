@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<full-backup-content>
+    <!-- Include all shared preferences -->
+    <include domain="sharedpref" path="."/>
+    
+    <!-- Include all databases -->
+    <include domain="database" path="."/>
+    
+    <!-- Include all files -->
+    <include domain="file" path="."/>
+    
+    <!-- Exclude sensitive data that shouldn't be backed up -->
+    <exclude domain="sharedpref" path="device.xml"/>
+    <exclude domain="sharedpref" path="analytics.xml"/>
+    
+    <!-- Exclude temporary files -->
+    <exclude domain="file" path="temp/"/>
+    <exclude domain="file" path="cache/"/>
+</full-backup-content>

@@ -1,0 +1,251 @@
+🧠 App Overview
+A lightweight, privacy-first, fully offline habit tracker app with competitive UI/UX, behavior-driven nudges, theming, onboarding tutorials, export capability, and polished presentation (about, version, legal info).
+
+📂 MODULE STRUCTURE
+Each module is standalone, so AI agents or devs can build/debug/test independently.
+Use gradle assembleDebug for the testing s  I have gradle in system PATH
+
+Phase	Module	Description
+1	core-architecture	App structure, Room DB, MVVM base
+2	habit-engine	Habit model, CRUD, streak logic
+3	ui-screens	Screens: Home, Add/Edit Habit, History
+4	reminders-engine	Local notifications via AlarmManager
+5	nudges-engine	Streak loss warning, motivational tips
+6	onboarding-wizard	Onboarding/tutorial + interactive tour
+7	themes-customizer	Dark/light themes, accent color switcher
+8	legal-policy	About, Privacy Policy, Terms, Version
+9	analytics-local	Track behavior locally (e.g. screen visits)
+10	export-engine	Export habits as JSON or CSV
+11	widget-module	Home screen widget with today's habits
+12	i18n-support	Language and localization support
+13	settings-preferences	Preferences: reset data, theme, feedback
+
+🛠️ DEVELOPMENT PLAN (Cursor-Compatible)
+📍 PHASE 1: Core Architecture Setup
+Module: core-architecture
+
+Language: Kotlin
+
+Structure: MVVM + Repository
+
+Database: Room (HabitEntity, HabitDao)
+
+DI: Hilt or basic Service Locator
+
+Data Types:
+
+HabitEntity: name, description, iconId, frequency, createdDate, streakCount, lastMarkedDate
+
+✅ Deliverable: Working data layer with dummy habit insertion & retrieval
+
+📍 PHASE 2: Habit Engine
+Module: habit-engine
+
+Logic to:
+
+Add/Edit/Delete habit
+
+Mark habit as done (daily)
+
+Streaks (reset if missed yesterday)
+
+Calculate current and longest streak
+
+Repository exposes LiveData / Flow for UI
+
+Sample data for dev testing
+
+✅ Deliverable: Unit-tested habit management engine
+
+📍 PHASE 3: UI Screens (Rich UX)
+Module: ui-screens
+
+MainScreen: Grid/List of habits + “Mark Done” toggle
+
+AddHabitScreen: Form with icon picker
+
+EditHabitScreen: Same as add, pre-filled
+
+HabitDetailScreen: Streak history, activity log
+
+EmptyStateScreen: For new users
+
+Animations: Use MotionLayout or Compose Transitions
+
+✅ Deliverable: All core screens functional with dummy data
+
+📍 PHASE 4: Reminder & Notifications
+Module: reminders-engine
+
+Local daily alarm (AlarmManager + BroadcastReceiver)
+
+Per-habit notification toggle
+
+Snooze & Dismiss options
+
+Summary notification: "You have 3 habits to complete"
+
+✅ Deliverable: Alarms fire correctly; habits tied to notification
+
+📍 PHASE 5: Behavioral Nudges Engine
+Module: nudges-engine
+
+Warn on streak break risk
+
+Show motivational quote when user misses
+
+Auto-suggest easier goals for failing habits
+
+Nudges stored locally (optional cache for randomness)
+
+✅ Deliverable: Nudges logic and UI overlay on main screen
+
+📍 PHASE 6: Onboarding Wizard
+Module: onboarding-wizard
+
+Shown once or after reinstall
+
+Slides with:
+
+What is a habit?
+
+How to use the app
+
+Benefits of streaks
+
+Option to skip
+
+Also includes in-app tooltips (SpotlightView or Compose intro)
+
+✅ Deliverable: Fully skippable onboarding, integrated into flow
+
+📍 PHASE 7: Theming & Customization
+Module: themes-customizer
+
+Light/Dark mode toggle
+
+User chooses accent color (via dialog)
+
+Font size adjustment (small, normal, large)
+
+Save preferences to SharedPrefs or DataStore
+
+✅ Deliverable: Theme switch applies across app instantly
+
+📍 PHASE 8: Legal, About, Version Info
+Module: legal-policy
+
+Offline about_us.html, privacy_policy.html
+
+"About" section includes:
+
+Developer info
+
+Version number (dynamically fetched)
+
+“Rate this app” + Feedback mail intent
+
+✅ Deliverable: Static policy viewer; version & metadata loaded correctly
+
+📍 PHASE 9: Local Analytics Engine
+Module: analytics-local
+
+Track:
+
+Habit completion rate
+
+Screen visits
+
+Streak retention per user
+
+Use Room/Prefs (no network)
+
+Export anonymized data for user viewing
+
+✅ Deliverable: Local log viewer in Settings
+
+📍 PHASE 10: Export / Backup Engine
+Module: export-engine
+
+Export habits & history:
+
+JSON or CSV
+
+Save to user’s documents directory
+
+Share intent (to Telegram, Gmail, etc.)
+
+✅ Deliverable: Working export with visual feedback
+
+📍 PHASE 11: Home Screen Widget
+Module: widget-module
+
+Display today's habits
+
+Quick "Mark Done" toggle
+
+Refresh button
+
+✅ Deliverable: Android widget functional and syncs with DB
+
+📍 PHASE 12: Localization & Language Support
+Module: i18n-support
+
+English, Spanish, French, Hindi (start with 2)
+
+Externalize all strings
+
+Detect language via locale
+
+✅ Deliverable: Language switcher, localized strings for key screens
+
+📍 PHASE 13: Settings & Preferences
+Module: settings-preferences
+
+Reset all data
+
+Change theme, language
+
+Send feedback via email
+
+App version, license link
+
+✅ Deliverable: Settings page fully functional
+
+🎯 BONUS: Post-Launch Enhancements (Optional)
+Feature	Description
+Cloud Backup (optional future)	Encrypt + save to Google Drive (only if going online later)
+AI Habit Suggestions (offline rules)	Rule-based tips like “You often miss Mondays. Consider lighter habit.”
+Achievement Badges	Milestones: 7-day streak, 30-day streak, etc.
+Gamification	XP points per habit done; level system
+Share Habit Progress	Export progress chart as image (via Canvas)
+
+🛒 Monetization Plan
+Free Version:
+
+Max 3 habits
+
+Limited themes
+
+No export or widget
+
+Pro Version:
+
+One-time unlock or local-only subscription
+
+Unlimited habits, export, themes, widgets, analytics
+
+No ads (or local-only fallback banner placeholder)
+
+🧪 Testing Strategy
+Unit test: HabitEngine, Nudges, Reminder scheduling
+
+UI test: Add/Edit flow, theme toggle, onboarding
+
+Manual test matrix for:
+
+Dark/light mode
+
+Multi-language
+
+Export on Android 8 to 14

@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    
+    <!-- Widget Background Colors -->
+    <color name="widgetBackgroundColor">#F8F9FA</color>
+    <color name="widgetBorderColor">#E1E5E9</color>
+    
+    <!-- Widget Text Colors -->
+    <color name="widgetTitleColor">#1A202C</color>
+    <color name="widgetTextColor">#2D3748</color>
+    <color name="widgetAccentColor">#3182CE</color>
+    <color name="widgetStreakColor">#D69E2E</color>
+    
+    <!-- Widget Button Colors -->
+    <color name="widgetButtonColor">#EDF2F7</color>
+    <color name="widgetButtonPressedColor">#CBD5E0</color>
+    <color name="widgetButtonTextColor">#2D3748</color>
+    
+    <!-- Widget Item Colors -->
+    <color name="widgetItemPressedColor">#EDF2F7</color>
+    <color name="widgetItemFocusedColor">#E6FFFA</color>
+    
+    <!-- Widget Icon Color -->
+    <color name="widgetIconColor">#4A5568</color>
+    
+    <!-- Legacy colors for backward compatibility -->
+    <color name="widgetBackground">#F8F9FA</color>
+    <color name="widgetDivider">#E1E5E9</color>
+    <color name="widgetAccent">#3182CE</color>
+    
+    <!-- Professional Widget Enhancement Colors -->
+    <!-- Widget Theme Colors -->
+    <color name="widget_background">#F8F9FA</color>
+    <color name="widget_background_dark">#1E1E1E</color>
+    
+    <!-- Text Colors -->
+    <color name="widget_text_primary">#212529</color>
+    <color name="widget_text_primary_dark">#FFFFFF</color>
+    <color name="widget_text_secondary">#6C757D</color>
+    <color name="widget_text_secondary_dark">#B0B0B0</color>
+    
+    <!-- Progress Colors -->
+    <color name="progress_excellent">#28A745</color>     <!-- Green for 80%+ -->
+    <color name="progress_good">#17A2B8</color>         <!-- Blue for 60-79% -->
+    <color name="progress_fair">#FFC107</color>         <!-- Yellow for 30-59% -->
+    <color name="progress_poor">#DC3545</color>         <!-- Red for <30% -->
+    
+    <!-- Button Colors -->
+    <color name="widget_button_background">#E9ECEF</color>
+    <color name="widget_button_background_dark">#495057</color>
+    <color name="widget_button_text">#495057</color>
+    <color name="widget_button_text_dark">#FFFFFF</color>
+    
+    <!-- Status Colors -->
+    <color name="habit_completed">#28A745</color>
+    <color name="habit_pending">#6C757D</color>
+    <color name="error_color">#DC3545</color>
+    
+    <!-- Streak Colors -->
+    <color name="streak_fire">#FF6B35</color>
+    <color name="streak_text">#495057</color>
+    
+    <!-- Focus/Touch Colors -->
+    <color name="widget_focus">#80BDFF</color>
+    <color name="widget_touch_feedback">#E9ECEF</color>
+    
+</resources>

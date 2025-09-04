@@ -1,0 +1,44 @@
+{
+	"version": "2.0.0",
+	"tasks": [
+		{
+			"label": "ADB: Capture logcat to file",
+			"type": "shell",
+			"command": "scripts/adb_log_capture.cmd",
+			"group": "build",
+			"problemMatcher": []
+		},
+		{
+			"label": "ADB: View filtered log (tail)",
+			"type": "shell",
+			"command": "scripts/view_log_filters.cmd",
+			"problemMatcher": []
+		},
+		{
+			"label": "ADB: Live log (cmd, tee-like)",
+			"type": "shell",
+			"command": "cmd /c \"adb logcat -c && adb logcat -v time | powershell -NoLogo -NoProfile -Command \\\"Tee-Object -FilePath .\\\\logcat_full.txt\\\"\"",
+			"isBackground": false,
+			"problemMatcher": []
+		},
+		{
+			"label": "ADB: Live log (PowerShell tee)",
+			"type": "shell",
+			"command": "pwsh -NoLogo -NoProfile -Command \"adb logcat -c; adb logcat -v time | Tee-Object -FilePath .\\logcat_full.txt\"",
+			"isBackground": false,
+			"problemMatcher": []
+		},
+		{
+			"label": "ADB: Reset server",
+			"type": "shell",
+			"command": "cmd /c \"adb kill-server && adb start-server && adb devices\"",
+			"problemMatcher": []
+		},
+		{
+			"label": "ADB: Clear logcat only",
+			"type": "shell",
+			"command": "adb logcat -c",
+			"problemMatcher": []
+		}
+	]
+}

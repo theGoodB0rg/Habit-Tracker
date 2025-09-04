@@ -1,0 +1,200 @@
+plugins {
+    id 'com.android.application'
+    id 'org.jetbrains.kotlin.android'
+    id 'kotlin-kapt'
+    id 'com.google.dagger.hilt.android'
+}
+
+android {
+    namespace 'com.habittracker'
+    compileSdk 34
+
+    // Load signing properties from keystore.properties (not committed) or environment variables
+    def keystoreProps = new Properties()
+    def keystoreFile = rootProject.file('keystore.properties')
+    if (keystoreFile.exists()) {
+        keystoreFile.withInputStream { keystoreProps.load(it) }
+    } else {
+        // Fallback to environment variables for CI/CD or local env
+        keystoreProps['storeFile']     = System.getenv('ANDROID_KEYSTORE') ?: ''
+        keystoreProps['storePassword'] = System.getenv('ANDROID_KEYSTORE_PASSWORD') ?: ''
+        keystoreProps['keyAlias']      = System.getenv('ANDROID_KEY_ALIAS') ?: ''
+        keystoreProps['keyPassword']   = System.getenv('ANDROID_KEY_PASSWORD') ?: ''
+    }
+    def hasReleaseKeystore = keystoreProps['storeFile'] && keystoreProps['storePassword'] && keystoreProps['keyAlias'] && keystoreProps['keyPassword']
+
+    defaultConfig {
+        applicationId "com.habittracker"
+        minSdk 24
+        targetSdk 34
+        versionCode 1
+        versionName "1.0"
+
+        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+        vectorDrawables {
+            useSupportLibrary true
+        }
+    }
+
+    signingConfigs {
+        // Fallback signing using the standard Android debug keystore for local installs
+        debugFallback {
+            storeFile file(System.properties['user.home'] + "/.android/debug.keystore")
+            storePassword 'android'
+            keyAlias 'androiddebugkey'
+            keyPassword 'android'
+        }
+        if (hasReleaseKeystore) {
+            release {
+                storeFile file(keystoreProps['storeFile'])
+                storePassword keystoreProps['storePassword']
+                keyAlias keystoreProps['keyAlias']
+                keyPassword keystoreProps['keyPassword']
+            }
+        }
+    }
+
+    buildTypes {
+        release {
+            // Professional-grade optimizations
+            minifyEnabled true
+            shrinkResources true
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+
+            // Only apply signing if provided; otherwise produce an unsigned artifact (suitable for later signing)
+            if (hasReleaseKeystore) {
+                signingConfig signingConfigs.release
+            } else {
+                // Sign with debug keystore so APK is directly installable on devices
+                signingConfig signingConfigs.debugFallback
+            }
+
+            // Disable debug logs in release if using BuildConfig checks in code
+            // buildConfigField 'boolean', 'LOGGING_ENABLED', 'false'
+        }
+        debug {
+            // buildConfigField 'boolean', 'LOGGING_ENABLED', 'true'
+        }
+    }
+    
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
+    }
+    
+    kotlinOptions {
+        jvmTarget = '17'
+    }
+    
+    buildFeatures {
+        compose true
+        viewBinding true
+    }
+    
+    composeOptions {
+        kotlinCompilerExtensionVersion '1.5.8'
+    }
+    
+    packaging {
+        resources {
+            excludes += '/META-INF/{AL2.0,LGPL2.1}'
+        }
+    }
+
+    // Use a dedicated unit test source set to isolate targeted tests for this phase
+    sourceSets {
+        test {
+            java.srcDirs = ['src/unitTest/java']
+            resources.srcDirs = ['src/unitTest/resources']
+        }
+    }
+}
+
+dependencies {
+    // Core Architecture Module (must be first for database access)
+    implementation project(':core-architecture')
+    
+    // Widget Module (for professional widget functionality)
+    implementation project(':widget-module')
+    
+    // Export Engine Module
+    implementation project(':export-engine')
+    
+    // Analytics Module
+    implementation project(':analytics-local')
+    
+    // Core Android
+    implementation 'androidx.core:core-ktx:1.12.0'
+    implementation 'androidx.appcompat:appcompat:1.6.1'
+    implementation 'androidx.lifecycle:lifecycle-runtime-ktx:2.7.0'
+    implementation 'androidx.activity:activity-compose:1.8.2'
+    
+    // Compose BOM
+    implementation platform('androidx.compose:compose-bom:2023.10.01')
+    implementation 'androidx.compose.ui:ui'
+    implementation 'androidx.compose.ui:ui-graphics'
+    implementation 'androidx.compose.ui:ui-tooling-preview'
+    implementation 'androidx.compose.material3:material3'
+    
+    // ViewModel & LiveData
+    implementation 'androidx.lifecycle:lifecycle-viewmodel-ktx:2.7.0'
+    implementation 'androidx.lifecycle:lifecycle-livedata-ktx:2.7.0'
+    implementation 'androidx.lifecycle:lifecycle-viewmodel-compose:2.7.0'
+    implementation 'androidx.lifecycle:lifecycle-runtime-compose:2.7.0'
+    
+    // Navigation
+    implementation 'androidx.navigation:navigation-compose:2.7.5'
+    
+    // Compose Extended Icons and Animations
+    implementation 'androidx.compose.material:material-icons-extended:1.5.4'
+    implementation 'androidx.compose.animation:animation:1.5.4'
+    implementation 'androidx.compose.animation:animation-graphics:1.5.4'
+    
+    // Date picker
+    implementation 'io.github.vanpra.compose-material-dialogs:datetime:0.9.0'
+    
+    // Room Database
+    implementation 'androidx.room:room-runtime:2.6.1'
+    implementation 'androidx.room:room-ktx:2.6.1'
+    kapt 'androidx.room:room-compiler:2.6.1'
+    
+    // Hilt Dependency Injection
+    implementation 'com.google.dagger:hilt-android:2.48'
+    kapt 'com.google.dagger:hilt-compiler:2.48'
+    implementation 'androidx.hilt:hilt-navigation-compose:1.1.0'
+    
+    // Coroutines
+    implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.3'
+    
+    // JSON serialization for Phase 1 - Smart Timing Enhancement
+    implementation 'com.google.code.gson:gson:2.10.1'
+    
+    // DataStore for preferences
+    implementation 'androidx.datastore:datastore-preferences:1.0.0'
+    
+    // Testing
+    testImplementation 'junit:junit:4.13.2'
+    // Add AndroidX test runner to unitTest classpath for tests annotated with AndroidJUnit4
+    testImplementation 'androidx.test.ext:junit:1.1.5'
+    testImplementation 'androidx.test:core:1.5.0'
+    testImplementation 'org.mockito:mockito-core:5.7.0'
+    testImplementation 'org.mockito.kotlin:mockito-kotlin:5.2.1'
+    testImplementation 'org.jetbrains.kotlinx:kotlinx-coroutines-test:1.7.3'
+    testImplementation 'androidx.room:room-testing:2.6.1'
+    testImplementation 'io.mockk:mockk:1.13.8'
+    testImplementation 'androidx.arch.core:core-testing:2.2.0'
+    testImplementation 'org.jetbrains.kotlin:kotlin-test:1.9.20'
+    
+    androidTestImplementation 'androidx.test.ext:junit:1.1.5'
+    androidTestImplementation 'androidx.test.espresso:espresso-core:3.5.1'
+    androidTestImplementation platform('androidx.compose:compose-bom:2023.10.01')
+    androidTestImplementation 'androidx.compose.ui:ui-test-junit4'
+    
+    debugImplementation 'androidx.compose.ui:ui-tooling'
+    debugImplementation 'androidx.compose.ui:ui-test-manifest'
+}
+
+// Allow references to generated code
+kapt {
+    correctErrorTypes true
+}

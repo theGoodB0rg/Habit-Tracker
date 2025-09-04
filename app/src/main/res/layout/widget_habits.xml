@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:background="@color/widget_background"
+    android:padding="8dp">
+
+    <TextView
+        android:id="@+id/text_widget_title"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Today's Habits"
+        android:textAppearance="@android:style/TextAppearance.Large"
+        android:textColor="@color/widget_text"
+        android:gravity="center"
+        android:importantForAccessibility="yes"
+        android:contentDescription="@string/widget_title" />
+
+    <ListView
+        android:id="@+id/list_habits"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:divider="@android:color/transparent"
+        android:dividerHeight="8dp"
+        android:paddingTop="8dp"
+        android:paddingBottom="8dp"
+        android:clipToPadding="false"
+        android:importantForAccessibility="yes"
+        android:contentDescription="@string/habits_list" />
+
+    <Button
+        android:id="@+id/button_refresh"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Refresh"
+        android:layout_gravity="center_horizontal"
+        android:backgroundTint="@color/widget_accent"
+        android:textColor="@color/widget_text"
+        android:minHeight="44dp"
+        android:minWidth="44dp"
+        android:importantForAccessibility="yes"
+        android:contentDescription="@string/refresh_button" />
+
+</LinearLayout>

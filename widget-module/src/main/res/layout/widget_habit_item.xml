@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/habit_item_root"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="horizontal"
+    android:gravity="center_vertical"
+    android:padding="8dp"
+    android:minHeight="48dp"
+    android:background="@drawable/widget_item_background"
+    android:focusable="true"
+    android:clickable="true">
+
+    <!-- Habit Icon -->
+    <ImageView
+        android:id="@+id/habit_icon"
+        android:layout_width="20dp"
+        android:layout_height="20dp"
+        android:src="@drawable/default_habit_icon"
+        android:contentDescription="Habit icon"
+        android:importantForAccessibility="no" />
+
+    <!-- Habit Name -->
+    <TextView
+        android:id="@+id/habit_name"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:layout_marginStart="8dp"
+        android:textSize="13sp"
+        android:textColor="@color/widgetTextColor"
+        android:maxLines="1"
+        android:ellipsize="end"
+        android:importantForAccessibility="yes"
+        android:contentDescription="Habit name" />
+
+    <!-- Completion Checkbox -->
+    <CheckBox
+        android:id="@+id/completion_checkbox"
+        android:layout_width="48dp"
+        android:layout_height="48dp"
+        android:layout_marginEnd="4dp"
+        android:buttonTint="@color/widgetAccentColor"
+        android:focusable="true"
+        android:clickable="true"
+        android:importantForAccessibility="yes"
+        android:contentDescription="Mark habit as complete"
+        android:padding="12dp" />
+
+    <!-- Timer Start/Resume Quick Action -->
+    <ImageButton
+        android:id="@+id/widget_timer_start"
+        android:layout_width="36dp"
+        android:layout_height="36dp"
+        android:layout_marginEnd="4dp"
+        android:background="@android:color/transparent"
+        android:src="@android:drawable/ic_media_play"
+        android:contentDescription="Start or resume timer for this habit"
+        android:focusable="true"
+        android:clickable="true" />
+
+    <!-- Streak Display -->
+    <TextView
+        android:id="@+id/streak_display"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="🔥0"
+        android:textSize="11sp"
+        android:textColor="@color/widgetStreakColor"
+        android:minWidth="32dp"
+        android:gravity="center"
+        android:importantForAccessibility="yes"
+        android:contentDescription="Current streak" />
+
+</LinearLayout>

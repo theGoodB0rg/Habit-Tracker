@@ -1,0 +1,148 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Legal Module Strings -->
+    <string name="about_title">About</string>
+    <string name="privacy_policy_title">Privacy Policy</string>
+    <string name="terms_of_service_title">Terms of Service</string>
+    <string name="tutorial_title">Tutorial</string>
+    <string name="tips_title">Tips &amp; Advice</string>
+    
+    <!-- About Screen -->
+    <string name="app_name_full">Habit Tracker</string>
+    <string name="app_tagline">Build better habits, one day at a time</string>
+    <string name="version_information">Version Information</string>
+    <string name="developer_information">Developer</string>
+    <string name="actions_section">Actions</string>
+    <string name="about_this_app">About This App</string>
+    
+    <!-- Version Info -->
+    <string name="version_label">Version</string>
+    <string name="build_type_label">Build Type</string>
+    <string name="target_sdk_label">Target SDK</string>
+    <string name="min_sdk_label">Minimum SDK</string>
+    <string name="build_date_label">Build Date</string>
+    
+    <!-- Developer Info -->
+    <string name="developer_name">Habit Tracker Team</string>
+    <string name="developer_email">support@habittracker.app</string>
+    <string name="developer_website">https://habittracker.app</string>
+    <string name="github_profile">GitHub Profile</string>
+    
+    <!-- Action Buttons -->
+    <string name="rate_app">Rate App</string>
+    <string name="send_feedback">Feedback</string>
+    <string name="view_tutorial">Tutorial</string>
+    <string name="view_tips">Tips</string>
+    <string name="privacy_policy">Privacy Policy</string>
+    <string name="terms_of_service">Terms of Service</string>
+    
+    <!-- App Description -->
+    <string name="app_description">Habit Tracker is a privacy-first, fully offline habit tracking application designed to help you build and maintain positive habits.\n\n• 🔒 Complete privacy - all data stays on your device\n• 📱 Beautiful, modern interface\n• 🎯 Smart streak tracking and motivation\n• 🌙 Dark and light themes\n• 🔔 Customizable reminders\n• 📊 Progress analytics\n• 📤 Export your data</string>
+    
+    <!-- Tutorial Strings -->
+    <string name="tutorial_welcome_title">Welcome to Habit Tracker!</string>
+    <string name="tutorial_welcome_description">This tutorial will guide you through all the features of Habit Tracker. Let\'s build better habits together!</string>
+    
+    <string name="tutorial_add_habit_title">Adding Your First Habit</string>
+    <string name="tutorial_add_habit_description">Tap the \'+\' button to create a new habit. Choose an icon, set a name, and customize your tracking preferences.</string>
+    
+    <string name="tutorial_track_progress_title">Tracking Your Progress</string>
+    <string name="tutorial_track_progress_description">Mark habits as complete by tapping the circle next to each habit. Your progress will be automatically tracked.</string>
+    
+    <string name="tutorial_build_streaks_title">Building Streaks</string>
+    <string name="tutorial_build_streaks_description">Build and maintain streaks by completing habits consistently. The longer your streak, the more motivated you\'ll become!</string>
+    
+    <string name="tutorial_stay_motivated_title">Staying Motivated</string>
+    <string name="tutorial_stay_motivated_description">Use the insights and reminders to stay on track. You\'ve got this!</string>
+    
+    <!-- Tutorial Actions -->
+    <string name="tutorial_skip">Skip</string>
+    <string name="tutorial_next">Next</string>
+    <string name="tutorial_previous">Previous</string>
+    <string name="tutorial_complete">Complete</string>
+    <string name="tutorial_progress">Tutorial Progress</string>
+    
+    <!-- Tips Categories -->
+    <string name="tips_category_all">All</string>
+    <string name="tips_category_getting_started">Getting Started</string>
+    <string name="tips_category_motivation">Motivation</string>
+    <string name="tips_category_streak_building">Streak Building</string>
+    <string name="tips_category_habit_formation">Habit Formation</string>
+    <string name="tips_category_productivity">Productivity</string>
+    <string name="tips_category_troubleshooting">Troubleshooting</string>
+    
+    <!-- Tip Titles -->
+    <string name="tip_start_small_title">Start Small and Simple</string>
+    <string name="tip_celebrate_wins_title">Celebrate Small Wins</string>
+    <string name="tip_focus_consistency_title">Focus on Consistency</string>
+    <string name="tip_stack_habits_title">Stack Your Habits</string>
+    <string name="tip_time_blocking_title">Use Time Blocking</string>
+    <string name="tip_missing_days_title">Missing Days? No Problem</string>
+    
+    <!-- Tip Descriptions -->
+    <string name="tip_start_small_description">Begin with habits that take less than 2 minutes to complete. This builds momentum and makes it easier to establish the routine.</string>
+    <string name="tip_celebrate_wins_description">Acknowledge and celebrate every time you complete a habit. Small celebrations reinforce positive behavior and keep you motivated.</string>
+    <string name="tip_focus_consistency_description">Rather than perfection, aim for consistency. It\'s better to do something small every day than to do something big occasionally.</string>
+    <string name="tip_stack_habits_description">Link new habits to existing routines. For example, \'After I brush my teeth, I will do 10 push-ups.\'</string>
+    <string name="tip_time_blocking_description">Assign specific time blocks for your habits. This creates structure and reduces decision fatigue.</string>
+    <string name="tip_missing_days_description">If you miss a day, don\'t give up! Get back on track the next day. Consistency over perfection is key to long-term success.</string>
+    
+    <!-- Feedback -->
+    <string name="feedback_subject">Habit Tracker Feedback</string>
+    <string name="feedback_device_info_header">Device Information:</string>
+    <string name="feedback_device_model">Device: %1$s %2$s</string>
+    <string name="feedback_android_version">Android Version: %1$s (API %2$d)</string>
+    <string name="feedback_app_version">App Version: %1$s (%2$d)</string>
+    <string name="feedback_build_type">Build Type: %1$s</string>
+    <string name="feedback_target_sdk">Target SDK: %1$d</string>
+    <string name="feedback_min_sdk">Min SDK: %1$d</string>
+    <string name="feedback_build_date">Build Date: %1$s</string>
+    
+    <!-- Loading and Error States -->
+    <string name="loading_content">Loading content…</string>
+    <string name="loading_tips">Loading tips…</string>
+    <string name="loading_version_info">Loading version information…</string>
+    
+    <string name="error_loading_content">Failed to load content</string>
+    <string name="error_loading_tips">Failed to Load Tips</string>
+    <string name="error_loading_version">Failed to load version information</string>
+    <string name="error_webview">WebView Error</string>
+    
+    <string name="retry">Retry</string>
+    <string name="refresh">Refresh</string>
+    <string name="dismiss">Dismiss</string>
+    
+    <!-- Empty States -->
+    <string name="no_tips_available">No tips available</string>
+    <string name="no_tips_category">No tips available for %1$s</string>
+    <string name="tips_check_back">Check back later for helpful tips and advice!</string>
+    
+    <!-- Navigation -->
+    <string name="navigate_back">Back</string>
+    <string name="content_description_back">Navigate back</string>
+    <string name="content_description_refresh">Refresh content</string>
+    <string name="content_description_app_icon">App Icon</string>
+    
+    <!-- Accessibility -->
+    <string name="content_description_tip_icon">Tip category icon</string>
+    <string name="content_description_version_info">Version information</string>
+    <string name="content_description_developer_info">Developer information</string>
+    <string name="content_description_tutorial_illustration">Tutorial step illustration</string>
+    <string name="content_description_progress_indicator">Tutorial progress indicator</string>
+    
+    <!-- General -->
+    <string name="categories">Categories</string>
+    <string name="actions">Actions</string>
+    <string name="information">Information</string>
+    <string name="contact">Contact</string>
+    <string name="support">Support</string>
+    
+    <!-- HTML Content Loading -->
+    <string name="html_content_loading">Loading %1$s…</string>
+    <string name="html_content_error">Failed to load %1$s. Please check your connection and try again.</string>
+    
+    <!-- Page Titles for WebView -->
+    <string name="page_title_about">About Us</string>
+    <string name="page_title_privacy">Privacy Policy</string>
+    <string name="page_title_terms">Terms of Service</string>
+</resources>

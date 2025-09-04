@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Habit Tracker</string>
+    <string name="habit_tracker_title">Habit Tracker</string>
+    <string name="no_habits_message">No habits yet!</string>
+    <string name="start_building_habits">Start building better habits today.</string>
+    <string name="total_habits">Total Habits: %d</string>
+    <string name="streak_label">Streak: %d</string>
+    <string name="created_label">Created: %s</string>
+    <string name="last_completed_label">Last completed: %s</string>
+    <string name="mark_complete">Mark Complete</string>
+    <string name="delete">Delete</string>
+    <string name="habit_added_success">Habit added successfully!</string>
+    <string name="habit_updated_success">Habit updated successfully!</string>
+    <string name="habit_deleted_success">Habit deleted successfully!</string>
+    <string name="habit_completed_success">Habit marked as complete! Streak: %d</string>
+    <string name="error_load_habits">Failed to load habits: %s</string>
+    <string name="error_add_habit">Failed to add habit: %s</string>
+    <string name="error_update_habit">Failed to update habit: %s</string>
+    <string name="error_delete_habit">Failed to delete habit: %s</string>
+    <string name="error_mark_complete">Failed to mark habit complete: %s</string>
+    <string name="widget_description">View and complete your daily habits</string>
+    <string name="habit_name">Habit Name</string>
+    <string name="mark_done">Mark Done</string>
+    <string name="widget_title">Today\'s Habits</string>
+    <string name="habits_list">Habits List</string>
+    <string name="refresh_button">Refresh</string>
+    <!-- Timer TTS / Accessibility Phrases -->
+    <string name="tts_timer_started">Timer started</string>
+    <string name="tts_timer_halfway">Halfway there</string>
+    <string name="tts_timer_complete">Timer complete</string>
+    <!-- Alert & Audio Settings -->
+    <string name="alert_audio_title">Alert &amp; Audio</string>
+    <string name="audio_cues">Audio Cues</string>
+    <string name="audio_cues_sub">Enable sound playback for timer alerts</string>
+    <string name="progress_cues">Progress Cues</string>
+    <string name="progress_cues_sub">Subtle sounds for midpoint / progress</string>
+    <string name="haptics">Haptics</string>
+    <string name="haptics_sub">Vibration patterns for alerts</string>
+    <string name="voice_tts">Voice (TTS)</string>
+    <string name="voice_tts_sub">Spoken midpoint / completion</string>
+    <string name="tone_variation">Tone Variation</string>
+    <string name="tone_variation_sub">Subtle pitch differences per alert</string>
+    <string name="heads_up_final">Heads-up (final 10s)</string>
+    <string name="heads_up_final_sub">Show a high-priority heads-up notification near completion</string>
+    <string name="sound_pack">Sound Pack</string>
+    <string name="alert_profile">Alert Profile</string>
+    <string name="change">Change</string>
+    <string name="volume">Volume</string>
+    <string name="preview_start">Preview Start</string>
+    <string name="preview_final">Preview Final</string>
+    <string name="select_sound_pack">Select Sound Pack</string>
+    <string name="select_alert_profile">Select Alert Profile</string>
+    <string name="paused_label">Paused</string>
+    <!-- Timer Notification Actions (Phase UIX-7) -->
+    <string name="notif_timer_in_progress">Timer in progress</string>
+    <string name="notif_timer_paused">Timer paused</string>
+    <string name="action_pause">Pause</string>
+    <string name="action_resume">Resume</string>
+    <string name="action_complete">Complete</string>
+    <string name="action_extend_5m">+5m</string>
+    <string name="action_add_1m">+1m</string>
+    <string name="action_sub_1m">-1m</string>
+    <string name="log_partial">Log partial</string>
+    <string name="add_note">Add note</string>
+    <!-- Timer UX gentle nudge before target (Phase 2) -->
+    <string name="nudge_near_target">About %1$dm to reach your target</string>
+</resources>

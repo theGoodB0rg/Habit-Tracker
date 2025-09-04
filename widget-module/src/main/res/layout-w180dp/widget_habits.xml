@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Compact widget layout for smaller sizes (2x1, 3x1) -->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/widget_root"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:background="@drawable/widget_background"
+    android:padding="8dp"
+    android:descendantFocusability="blocksDescendants">
+
+    <!-- Compact header -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center_vertical">
+
+        <TextView
+            android:id="@+id/widget_title"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="@string/widget_title_today"
+            android:textSize="12sp"
+            android:textStyle="bold"
+            android:textColor="@color/widgetTitleColor"
+            android:ellipsize="end"
+            android:maxLines="1"
+            android:importantForAccessibility="yes"
+            android:contentDescription="My Habits for today" />
+
+        <TextView
+            android:id="@+id/progress_indicator"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="0/0"
+            android:textSize="10sp"
+            android:textColor="@color/widgetAccentColor"
+            android:textStyle="bold"
+            android:minWidth="40dp"
+            android:gravity="end"
+            android:importantForAccessibility="yes"
+            android:contentDescription="Daily progress" />
+    </LinearLayout>
+
+    <!-- Compact habits list -->
+    <ListView
+        android:id="@+id/habits_list"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:divider="@null"
+        android:dividerHeight="2dp"
+        android:paddingTop="4dp"
+        android:paddingBottom="4dp"
+        android:clipToPadding="false"
+        android:scrollbars="none"
+        android:importantForAccessibility="yes" />
+
+    <!-- Compact footer -->
+    <Button
+        android:id="@+id/button_refresh"
+        android:layout_width="match_parent"
+        android:layout_height="32dp"
+        android:text="@string/widget_sync"
+        android:textSize="10sp"
+        android:padding="4dp"
+        android:background="@drawable/widget_button_background"
+        android:textColor="@color/widgetButtonTextColor"
+        android:contentDescription="Refresh and sync habits"
+        android:focusable="true"
+        android:clickable="true"
+        android:importantForAccessibility="yes" />
+
+    <!-- Empty view -->
+    <TextView
+        android:id="@+id/empty_view"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="No habits"
+        android:gravity="center"
+        android:padding="16dp"
+        android:textSize="12sp"
+        android:textColor="@color/widgetTextColor"
+        android:visibility="gone"
+        android:importantForAccessibility="yes"
+        android:contentDescription="No habits available" />
+
+</LinearLayout>

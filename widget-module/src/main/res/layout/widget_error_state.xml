@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:background="@drawable/widget_background"
+    android:padding="16dp"
+    android:gravity="center">
+
+    <!-- Error Icon and Title -->
+    <TextView
+        android:id="@+id/error_title"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="⚠️ Widget Error"
+        android:textSize="16sp"
+        android:textStyle="bold"
+        android:textColor="@color/error_color"
+        android:gravity="center"
+        android:layout_marginBottom="8dp" />
+
+    <!-- Error Message -->
+    <TextView
+        android:id="@+id/error_message"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Failed to load habits data"
+        android:textSize="12sp"
+        android:textColor="@color/widget_text_secondary"
+        android:gravity="center"
+        android:layout_marginBottom="12dp"
+        android:maxLines="2"
+        android:ellipsize="end" />
+
+    <!-- Retry Button -->
+    <Button
+        android:id="@+id/retry_button"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="🔄 Retry"
+        android:textSize="12sp"
+        android:paddingHorizontal="16dp"
+        android:paddingVertical="8dp"
+        android:background="@drawable/widget_button_background"
+        android:textColor="@color/widget_button_text"
+        android:contentDescription="Retry loading widget data" />
+
+</LinearLayout>

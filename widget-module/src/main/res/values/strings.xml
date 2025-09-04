@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Widget strings -->
+    <string name="widget_description">Track and complete your daily habits directly from your home screen. Tap to mark habits as done and see your progress at a glance.</string>
+    <string name="widget_title_today">📊 My Habits - Today</string>
+    <string name="widget_no_habits">No habits for today!\nTap to add your first habit.</string>
+    <string name="widget_loading">Loading habits...</string>
+    <string name="widget_error">Unable to load habits</string>
+    <string name="widget_sync">🔄 Sync</string>
+    <string name="widget_complete">🎉 Complete!</string>
+    <string name="widget_start_day">🔄 Start Day</string>
+    <string name="widget_button_refresh">🔄 Refresh</string>
+    <string name="widget_next_suggested_prefix">Next suggested:</string>
+    <string name="widget_next_suggested_content_desc">Next suggested time for your habits</string>
+    
+    <!-- Accessibility strings -->
+    <string name="widget_habit_complete">Mark %1$s as complete</string>
+    <string name="widget_habit_incomplete">Mark %1$s as not done</string>
+    <string name="widget_progress_description">%1$d of %2$d habits completed today</string>
+    <string name="widget_progressbar_content_desc">Daily completion progress</string>
+    <string name="widget_streak_description">%1$d day streak</string>
+</resources>

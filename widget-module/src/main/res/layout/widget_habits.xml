@@ -1,0 +1,136 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/widget_root"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:background="@drawable/widget_background"
+    android:padding="12dp"
+    android:descendantFocusability="blocksDescendants">
+
+    <!-- Header with progress -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center_vertical">
+
+        <TextView
+            android:id="@+id/widget_title"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="@string/widget_title_today"
+            android:textSize="14sp"
+            android:textStyle="bold"
+            android:textColor="@color/widgetTitleColor"
+            android:ellipsize="end"
+            android:maxLines="1"
+            android:importantForAccessibility="yes"
+            android:contentDescription="My Habits for today" />
+
+        <TextView
+            android:id="@+id/progress_indicator"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="0/0 (0%)"
+            android:textSize="12sp"
+            android:textColor="@color/widgetAccentColor"
+            android:textStyle="bold"
+            android:minWidth="60dp"
+            android:gravity="end"
+            android:importantForAccessibility="yes"
+            android:contentDescription="Daily progress" />
+    </LinearLayout>
+
+    <!-- Visual progress indicator -->
+    <ProgressBar
+        android:id="@+id/daily_progress_bar"
+        style="@android:style/Widget.ProgressBar.Horizontal"
+        android:layout_width="match_parent"
+        android:layout_height="4dp"
+        android:layout_marginTop="4dp"
+        android:progress="0"
+        android:max="100"
+        android:indeterminate="false"
+        android:visibility="gone"
+        android:contentDescription="@string/widget_progressbar_content_desc"
+        android:importantForAccessibility="yes" />
+    
+    <!-- Next suggested time (optional) -->
+    <TextView
+        android:id="@+id/next_suggested_time"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="4dp"
+        android:text="@string/widget_loading"
+        android:textSize="12sp"
+        android:textColor="@color/widgetTextColor"
+        android:visibility="gone"
+        android:importantForAccessibility="yes"
+        android:contentDescription="Next suggested time" />
+
+    <!-- Habits List -->
+    <ListView
+        android:id="@+id/habits_list"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:divider="@null"
+        android:dividerHeight="4dp"
+        android:paddingTop="8dp"
+        android:paddingBottom="8dp"
+        android:clipToPadding="false"
+        android:scrollbars="vertical"
+        android:importantForAccessibility="yes" />
+
+    <!-- Footer with actions -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:paddingTop="8dp">
+
+        <TextView
+            android:id="@+id/daily_progress"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="0% Complete Today"
+            android:textSize="12sp"
+            android:textColor="@color/widgetTextColor"
+            android:importantForAccessibility="yes"
+            android:contentDescription="Daily completion percentage" />
+
+        <Button
+            android:id="@+id/refresh_button"
+            android:layout_width="wrap_content"
+            android:layout_height="36dp"
+            android:text="@string/widget_sync"
+            android:textSize="11sp"
+            android:minWidth="80dp"
+            android:padding="8dp"
+            android:background="@drawable/widget_button_background"
+            android:textColor="@color/widgetButtonTextColor"
+            android:contentDescription="Refresh and sync habits"
+            android:focusable="true"
+            android:clickable="true"
+            android:importantForAccessibility="yes" />
+    </LinearLayout>
+
+    <!-- Empty view -->
+    <TextView
+        android:id="@+id/empty_state_text"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/widget_no_habits"
+        android:gravity="center"
+        android:padding="24dp"
+        android:textSize="14sp"
+        android:textColor="@color/widgetTextColor"
+        android:visibility="gone"
+        android:importantForAccessibility="yes"
+        android:contentDescription="No habits available, tap to add habits" />
+
+</LinearLayout>

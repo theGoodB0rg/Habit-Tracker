@@ -1,0 +1,63 @@
+<resources>
+    <!-- Export Engine Module Strings -->
+    <string name="export_title">Export Habits</string>
+    <string name="export_subtitle">Export your habit data</string>
+    
+    <!-- Export Formats -->
+    <string name="format_json">JSON</string>
+    <string name="format_csv">CSV</string>
+    
+    <!-- Export Scopes -->
+    <string name="scope_all_habits">All Habits</string>
+    <string name="scope_active_habits">Active Habits Only</string>
+    <string name="scope_specific_habit">Specific Habit</string>
+    <string name="scope_date_range">Date Range</string>
+    
+    <!-- Export Options -->
+    <string name="include_completions">Include Completion History</string>
+    <string name="include_streak_history">Include Streak Statistics</string>
+    <string name="include_metadata">Include Export Metadata</string>
+    
+    <!-- Progress Messages -->
+    <string name="progress_validating">Validating configuration…</string>
+    <string name="progress_checking_permissions">Checking permissions…</string>
+    <string name="progress_collecting_data">Collecting habit data…</string>
+    <string name="progress_collecting_completions">Collecting completion data…</string>
+    <string name="progress_transforming">Transforming data…</string>
+    <string name="progress_writing_file">Writing file…</string>
+    <string name="progress_complete">Export completed successfully</string>
+    
+    <!-- Error Messages -->
+    <string name="error_no_data">No data available to export</string>
+    <string name="error_storage_permission">Storage permission is required for export</string>
+    <string name="error_insufficient_storage">Insufficient storage space for export</string>
+    <string name="error_file_operation">Failed to write export file</string>
+    <string name="error_serialization">Failed to serialize data</string>
+    <string name="error_invalid_config">Invalid export configuration</string>
+    
+    <!-- Success Messages -->
+    <string name="export_successful">Export completed successfully</string>
+    <string name="export_failed">Export failed</string>
+    
+    <!-- Share Options -->
+    <string name="share_title">Share Habit Data</string>
+    <string name="share_via">Share via</string>
+    <string name="share_email">Email</string>
+    <string name="share_telegram">Telegram</string>
+    <string name="share_whatsapp">WhatsApp</string>
+    <string name="share_google_drive">Google Drive</string>
+    <string name="share_dropbox">Dropbox</string>
+    
+    <!-- File Information -->
+    <string name="file_name">File Name</string>
+    <string name="file_size">File Size</string>
+    <string name="record_count">Records</string>
+    <string name="estimated_size">Estimated Size</string>
+    
+    <!-- Buttons -->
+    <string name="button_start_export">Start Export</string>
+    <string name="button_share_last_export">Share Last Export</string>
+    <string name="button_preview">Preview</string>
+    <string name="button_cancel">Cancel</string>
+    <string name="button_retry">Retry</string>
+</resources>
