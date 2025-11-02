@@ -26,6 +26,7 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.IntOffset
+import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.toSize
 import androidx.compose.ui.window.Popup
@@ -33,6 +34,7 @@ import androidx.compose.ui.window.PopupProperties
 import androidx.compose.ui.zIndex
 import com.habittracker.onboarding.model.TooltipConfig
 import com.habittracker.onboarding.model.TooltipPosition
+import kotlin.math.roundToInt
 import kotlinx.coroutines.delay
 
 /**
@@ -80,7 +82,7 @@ fun TooltipOverlay(
         ),
         onDismissRequest = onDismiss
     ) {
-        Box(
+        BoxWithConstraints(
             modifier = Modifier
                 .fillMaxSize()
                 .background(Color.Black.copy(alpha = overlayAlpha))
@@ -94,60 +96,39 @@ fun TooltipOverlay(
             // Try to position near target if coordinates are known
             val targetRect = TooltipCoordinateManager.getTarget(tooltipConfig.targetComposableKey)
             val density = LocalDensity.current
-            val tooltipModifier = if (targetRect != null) {
-                // Compute base position relative to target + desired offset
-                val screenPadding = 12.dp
-                val targetLeft = with(density) { targetRect.left.toDp() }
-                val targetTop = with(density) { targetRect.top.toDp() }
-                val targetRight = with(density) { targetRect.right.toDp() }
-                val targetBottom = with(density) { targetRect.bottom.toDp() }
+            val screenWidthPx = with(density) { maxWidth.toPx() }
+            val screenHeightPx = with(density) { maxHeight.toPx() }
+            val marginPx = with(density) { 16.dp.toPx() }
+            var tooltipSizePx by remember { mutableStateOf(IntSize.Zero) }
 
-                // Initial (x,y) before size known; we rely on Popup natural sizing then clamp via padding
-                val baseModifier = when (tooltipConfig.position) {
-                    com.habittracker.onboarding.model.TooltipPosition.TOP -> {
-                        Modifier.padding(start = targetLeft, top = (targetTop - 8.dp))
-                    }
-                    com.habittracker.onboarding.model.TooltipPosition.BOTTOM -> {
-                        Modifier.padding(start = targetLeft, top = targetBottom + 8.dp)
-                    }
-                    com.habittracker.onboarding.model.TooltipPosition.LEFT -> {
-                        Modifier.padding(start = (targetLeft - 8.dp), top = targetTop)
-                    }
-                    com.habittracker.onboarding.model.TooltipPosition.RIGHT -> {
-                        Modifier.padding(start = targetRight + 8.dp, top = targetTop)
-                    }
-                    com.habittracker.onboarding.model.TooltipPosition.CENTER -> {
-                        Modifier.align(Alignment.Center)
-                    }
-                    com.habittracker.onboarding.model.TooltipPosition.TOP_LEFT -> {
-                        Modifier.padding(start = targetLeft, top = targetTop - 8.dp)
-                    }
-                    com.habittracker.onboarding.model.TooltipPosition.TOP_RIGHT -> {
-                        Modifier.padding(start = targetRight, top = targetTop - 8.dp)
-                    }
-                    com.habittracker.onboarding.model.TooltipPosition.BOTTOM_LEFT -> {
-                        Modifier.padding(start = targetLeft, top = targetBottom + 8.dp)
-                    }
-                    com.habittracker.onboarding.model.TooltipPosition.BOTTOM_RIGHT -> {
-                        Modifier.padding(start = targetRight, top = targetBottom + 8.dp)
-                    }
-                }
-                // Align top-start for explicit coordinate-based placements (except center case)
-                if (tooltipConfig.position == com.habittracker.onboarding.model.TooltipPosition.CENTER) {
-                    baseModifier
-                } else {
-                    baseModifier.align(Alignment.TopStart)
-                }
-            } else {
-                Modifier.align(Alignment.Center)
+            val tooltipOffset = remember(
+                targetRect,
+                tooltipSizePx,
+                screenWidthPx,
+                screenHeightPx,
+                marginPx,
+                tooltipConfig.position
+            ) {
+                calculateTooltipOffset(
+                    targetRect = targetRect,
+                    tooltipSize = tooltipSizePx,
+                    screenWidthPx = screenWidthPx,
+                    screenHeightPx = screenHeightPx,
+                    marginPx = marginPx,
+                    position = tooltipConfig.position
+                )
             }
-            
+
             TooltipCard(
                 config = tooltipConfig,
                 scale = tooltipScale,
                 alpha = tooltipAlpha,
                 onDismiss = onDismiss,
-                modifier = tooltipModifier
+                modifier = Modifier
+                    .offset { tooltipOffset }
+                    .onGloballyPositioned { coordinates ->
+                        tooltipSizePx = coordinates.size
+                    }
             )
         }
     }
@@ -352,6 +333,85 @@ fun rememberTooltipTarget(
  * Global coordinate manager for tooltip positioning
  * In a real implementation, this would be a proper singleton or DI component
  */
+private fun calculateTooltipOffset(
+    targetRect: Rect?,
+    tooltipSize: IntSize,
+    screenWidthPx: Float,
+    screenHeightPx: Float,
+    marginPx: Float,
+    position: TooltipPosition
+): IntOffset {
+    val tooltipWidth = tooltipSize.width.toFloat()
+    val tooltipHeight = tooltipSize.height.toFloat()
+
+    if (targetRect == null || tooltipWidth == 0f || tooltipHeight == 0f) {
+        val safeX = ((screenWidthPx - tooltipWidth) / 2f).coerceAtLeast(marginPx)
+        val safeY = ((screenHeightPx - tooltipHeight) / 2f).coerceAtLeast(marginPx)
+        return IntOffset(safeX.roundToInt(), safeY.roundToInt())
+    }
+
+    val centerX = targetRect.left + (targetRect.width / 2f)
+    val centerY = targetRect.top + (targetRect.height / 2f)
+
+    var x = when (position) {
+        TooltipPosition.TOP -> centerX - tooltipWidth / 2f
+        TooltipPosition.BOTTOM -> centerX - tooltipWidth / 2f
+        TooltipPosition.LEFT -> targetRect.left - tooltipWidth - marginPx
+        TooltipPosition.RIGHT -> targetRect.right + marginPx
+        TooltipPosition.CENTER -> centerX - tooltipWidth / 2f
+        TooltipPosition.TOP_LEFT -> targetRect.left
+        TooltipPosition.TOP_RIGHT -> targetRect.right - tooltipWidth
+        TooltipPosition.BOTTOM_LEFT -> targetRect.left
+        TooltipPosition.BOTTOM_RIGHT -> targetRect.right - tooltipWidth
+    }
+
+    var y = when (position) {
+        TooltipPosition.TOP -> targetRect.top - tooltipHeight - marginPx
+        TooltipPosition.BOTTOM -> targetRect.bottom + marginPx
+        TooltipPosition.LEFT -> centerY - tooltipHeight / 2f
+        TooltipPosition.RIGHT -> centerY - tooltipHeight / 2f
+        TooltipPosition.CENTER -> centerY - tooltipHeight / 2f
+        TooltipPosition.TOP_LEFT -> targetRect.top - tooltipHeight - marginPx
+        TooltipPosition.TOP_RIGHT -> targetRect.top - tooltipHeight - marginPx
+        TooltipPosition.BOTTOM_LEFT -> targetRect.bottom + marginPx
+        TooltipPosition.BOTTOM_RIGHT -> targetRect.bottom + marginPx
+    }
+
+    val prefersTop = position == TooltipPosition.TOP || position == TooltipPosition.TOP_LEFT || position == TooltipPosition.TOP_RIGHT
+    val prefersBottom = position == TooltipPosition.BOTTOM || position == TooltipPosition.BOTTOM_LEFT || position == TooltipPosition.BOTTOM_RIGHT
+    val prefersLeft = position == TooltipPosition.LEFT || position == TooltipPosition.TOP_LEFT || position == TooltipPosition.BOTTOM_LEFT
+    val prefersRight = position == TooltipPosition.RIGHT || position == TooltipPosition.TOP_RIGHT || position == TooltipPosition.BOTTOM_RIGHT
+
+    if (prefersTop && y < marginPx) {
+        y = targetRect.bottom + marginPx
+    }
+    if (prefersBottom && (y + tooltipHeight + marginPx) > screenHeightPx) {
+        y = targetRect.top - tooltipHeight - marginPx
+    }
+    if (prefersLeft && x < marginPx) {
+        x = targetRect.right + marginPx
+    }
+    if (prefersRight && (x + tooltipWidth + marginPx) > screenWidthPx) {
+        x = targetRect.left - tooltipWidth - marginPx
+    }
+
+    val horizontalMax = screenWidthPx - tooltipWidth - marginPx
+    val verticalMax = screenHeightPx - tooltipHeight - marginPx
+
+    x = when {
+        tooltipWidth <= 0f -> x
+        horizontalMax <= marginPx -> (screenWidthPx - tooltipWidth) / 2f
+        else -> x.coerceIn(marginPx, horizontalMax)
+    }
+
+    y = when {
+        tooltipHeight <= 0f -> y
+        verticalMax <= marginPx -> (screenHeightPx - tooltipHeight) / 2f
+        else -> y.coerceIn(marginPx, verticalMax)
+    }
+
+    return IntOffset(x.roundToInt(), y.roundToInt())
+}
 object TooltipCoordinateManager {
     private val coordinates = mutableMapOf<String, Rect>()
     private val densityValues = mutableMapOf<String, Float>()
@@ -374,3 +434,6 @@ object TooltipCoordinateManager {
         densityValues.clear()
     }
 }
+
+
+
