@@ -159,6 +159,30 @@ class AnalyticsViewModel @Inject constructor(
     }
 
     /**
+     * Track timer action events emitted by the coordinator so analytics stay in sync.
+     */
+    fun trackTimerEvent(
+        eventType: String,
+        habitId: Long? = null,
+        sessionId: Long? = null,
+        source: String? = null,
+        extra: Map<String, Any?> = emptyMap()
+    ) {
+        viewModelScope.launch {
+            try {
+                trackingUseCases.trackTimerEventUseCase(
+                    eventType = eventType,
+                    habitId = habitId,
+                    sessionId = sessionId,
+                    source = source,
+                    extra = extra
+                )
+            } catch (e: Exception) {
+                android.util.Log.w("AnalyticsViewModel", "Failed to track timer event", e)
+            }
+        }
+    }
+    /**
      * Process analytics data into chart-friendly formats
      */
     private fun processChartData(analyticsData: AnalyticsData) {

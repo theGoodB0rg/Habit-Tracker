@@ -26,3 +26,17 @@ fun TimerActionEventEffect(
         }
     }
 }
+
+@Composable
+fun TimerActionTelemetryEffect(
+    handler: TimerActionHandler?,
+    onTelemetry: suspend (TimerActionCoordinator.TimerActionTelemetry) -> Unit
+) {
+    if (handler == null) return
+
+    LaunchedEffect(handler) {
+        handler.telemetry.collect { event ->
+            onTelemetry(event)
+        }
+    }
+}

@@ -37,6 +37,13 @@ import com.habittracker.ui.components.timer.MiniSessionBar
 import com.habittracker.ui.components.LoadingComponent
 import com.habittracker.nudges.viewmodel.NudgeViewModel
 import com.habittracker.nudges.ui.NudgeBannerSection
+import androidx.compose.ui.platform.LocalContext
+import com.habittracker.timerux.TimerActionCoordinator
+import com.habittracker.timerux.TimerCompletionInteractor.ConfirmType
+import com.habittracker.timerux.TimerCompletionInteractor.Intent as TimerIntent
+import com.habittracker.timerux.resolveTimerUxEntryPoint
+import com.habittracker.timing.TimerFeatureFlags
+import com.habittracker.ui.utils.TimerActionTelemetryEffect
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 
@@ -65,7 +72,22 @@ fun MainScreen(
     
     // Analytics integration
     val analyticsViewModel: AnalyticsViewModel = hiltViewModel()
-    
+
+    val context = LocalContext.current
+    val useActionCoordinator = TimerFeatureFlags.enableActionCoordinator
+    val timerActionHandler = remember(context, useActionCoordinator) {
+        if (useActionCoordinator) resolveTimerUxEntryPoint(context).timerActionHandler() else null
+    }
+
+    TimerActionTelemetryEffect(handler = timerActionHandler) { telemetry ->
+        val analyticsEvent = telemetry.toAnalyticsEvent() ?: return@TimerActionTelemetryEffect
+        analyticsViewModel.trackTimerEvent(
+            eventType = analyticsEvent.type,
+            habitId = telemetry.habitId,
+            extra = analyticsEvent.extra
+        )
+    }
+
     // Track screen visit
     LaunchedEffect(Unit) {
         analyticsViewModel.trackScreenVisit("MainScreen")
@@ -381,6 +403,16 @@ fun MainScreen(
                                             }
                                         },
                                         onEditClick = { onNavigateToEditHabit(habit.id) },
+                                        onOvertimeExtend = {
+                                            analyticsViewModel.trackScreenVisit("OvertimeExtend", fromScreen = "EnhancedHabitCard")
+                                        },
+                                        onOvertimeComplete = {
+                                            analyticsViewModel.trackHabitCompletion(
+                                                habitId = it.id.toString(),
+                                                habitName = it.name,
+                                                isCompleted = true
+                                            )
+                                        },
                                         isCompact = true,
                                         modifier = Modifier.weight(1f)
                                     )
@@ -423,6 +455,16 @@ fun MainScreen(
                                     }
                                 },
                                 onEditClick = { onNavigateToEditHabit(habit.id) },
+                                onOvertimeExtend = {
+                                    analyticsViewModel.trackScreenVisit("OvertimeExtend", fromScreen = "EnhancedHabitCard")
+                                },
+                                onOvertimeComplete = {
+                                    analyticsViewModel.trackHabitCompletion(
+                                        habitId = it.id.toString(),
+                                        habitName = it.name,
+                                        isCompleted = true
+                                    )
+                                },
                                 modifier = Modifier
                                     .fillMaxWidth()
                                     .animateItemPlacement()
@@ -618,4 +660,60 @@ private fun TestStreakWarningBanner(
 // Extension function to convert java.util.Date to LocalDate
 private fun java.util.Date.toLocalDate(): LocalDate {
     return this.toInstant().atZone(java.time.ZoneId.systemDefault()).toLocalDate()
+}
+
+
+private data class TimerAnalyticsEvent(
+    val type: String,
+    val extra: Map<String, Any?> = emptyMap()
+)
+
+private fun TimerActionCoordinator.TimerActionTelemetry.toAnalyticsEvent(): TimerAnalyticsEvent? {
+    return when (this) {
+        is TimerActionCoordinator.TimerActionTelemetry.Executed -> {
+            val eventType = intent.toAnalyticsEventType() ?: return null
+            TimerAnalyticsEvent(
+                type = eventType,
+                extra = mapOf("intent" to intent.toAnalyticsIntentName())
+            )
+        }
+        is TimerActionCoordinator.TimerActionTelemetry.Confirmed -> TimerAnalyticsEvent(
+            type = "timer_confirm_required",
+            extra = mapOf(
+                "intent" to intent.toAnalyticsIntentName(),
+                "confirm" to confirmType.toAnalyticsValue()
+            )
+        )
+        is TimerActionCoordinator.TimerActionTelemetry.Disallowed -> TimerAnalyticsEvent(
+            type = "timer_action_blocked",
+            extra = mapOf(
+                "intent" to intent.toAnalyticsIntentName(),
+                "reason" to reason
+            )
+        )
+    }
+}
+
+private fun TimerIntent.toAnalyticsEventType(): String? = when (this) {
+    TimerIntent.Start -> "timer_start"
+    TimerIntent.Pause -> "timer_pause"
+    TimerIntent.Resume -> "timer_resume"
+    TimerIntent.Done -> "timer_done"
+    TimerIntent.StopWithoutComplete -> "timer_discard"
+    TimerIntent.QuickComplete -> "timer_quick_complete"
+}
+
+private fun TimerIntent.toAnalyticsIntentName(): String = when (this) {
+    TimerIntent.Start -> "start"
+    TimerIntent.Pause -> "pause"
+    TimerIntent.Resume -> "resume"
+    TimerIntent.Done -> "done"
+    TimerIntent.StopWithoutComplete -> "stop_without_complete"
+    TimerIntent.QuickComplete -> "quick_complete"
+}
+
+private fun ConfirmType.toAnalyticsValue(): String = when (this) {
+    ConfirmType.BelowMinDuration -> "below_min_duration"
+    ConfirmType.DiscardNonZeroSession -> "discard_non_zero_session"
+    ConfirmType.EndPomodoroEarly -> "end_pomodoro_early"
 }

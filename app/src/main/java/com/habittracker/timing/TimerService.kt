@@ -932,11 +932,4 @@ object TimerAlertBus {
     fun emit(event: TimerAlertEvent) { _events.tryEmit(event) }
 }
 
-// Runtime toggles for experimentation (could map to BuildConfig or DataStore later)
-object TimerFeatureFlags {
-    var enableAlertScheduling: Boolean = true
-    var enableActionCoordinator: Boolean = true
-}
-
-
 

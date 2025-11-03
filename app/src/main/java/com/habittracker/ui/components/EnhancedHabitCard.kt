@@ -65,6 +65,8 @@ fun EnhancedHabitCard(
     onStartTimer: (HabitUiModel, Duration) -> Unit = { _, _ -> },
     onApplySuggestion: (SmartSuggestion) -> Unit = { },
     onDismissSuggestion: (SmartSuggestion) -> Unit = { },
+    onOvertimeExtend: (HabitUiModel) -> Unit = {},
+    onOvertimeComplete: (HabitUiModel) -> Unit = {},
     modifier: Modifier = Modifier,
     isCompact: Boolean = false,
     timingViewModel: TimingFeatureViewModel = hiltViewModel()
@@ -106,7 +108,6 @@ fun EnhancedHabitCard(
     }
     val tickerViewModel: TimerTickerViewModel = hiltViewModel()
     val activeTimerVm: ActiveTimerViewModel = hiltViewModel()
-    val analyticsVm: com.habittracker.analytics.presentation.viewmodel.AnalyticsViewModel = hiltViewModel()
     val scope = androidx.compose.runtime.rememberCoroutineScope()
 
     // Local error banner state (collect from TimingFeatureViewModel)
@@ -760,20 +761,18 @@ fun EnhancedHabitCard(
                                 modifier = Modifier.weight(1f)
                             )
                             TextButton(onClick = {
-                                // Track overtime extend action
-                                analyticsVm.trackScreenVisit("OvertimeExtend", fromScreen = "EnhancedHabitCard")
+                                onOvertimeExtend(habit)
                                 timerController.extendFiveMinutes()
                             }) {
                                 Text("+5m")
                             }
                             TextButton(onClick = {
-                                // Track immediate completion from overtime nudge
-                                analyticsVm.trackHabitCompletion(
-                                    habitId = habit.id.toString(),
-                                    habitName = habit.name,
-                                    isCompleted = true
-                                )
-                                timerController.complete()
+                                onOvertimeComplete(habit)
+                                if (handler != null) {
+                                    handler.handle(TimerIntent.Done, habit.id)
+                                } else {
+                                    timerController.complete()
+                                }
                             }) {
                                 Text("Complete now")
                             }
@@ -915,3 +914,4 @@ fun EnhancedHabitCard(
         )
     }
 }
+
