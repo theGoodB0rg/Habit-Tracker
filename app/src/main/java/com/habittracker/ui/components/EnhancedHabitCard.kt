@@ -460,14 +460,7 @@ fun EnhancedHabitCard(
                         habit = habit,
                         onStartTimer = { h, d ->
                             if (!controlsEnabled) return@SimpleTimerButton
-                            // Delegate to callback and start controller for side effects/analytics
                             onStartTimer(h, d)
-                            timingViewModel.recordTimerUsage(h.id, completed = false)
-                            if (handler != null) {
-                                handler.handle(TimerIntent.Start, h.id)
-                            } else {
-                                timerController.start(h.id, TimerType.SIMPLE, d)
-                            }
                         },
                         modifier = controlModifier
                     )
@@ -798,17 +791,23 @@ fun EnhancedHabitCard(
                         SmartSuggestionCard(
                             suggestion = suggestion,
                             onApplySuggestion = { 
-                                // One-tap: ensure timer feature is on, then start with suggested duration or default
                                 if (!timingViewModel.isFeatureEnabled(Feature.SIMPLE_TIMER)) {
                                     timingViewModel.enableFeature(Feature.SIMPLE_TIMER)
                                 }
                                 val dur = it.suggestedDuration
                                     ?: habit.estimatedDuration
                                     ?: java.time.Duration.ofMinutes(25)
-                                timerController.start(habit.id, TimerType.SIMPLE, dur)
-                                timingViewModel.recordTimerUsage(habit.id, completed = false)
-                                timingViewModel.recordSuggestionInteraction(it, accepted = true)
                                 onApplySuggestion(it)
+                                if (handler != null) {
+                                    handler.handle(
+                                        TimerIntent.Start,
+                                        habit.id,
+                                        TimerActionCoordinator.DecisionContext(smartDuration = dur)
+                                    )
+                                } else {
+                                    timerController.start(habit.id, TimerType.SIMPLE, dur)
+                                }
+                                timingViewModel.recordSuggestionInteraction(it, accepted = true)
                             },
                             onDismissSuggestion = { 
                                 onDismissSuggestion(it)

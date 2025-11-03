@@ -39,6 +39,16 @@ import com.habittracker.utils.TimerDisplayUtils
 import java.time.Duration
 import java.time.LocalTime
 import java.time.format.DateTimeFormatter
+import androidx.compose.ui.platform.LocalContext
+import com.habittracker.timerux.TimerActionCoordinator
+import com.habittracker.timerux.TimerActionHandler
+import com.habittracker.timerux.TimerCompletionInteractor
+import com.habittracker.timerux.TimerCompletionInteractor.Intent as TimerIntent
+import com.habittracker.timerux.resolveTimerUxEntryPoint
+import com.habittracker.timing.TimerController
+import com.habittracker.timing.TimerFeatureFlags
+import com.habittracker.ui.modifiers.disableDuringTimerAction
+import com.habittracker.ui.viewmodels.timing.TimerTickerViewModel
 
 /**
  * Phase 2: Progressive UI Complexity System
@@ -59,33 +69,104 @@ fun SimpleTimerButton(
     onStartTimer: (HabitUiModel, Duration) -> Unit,
     modifier: Modifier = Modifier
 ) {
-    // Best of both: keep it visible but compact, and respect feature preference when available.
-    val timingViewModel: com.habittracker.ui.viewmodels.timing.TimingFeatureViewModel = androidx.hilt.navigation.compose.hiltViewModel()
-    val prefs by timingViewModel.smartTimingPreferences.collectAsState()
-    val timersEnabled = timingViewModel.isFeatureEnabled(com.habittracker.ui.models.timing.Feature.SIMPLE_TIMER)
+    val context = LocalContext.current
+    val timingViewModel: com.habittracker.ui.viewmodels.timing.TimingFeatureViewModel = hiltViewModel()
+    val timersEnabled = timingViewModel.isFeatureEnabled(Feature.SIMPLE_TIMER)
     val defaultDuration = habit.estimatedDuration ?: Duration.ofMinutes(25)
+
+    val timerTickerViewModel: TimerTickerViewModel = hiltViewModel()
+    val remainingByHabit by timerTickerViewModel.remainingByHabit.collectAsState()
+    val pausedByHabit by timerTickerViewModel.pausedByHabit.collectAsState()
+    val isActiveWithoutCoordinator = (remainingByHabit[habit.id] ?: 0L) > 0
+    val isPausedWithoutCoordinator = pausedByHabit[habit.id] == true
+
+    val timerController = remember(context) { TimerController(context) }
+    val useCoordinator = TimerFeatureFlags.enableActionCoordinator
+    val handler: TimerActionHandler? = remember(context, useCoordinator) {
+        if (useCoordinator) resolveTimerUxEntryPoint(context).timerActionHandler() else null
+    }
+    val coordinatorState by if (handler != null) {
+        handler.state.collectAsState()
+    } else {
+        remember { mutableStateOf(TimerActionCoordinator.CoordinatorState()) }
+    }
+    val isTrackedHabit = handler != null && coordinatorState.trackedHabitId == habit.id
+    val waitingForService = isTrackedHabit && coordinatorState.waitingForService
+    val coordinatorTimerState = if (isTrackedHabit) {
+        coordinatorState.timerState
+    } else {
+        TimerCompletionInteractor.TimerState.IDLE
+    }
+
+    val displayLabel = when {
+        !timersEnabled -> "Start (Enable)"
+        waitingForService -> "Starting..."
+        coordinatorTimerState == TimerCompletionInteractor.TimerState.RUNNING && isTrackedHabit -> "Active"
+        coordinatorTimerState == TimerCompletionInteractor.TimerState.PAUSED && isTrackedHabit -> "Resume"
+        isPausedWithoutCoordinator -> "Resume"
+        isActiveWithoutCoordinator -> "Active"
+        else -> "Start"
+    }
+
+    val enabled = when {
+        !timersEnabled -> true
+        waitingForService -> false
+        coordinatorTimerState == TimerCompletionInteractor.TimerState.RUNNING && isTrackedHabit -> false
+        isActiveWithoutCoordinator && handler == null -> false
+        else -> true
+    }
+
+    val leadingIcon = when {
+        waitingForService -> Icons.Default.HourglassTop
+        coordinatorTimerState == TimerCompletionInteractor.TimerState.PAUSED && isTrackedHabit -> Icons.Default.PlayArrow
+        coordinatorTimerState == TimerCompletionInteractor.TimerState.RUNNING && isTrackedHabit -> Icons.Default.CheckCircle
+        isPausedWithoutCoordinator -> Icons.Default.PlayArrow
+        isActiveWithoutCoordinator -> Icons.Default.CheckCircle
+        else -> Icons.Default.Timer
+    }
+
+    val chipModifier = if (handler != null && isTrackedHabit) {
+        modifier.disableDuringTimerAction(coordinatorState)
+    } else {
+        modifier
+    }
 
     AssistChip(
         onClick = {
             if (!timersEnabled) {
-                // One-tap enablement: turn on SIMPLE_TIMER and proceed.
-                timingViewModel.enableFeature(com.habittracker.ui.models.timing.Feature.SIMPLE_TIMER)
+                timingViewModel.enableFeature(Feature.SIMPLE_TIMER)
             }
-            onStartTimer(habit, defaultDuration)
+            val duration = defaultDuration
+            onStartTimer(habit, duration)
+
+            if (handler != null) {
+                val intent = when {
+                    coordinatorTimerState == TimerCompletionInteractor.TimerState.PAUSED && isTrackedHabit -> TimerIntent.Resume
+                    else -> TimerIntent.Start
+                }
+                handler.handle(intent, habit.id)
+            } else {
+                timerController.start(habit.id, TimerType.SIMPLE, duration)
+            }
         },
-        label = { Text(text = if (timersEnabled) "Start" else "Start (Enable)" ) },
+        label = { Text(text = displayLabel) },
         leadingIcon = {
             Icon(
-                imageVector = Icons.Default.Timer,
-                contentDescription = if (timersEnabled) "Start timer" else "Timer disabled, enable in settings",
+                imageVector = leadingIcon,
+                contentDescription = when {
+                    !timersEnabled -> "Timer disabled, enable in settings"
+                    waitingForService -> "Starting timer"
+                    displayLabel == "Resume" -> "Resume timer"
+                    displayLabel == "Active" -> "Timer running"
+                    else -> "Start timer"
+                },
                 modifier = Modifier.size(16.dp)
             )
         },
-        enabled = true,
-        modifier = modifier
+        enabled = enabled,
+        modifier = chipModifier
     )
 }
-
 @Composable
 fun LiveRemainingTime(
     habitId: Long,
