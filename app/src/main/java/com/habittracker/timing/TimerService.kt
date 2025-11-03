@@ -193,6 +193,11 @@ class TimerService : Service() {
                 // Capture currently active sessions BEFORE starting to detect auto-paused ones
                 val previouslyActive = try { timingRepository.listActiveTimerSessions() } catch (e: Exception) { emptyList() }
                 val session = timingRepository.getActiveTimerSession(habitId)
+                if (session?.isRunning == true && tickJob?.isActive == true) {
+                    sessionId = session.id
+                    currentTimerType = session.type
+                    return@launch
+                }
                 val sid = if (session == null) {
                     timingRepository.startTimerSession(
                         habitId,
@@ -930,4 +935,8 @@ object TimerAlertBus {
 // Runtime toggles for experimentation (could map to BuildConfig or DataStore later)
 object TimerFeatureFlags {
     var enableAlertScheduling: Boolean = true
+    var enableActionCoordinator: Boolean = true
 }
+
+
+

@@ -5,6 +5,8 @@ import androidx.compose.animation.core.*
 import androidx.compose.foundation.*
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.relocation.BringIntoViewRequester
+import androidx.compose.foundation.relocation.bringIntoViewRequester
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
@@ -14,17 +16,23 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.geometry.Size
+import androidx.compose.ui.graphics.BlendMode
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.CompositingStrategy
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.toArgb
+import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.layout.LayoutCoordinates
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
@@ -36,6 +44,7 @@ import com.habittracker.onboarding.model.TooltipConfig
 import com.habittracker.onboarding.model.TooltipPosition
 import kotlin.math.roundToInt
 import kotlinx.coroutines.delay
+import kotlin.math.max
 
 /**
  * Advanced tooltip system for in-app guided tours
@@ -85,6 +94,7 @@ fun TooltipOverlay(
         BoxWithConstraints(
             modifier = Modifier
                 .fillMaxSize()
+                .graphicsLayer(compositingStrategy = CompositingStrategy.Offscreen)
                 .background(Color.Black.copy(alpha = overlayAlpha))
                 .clickable(
                     indication = null,
@@ -100,6 +110,14 @@ fun TooltipOverlay(
             val screenHeightPx = with(density) { maxHeight.toPx() }
             val marginPx = with(density) { 16.dp.toPx() }
             var tooltipSizePx by remember { mutableStateOf(IntSize.Zero) }
+
+            targetRect?.let {
+                SpotlightHighlight(
+                    rect = it,
+                    highlightColor = tooltipConfig.highlightColor,
+                    density = density
+                )
+            }
 
             val tooltipOffset = remember(
                 targetRect,
@@ -220,6 +238,59 @@ private fun TooltipCard(
     }
 }
 
+@Composable
+private fun SpotlightHighlight(
+    rect: Rect,
+    highlightColor: Color,
+    density: Density,
+    modifier: Modifier = Modifier
+) {
+    val paddingPx = with(density) { 12.dp.toPx() }
+    val borderWidth = with(density) { 2.dp.toPx() }
+    val cornerRadiusPx = with(density) { 16.dp.toPx() }
+
+    Canvas(
+        modifier = modifier.fillMaxSize()
+    ) {
+        val expandedLeft = (rect.left - paddingPx).coerceAtLeast(0f)
+        val expandedTop = (rect.top - paddingPx).coerceAtLeast(0f)
+        val expandedRight = rect.right + paddingPx
+        val expandedBottom = rect.bottom + paddingPx
+        val expandedWidth = max(1f, expandedRight - expandedLeft)
+        val expandedHeight = max(1f, expandedBottom - expandedTop)
+        val center = Offset(
+            x = expandedLeft + expandedWidth / 2f,
+            y = expandedTop + expandedHeight / 2f
+        )
+        val glowRadius = max(expandedWidth, expandedHeight) / 2f * 1.6f
+
+        drawCircle(
+            brush = Brush.radialGradient(
+                colors = listOf(
+                    highlightColor.copy(alpha = 0.35f),
+                    highlightColor.copy(alpha = 0f)
+                ),
+                center = center,
+                radius = glowRadius
+            )
+        )
+        drawRoundRect(
+            color = Color.Transparent,
+            topLeft = Offset(expandedLeft, expandedTop),
+            size = Size(expandedWidth, expandedHeight),
+            cornerRadius = CornerRadius(cornerRadiusPx, cornerRadiusPx),
+            blendMode = BlendMode.Clear
+        )
+        drawRoundRect(
+            color = highlightColor.copy(alpha = 0.55f),
+            topLeft = Offset(expandedLeft, expandedTop),
+            size = Size(expandedWidth, expandedHeight),
+            cornerRadius = CornerRadius(cornerRadiusPx, cornerRadiusPx),
+            style = Stroke(width = borderWidth)
+        )
+    }
+}
+
 /**
  * Spotlight effect for highlighting specific UI elements
  */
@@ -310,23 +381,32 @@ fun TooltipManager(
 /**
  * Hook for tracking composable positions for tooltips
  */
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun rememberTooltipTarget(
     key: String
 ): Modifier {
     val density = LocalDensity.current
     val densityValue = density.density
+    val bringIntoViewRequester = remember { BringIntoViewRequester() }
     
-    return Modifier.onGloballyPositioned { coordinates ->
-        // Store coordinates in a global registry for tooltip positioning
-        // This would integrate with a tooltip coordinate manager
-        // Density is used for accurate pixel-to-dp conversions
-        val bounds = Rect(
-            offset = coordinates.localToWindow(Offset.Zero),
-            size = coordinates.size.toSize()
-        )
-        TooltipCoordinateManager.updateTarget(key, bounds, densityValue)
-    }
+    return Modifier
+        .bringIntoViewRequester(bringIntoViewRequester)
+        .onGloballyPositioned { coordinates ->
+            // Store coordinates in a global registry for tooltip positioning
+            // This would integrate with a tooltip coordinate manager
+            // Density is used for accurate pixel-to-dp conversions
+            val bounds = Rect(
+                offset = coordinates.localToWindow(Offset.Zero),
+                size = coordinates.size.toSize()
+            )
+            TooltipCoordinateManager.updateTarget(
+                key = key,
+                bounds = bounds,
+                density = densityValue,
+                bringIntoViewRequester = bringIntoViewRequester
+            )
+        }
 }
 
 /**
@@ -412,13 +492,23 @@ private fun calculateTooltipOffset(
 
     return IntOffset(x.roundToInt(), y.roundToInt())
 }
+@OptIn(ExperimentalFoundationApi::class)
 object TooltipCoordinateManager {
     private val coordinates = mutableMapOf<String, Rect>()
     private val densityValues = mutableMapOf<String, Float>()
+    private val bringIntoViewRequesters = mutableMapOf<String, BringIntoViewRequester>()
     
-    fun updateTarget(key: String, bounds: Rect, density: Float = 1f) {
+    fun updateTarget(
+        key: String,
+        bounds: Rect,
+        density: Float = 1f,
+        bringIntoViewRequester: BringIntoViewRequester? = null
+    ) {
         coordinates[key] = bounds
         densityValues[key] = density
+        if (bringIntoViewRequester != null) {
+            bringIntoViewRequesters[key] = bringIntoViewRequester
+        }
     }
     
     fun getTarget(key: String): Rect? {
@@ -428,12 +518,14 @@ object TooltipCoordinateManager {
     fun getDensity(key: String): Float {
         return densityValues[key] ?: 1f
     }
+
+    suspend fun bringTargetIntoView(key: String) {
+        bringIntoViewRequesters[key]?.bringIntoView()
+    }
     
     fun clearTargets() {
         coordinates.clear()
         densityValues.clear()
+        bringIntoViewRequesters.clear()
     }
 }
-
-
-

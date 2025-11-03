@@ -20,6 +20,7 @@ import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -48,8 +49,13 @@ fun OnboardingScreen(
     val errorEvent by viewModel.errorEvent.collectAsStateWithLifecycle(null)
     
     val configuration = LocalConfiguration.current
+    val density = LocalDensity.current
     val screenHeight = configuration.screenHeightDp.dp
     val isCompactHeight = screenHeight < 600.dp
+    var bottomSectionHeightPx by remember { mutableStateOf(0) }
+    val bottomInset = remember(bottomSectionHeightPx, density) {
+        with(density) { bottomSectionHeightPx.toDp() }
+    }
     
     // Handle navigation events with error protection
     LaunchedEffect(navigationEvent) {
@@ -152,7 +158,8 @@ fun OnboardingScreen(
                         OnboardingSlideContent(
                             slide = slide,
                             isVisible = page == uiState.currentSlide && !uiState.isLoading,
-                            modifier = Modifier.fillMaxSize()
+                            modifier = Modifier.fillMaxSize(),
+                            bottomInset = bottomInset
                         )
                     }
                 }
@@ -198,6 +205,7 @@ fun OnboardingScreen(
                         vertical = if (isCompactHeight) 16.dp else 24.dp
                     )
                     .navigationBarsPadding() // Handle navigation bar
+                    .onGloballyPositioned { bottomSectionHeightPx = it.size.height }
             )
         }
         

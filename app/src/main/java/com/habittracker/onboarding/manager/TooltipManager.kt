@@ -329,6 +329,14 @@ fun TooltipDisplay(
             android.util.Log.w("TooltipManager", "Tooltip Error: $error")
         }
     }
+
+    LaunchedEffect(currentTooltip) {
+        currentTooltip?.let { tooltip ->
+            runCatching {
+                com.habittracker.onboarding.components.TooltipCoordinateManager.bringTargetIntoView(tooltip.targetComposableKey)
+            }
+        }
+    }
     
     // Show tooltip with safety checks
     if (isActive && currentTooltip != null) {
@@ -345,3 +353,4 @@ fun TooltipDisplay(
         )
     }
 }
+

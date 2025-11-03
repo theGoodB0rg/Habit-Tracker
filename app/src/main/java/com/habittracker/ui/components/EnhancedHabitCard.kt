@@ -34,6 +34,13 @@ import java.time.LocalDate
 import java.time.Duration
 import java.util.*
 import kotlinx.coroutines.launch
+import com.habittracker.timerux.TimerActionCoordinator
+import com.habittracker.timerux.TimerCompletionInteractor.ConfirmType
+import com.habittracker.timerux.TimerCompletionInteractor.Intent as TimerIntent
+import com.habittracker.timerux.resolveTimerUxEntryPoint
+import com.habittracker.timing.TimerFeatureFlags
+import com.habittracker.ui.modifiers.disableDuringTimerAction
+import com.habittracker.ui.utils.TimerActionEventEffect
 
 /**
  * Enhanced HabitCard with Phase 2 Progressive Timing Features
@@ -68,6 +75,23 @@ fun EnhancedHabitCard(
     val hasAnyCompletion = habit.lastCompletedDate != null
     val context = androidx.compose.ui.platform.LocalContext.current
     val timerController = remember(context) { com.habittracker.timing.TimerController(context) }
+    val useCoordinator = TimerFeatureFlags.enableActionCoordinator
+    val handler = remember(context, useCoordinator) {
+        if (useCoordinator) resolveTimerUxEntryPoint(context).timerActionHandler() else null
+    }
+    val coordinatorState by if (handler != null) {
+        handler.state.collectAsState()
+    } else {
+        remember(handler) { mutableStateOf(TimerActionCoordinator.CoordinatorState()) }
+    }
+    val waitingOnThisHabit = handler != null && coordinatorState.trackedHabitId == habit.id && coordinatorState.waitingForService
+    val controlsEnabled = handler == null || !waitingOnThisHabit
+    val controlModifier = if (handler != null && coordinatorState.trackedHabitId == habit.id) {
+        Modifier.disableDuringTimerAction(coordinatorState)
+    } else {
+        Modifier
+    }
+
     // Phase 2 UX: show snackbar when another timer is auto-paused due to single-active enforcement
     LaunchedEffect(Unit) {
         com.habittracker.timing.TimerBus.events.collect { evt ->
@@ -100,6 +124,11 @@ fun EnhancedHabitCard(
     val isPaused = pausedByHabit[habit.id] == true
     val remainingByHabit by tickerViewModel.remainingByHabit.collectAsState()
     val isActive = remainingByHabit[habit.id]?.let { it > 0 } == true
+    val pausedForUi = if (handler != null && coordinatorState.trackedHabitId == habit.id) {
+        coordinatorState.paused
+    } else {
+        isPaused
+    }
     
     // Timing feature state
     val userEngagementLevel by timingViewModel.userEngagementLevel.collectAsState()
@@ -109,11 +138,36 @@ fun EnhancedHabitCard(
     val dateFormatter = remember { SimpleDateFormat("MMM dd", Locale.getDefault()) }
     
     // Phase 1: Interactor wiring state
-    val interactor = remember { com.habittracker.timerux.TimerCompletionInteractor() }
+    val interactor = remember(handler) {
+        if (handler == null) com.habittracker.timerux.TimerCompletionInteractor() else null
+    }
     var confirmBelowMin by remember { mutableStateOf<Int?>(null) }
     var confirmDiscardElapsedSec by remember { mutableStateOf<Int?>(null) }
     // Phase 5: End Pomodoro Early confirmation
     var confirmEndPomodoroEarly by remember { mutableStateOf<Boolean>(false) }
+
+    if (handler != null) {
+        TimerActionEventEffect(
+            handler = handler,
+            onConfirm = { event ->
+                if (event.habitId != habit.id) return@TimerActionEventEffect
+                when (event.type) {
+                    ConfirmType.BelowMinDuration -> {
+                        confirmBelowMin = (event.payload as? Int) ?: habit.timing?.minDuration?.seconds?.toInt()
+                    }
+                    ConfirmType.DiscardNonZeroSession -> {
+                        confirmDiscardElapsedSec = (event.payload as? Int) ?: 0
+                    }
+                    ConfirmType.EndPomodoroEarly -> {
+                        confirmEndPomodoroEarly = true
+                    }
+                }
+            },
+            onSnackbar = { message -> showUndo(message) {} },
+            onUndo = { message -> showUndo(message) { onUndoComplete() } },
+            onTip = { message -> showUndo(message) {} }
+        )
+    }
 
     var showControlSheet by remember { mutableStateOf(false) }
     // Optional note dialog for partials
@@ -300,7 +354,11 @@ fun EnhancedHabitCard(
                         ) {
                             IconButton(
                                 onClick = {
-                                    // Phase 1: Route to interactor
+                                    if (handler != null) {
+                                        handler.handle(TimerIntent.Done, habit.id)
+                                        return@IconButton
+                                    }
+                                    val localInteractor = interactor ?: return@IconButton
                                     val timing = habit.timing
                                     val session = habit.timerSession
                                     val inputs = com.habittracker.timerux.TimerCompletionInteractor.Inputs(
@@ -321,7 +379,7 @@ fun EnhancedHabitCard(
                                         timerType = session?.type,
                                         isInBreak = session?.isInBreak == true
                                     )
-                                    val outcome = interactor.decide(
+                                    val outcome = localInteractor.decide(
                                         if (timing?.timerEnabled == true) com.habittracker.timerux.TimerCompletionInteractor.Intent.Done
                                         else com.habittracker.timerux.TimerCompletionInteractor.Intent.QuickComplete,
                                         inputs
@@ -400,23 +458,49 @@ fun EnhancedHabitCard(
                     SimpleTimerButton(
                         habit = habit,
                         onStartTimer = { h, d ->
+                            if (!controlsEnabled) return@SimpleTimerButton
                             // Delegate to callback and start controller for side effects/analytics
                             onStartTimer(h, d)
-                            timerController.start(h.id, TimerType.SIMPLE, d)
                             timingViewModel.recordTimerUsage(h.id, completed = false)
+                            if (handler != null) {
+                                handler.handle(TimerIntent.Start, h.id)
+                            } else {
+                                timerController.start(h.id, TimerType.SIMPLE, d)
+                            }
                         },
-                        modifier = Modifier
+                        modifier = controlModifier
                     )
                     // Runtime controls only when a timer is active or paused for this habit
                     if (isActive || isPaused) {
-                        IconButton(onClick = { if (isPaused) timerController.resume() else timerController.pause() }, modifier = Modifier.size(48.dp)) {
+                        IconButton(
+                            onClick = {
+                                if (handler != null) {
+                                    val intent = if (pausedForUi) TimerIntent.Resume else TimerIntent.Pause
+                                    handler.handle(intent, habit.id)
+                                } else {
+                                    if (isPaused) timerController.resume() else timerController.pause()
+                                }
+                            },
+                            enabled = controlsEnabled,
+                            modifier = controlModifier.then(Modifier.size(48.dp))
+                        ) {
                             Icon(
-                                imageVector = if (isPaused) Icons.Filled.PlayArrow else Icons.Filled.Pause,
-                                contentDescription = if (isPaused) "Resume timer" else "Pause timer",
+                                imageVector = if (pausedForUi) Icons.Filled.PlayArrow else Icons.Filled.Pause,
+                                contentDescription = if (pausedForUi) "Resume timer" else "Pause timer",
                                 modifier = Modifier.size(20.dp)
                             )
                         }
-                        IconButton(onClick = { timerController.complete() }, modifier = Modifier.size(48.dp)) {
+                        IconButton(
+                            onClick = {
+                                if (handler != null) {
+                                    handler.handle(TimerIntent.Done, habit.id)
+                                } else {
+                                    timerController.complete()
+                                }
+                            },
+                            enabled = controlsEnabled,
+                            modifier = controlModifier.then(Modifier.size(48.dp))
+                        ) {
                             Icon(
                                 imageVector = Icons.Filled.Stop,
                                 contentDescription = "Complete session",
@@ -435,9 +519,18 @@ fun EnhancedHabitCard(
                         confirmButton = {
                             TextButton(onClick = {
                                 confirmEndPomodoroEarly = false
-                                // Proceed as Done: send to service then mark complete
-                                timerController.complete()
-                                onMarkComplete()
+                                if (handler != null) {
+                                    handler.handle(
+                                        TimerIntent.Done,
+                                        habit.id,
+                                        TimerActionCoordinator.DecisionContext(
+                                            confirmation = TimerActionCoordinator.ConfirmationOverride.END_POMODORO_EARLY
+                                        )
+                                    )
+                                } else {
+                                    timerController.complete()
+                                    onMarkComplete()
+                                }
                             }) { Text("End & Complete") }
                         },
                         dismissButton = {
@@ -456,8 +549,18 @@ fun EnhancedHabitCard(
                         confirmButton = {
                             TextButton(onClick = {
                                 confirmBelowMin = null
-                                onMarkComplete()
-                                showUndo("Marked as done. Undo") { onUndoComplete() }
+                                if (handler != null) {
+                                    handler.handle(
+                                        TimerIntent.Done,
+                                        habit.id,
+                                        TimerActionCoordinator.DecisionContext(
+                                            confirmation = TimerActionCoordinator.ConfirmationOverride.COMPLETE_BELOW_MINIMUM
+                                        )
+                                    )
+                                } else {
+                                    onMarkComplete()
+                                    showUndo("Marked as done. Undo") { onUndoComplete() }
+                                }
                             }) { Text("Complete anyway") }
                         },
                         dismissButton = {
@@ -465,9 +568,18 @@ fun EnhancedHabitCard(
                                 TextButton(onClick = { confirmBelowMin = null }) { Text("Keep timing") }
                                 TextButton(onClick = {
                                     confirmBelowMin = null
-                                    // Phase 1: treat as complete for simplicity; future: SavePartial
-                                    onMarkComplete()
-                                    showUndo("Logged as partial. Undo") { onUndoComplete() }
+                                    if (handler != null) {
+                                        handler.handle(
+                                            TimerIntent.Done,
+                                            habit.id,
+                                            TimerActionCoordinator.DecisionContext(
+                                                confirmation = TimerActionCoordinator.ConfirmationOverride.COMPLETE_BELOW_MINIMUM
+                                            )
+                                        )
+                                    } else {
+                                        onMarkComplete()
+                                        showUndo("Logged as partial. Undo") { onUndoComplete() }
+                                    }
                                 }) { Text("Log partial") }
                             }
                         }
@@ -484,8 +596,18 @@ fun EnhancedHabitCard(
                         confirmButton = {
                             TextButton(onClick = {
                                 confirmDiscardElapsedSec = null
-                                timerController.stop()
-                                showUndo("Session discarded") {}
+                                if (handler != null) {
+                                    handler.handle(
+                                        TimerIntent.StopWithoutComplete,
+                                        habit.id,
+                                        TimerActionCoordinator.DecisionContext(
+                                            confirmation = TimerActionCoordinator.ConfirmationOverride.DISCARD_SESSION
+                                        )
+                                    )
+                                } else {
+                                    timerController.stop()
+                                    showUndo("Session discarded") {}
+                                }
                             }) { Text("Discard") }
                         },
                         dismissButton = {
