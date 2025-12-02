@@ -24,7 +24,11 @@ class TimerCompletionInteractor @Inject constructor() {
         val singleActiveTimer: Boolean = true,
         // Phase 5 — Pomodoro inputs
         val timerType: com.habittracker.ui.models.timing.TimerType? = null,
-        val isInBreak: Boolean = false
+        val isInBreak: Boolean = false,
+        val logPartial: Boolean = false,
+
+        val requestedDurationSec: Int? = null,
+        val askToCompleteWithoutTimer: Boolean = true
     )
 
     enum class Platform { APP, WIDGET, NOTIF }
@@ -39,7 +43,7 @@ class TimerCompletionInteractor @Inject constructor() {
     }
 
     sealed interface Action {
-        data class StartTimer(val habitId: Long): Action
+    data class StartTimer(val habitId: Long, val durationOverrideSec: Int? = null): Action
         data class PauseTimer(val habitId: Long): Action
         data class ResumeTimer(val habitId: Long): Action
         data class CompleteToday(val habitId: Long, val logDuration: Boolean, val partial: Boolean = false): Action
@@ -49,7 +53,7 @@ class TimerCompletionInteractor @Inject constructor() {
         data class ShowTip(val message: String): Action
     }
 
-    enum class ConfirmType { BelowMinDuration, DiscardNonZeroSession, EndPomodoroEarly }
+    enum class ConfirmType { BelowMinDuration, DiscardNonZeroSession, EndPomodoroEarly, CompleteWithoutTimer }
 
     fun decide(intent: Intent, inputs: Inputs): ActionOutcome {
         // Heuristics
@@ -65,10 +69,22 @@ class TimerCompletionInteractor @Inject constructor() {
                     undoable = true
                 )
             }
-            Intent.Start -> ActionOutcome.Execute(listOf(Action.StartTimer(inputs.habitId)))
+            Intent.Start -> {
+                val overrideSec = inputs.requestedDurationSec?.takeIf { it > 0 }
+                ActionOutcome.Execute(listOf(Action.StartTimer(inputs.habitId, overrideSec)))
+            }
             Intent.Pause -> ActionOutcome.Execute(listOf(Action.PauseTimer(inputs.habitId)))
             Intent.Resume -> ActionOutcome.Execute(listOf(Action.ResumeTimer(inputs.habitId)))
             Intent.StopWithoutComplete -> {
+                if (inputs.logPartial) {
+                    val duration = inputs.elapsedSec.coerceAtLeast(0)
+                    return ActionOutcome.Execute(
+                        actions = listOf(
+                            Action.SavePartial(inputs.habitId, duration),
+                            Action.ShowUndo("Logged as partial. Undo")
+                        )
+                    )
+                }
                 if (inputs.elapsedSec > 0) ActionOutcome.Confirm(ConfirmType.DiscardNonZeroSession, inputs.elapsedSec)
                 else ActionOutcome.Execute(listOf(Action.DiscardSession(inputs.habitId)))
             }
@@ -76,6 +92,9 @@ class TimerCompletionInteractor @Inject constructor() {
                 if (!inputs.timerEnabled || inputs.timerState == TimerState.IDLE) {
                     if (inputs.requireTimerToComplete && inputs.timerEnabled) {
                         return ActionOutcome.Disallow("This habit requires using the timer. Tap the timer button to start.")
+                    }
+                    if (inputs.timerEnabled && inputs.askToCompleteWithoutTimer) {
+                        return ActionOutcome.Confirm(ConfirmType.CompleteWithoutTimer)
                     }
                     return ActionOutcome.Execute(
                         actions = listOf(Action.CompleteToday(inputs.habitId, logDuration = false), Action.ShowUndo("Completed without timing. Undo")),

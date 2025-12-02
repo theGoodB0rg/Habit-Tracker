@@ -79,6 +79,7 @@ fun TimerControlSheet(
     var confirmBelowMin by remember { mutableStateOf<Int?>(null) }
     var confirmDiscard by remember { mutableStateOf<Int?>(null) }
     var confirmEndPomodoro by remember { mutableStateOf(false) }
+    var confirmCompleteWithoutTimer by remember { mutableStateOf(false) }
 
     val controlsEnabled = handler == null || !coordinatorState.waitingForService
     val pausedForUi = if (handler != null) coordinatorState.paused else state.paused
@@ -98,6 +99,9 @@ fun TimerControlSheet(
                     }
                     ConfirmType.EndPomodoroEarly -> {
                         confirmEndPomodoro = true
+                    }
+                    ConfirmType.CompleteWithoutTimer -> {
+                        confirmCompleteWithoutTimer = true
                     }
                 }
             },
@@ -259,9 +263,19 @@ fun TimerControlSheet(
             dismissButton = {
                 Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                     if (onLogPartial != null) {
+                        val logPartial = onLogPartial
                         TextButton(onClick = {
                             confirmBelowMin = null
-                            onLogPartial(state.habitId)
+                            if (handler != null) {
+                                handler.handle(
+                                    TimerIntent.StopWithoutComplete,
+                                    state.habitId,
+                                    TimerActionCoordinator.DecisionContext(
+                                        confirmation = TimerActionCoordinator.ConfirmationOverride.LOG_PARTIAL_BELOW_MINIMUM
+                                    )
+                                )
+                            }
+                            logPartial(state.habitId)
                             onDismiss()
                         }) {
                             Text(text = stringResource(id = com.habittracker.R.string.log_partial))
@@ -335,6 +349,49 @@ fun TimerControlSheet(
             dismissButton = {
                 TextButton(onClick = { confirmEndPomodoro = false }) {
                     Text("Keep timing")
+                }
+            }
+        )
+    }
+    if (confirmCompleteWithoutTimer) {
+        // Signal to coordinator that dialog is open
+        androidx.compose.runtime.LaunchedEffect(Unit) {
+            handler?.setPendingConfirmation(state.habitId, ConfirmType.CompleteWithoutTimer)
+        }
+        
+        AlertDialog(
+            onDismissRequest = {
+                confirmCompleteWithoutTimer = false
+                handler?.clearPendingConfirmation()
+            },
+            title = { Text("Complete without timer?") },
+            text = { Text("You have a timer enabled. Complete without running it?") },
+            confirmButton = {
+                TextButton(onClick = {
+                    confirmCompleteWithoutTimer = false
+                    handler?.clearPendingConfirmation()
+                    if (handler != null) {
+                        handler.handle(
+                            TimerIntent.Done,
+                            state.habitId,
+                            TimerActionCoordinator.DecisionContext(
+                                confirmation = TimerActionCoordinator.ConfirmationOverride.COMPLETE_WITHOUT_TIMER
+                            )
+                        )
+                    } else {
+                        controller.complete()
+                    }
+                    onDismiss()
+                }) {
+                    Text("Complete")
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = {
+                    confirmCompleteWithoutTimer = false
+                    handler?.clearPendingConfirmation()
+                }) {
+                    Text("Cancel")
                 }
             }
         )

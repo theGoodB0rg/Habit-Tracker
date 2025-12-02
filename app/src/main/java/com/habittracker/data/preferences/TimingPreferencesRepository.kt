@@ -40,7 +40,7 @@ data class TimingPreferences(
     ,
     // Phase UIX-3 alert delivery channels
     val enableHaptics: Boolean = true,
-    val enableTts: Boolean = false,
+    val enableTts: Boolean = true,  // Enable TTS by default for verbal timer feedback
     // Phase UIX-3 hybrid sound strategy
     val selectedSoundPackId: String = "default",
     val enableProgressCues: Boolean = true
@@ -48,7 +48,8 @@ data class TimingPreferences(
     val soundMasterVolumePercent: Int = 100, // 0..100 scaling for all alert sounds
     val enableToneVariation: Boolean = false,
     // Phase UIX-7 heads-up final alert (last 10s)
-    val enableHeadsUpFinal: Boolean = false
+    val enableHeadsUpFinal: Boolean = false,
+    val askToCompleteWithoutTimer: Boolean = true
 )
 
 interface TimingPreferencesRepository {
@@ -76,6 +77,7 @@ interface TimingPreferencesRepository {
     suspend fun setSoundMasterVolume(percent: Int)
     suspend fun setEnableToneVariation(enabled: Boolean)
     suspend fun setEnableHeadsUpFinal(enabled: Boolean)
+    suspend fun setAskToCompleteWithoutTimer(enabled: Boolean)
 }
 
 @Singleton
@@ -107,6 +109,7 @@ class TimingPreferencesRepositoryImpl @Inject constructor(
     val SOUND_MASTER_VOLUME_PERCENT = intPreferencesKey("timing.sound_master_volume_percent")
     val ENABLE_TONE_VARIATION = booleanPreferencesKey("timing.enable_tone_variation")
     val ENABLE_HEADS_UP_FINAL = booleanPreferencesKey("timing.enable_heads_up_final")
+    val ASK_TO_COMPLETE_WITHOUT_TIMER = booleanPreferencesKey("timing.ask_to_complete_without_timer")
     }
 
     override fun preferences(): Flow<TimingPreferences> =
@@ -132,7 +135,7 @@ class TimingPreferencesRepositoryImpl @Inject constructor(
                 val audioCues = prefs[Keys.ENABLE_GLOBAL_AUDIO_CUES] ?: true
                 val reducedMotion = prefs[Keys.REDUCED_MOTION] ?: false
                 val enableHaptics = prefs[Keys.ENABLE_HAPTICS] ?: true
-                val enableTts = prefs[Keys.ENABLE_TTS] ?: false
+                val enableTts = prefs[Keys.ENABLE_TTS] ?: true  // TTS enabled by default
                 val soundPack = prefs[Keys.SELECTED_SOUND_PACK_ID] ?: "default"
                 val progressCues = prefs[Keys.ENABLE_PROGRESS_CUES] ?: true
                 val masterVol = (prefs[Keys.SOUND_MASTER_VOLUME_PERCENT] ?: 100).coerceIn(0,100)
@@ -161,7 +164,8 @@ class TimingPreferencesRepositoryImpl @Inject constructor(
                     ,
                     soundMasterVolumePercent = masterVol,
                     enableToneVariation = toneVar,
-                    enableHeadsUpFinal = headsUp
+                    enableHeadsUpFinal = headsUp,
+                    askToCompleteWithoutTimer = prefs[Keys.ASK_TO_COMPLETE_WITHOUT_TIMER] ?: true
                 )
             }
             .distinctUntilChanged()
@@ -309,6 +313,12 @@ class TimingPreferencesRepositoryImpl @Inject constructor(
     override suspend fun setEnableHeadsUpFinal(enabled: Boolean) {
         try { dataStore.edit { it[Keys.ENABLE_HEADS_UP_FINAL] = enabled } } catch (e: Exception) {
             Log.e("TimingPrefsRepo", "Failed to write enableHeadsUpFinal", e)
+        }
+    }
+
+    override suspend fun setAskToCompleteWithoutTimer(enabled: Boolean) {
+        try { dataStore.edit { it[Keys.ASK_TO_COMPLETE_WITHOUT_TIMER] = enabled } } catch (e: Exception) {
+            Log.e("TimingPrefsRepo", "Failed to write askToCompleteWithoutTimer", e)
         }
     }
 }

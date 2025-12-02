@@ -23,9 +23,25 @@ class TimerActionHandler @Inject constructor(
         context: TimerActionCoordinator.DecisionContext = TimerActionCoordinator.DecisionContext()
     ) {
         mainScope.launch {
-            val outcome = coordinator.decide(intent, habitId, context)
-            coordinator.handleOutcome(intent, outcome, habitId)
+            val decision = coordinator.decide(intent, habitId, context)
+            coordinator.handleOutcome(decision, habitId)
         }
+    }
+
+    /**
+     * Signal that a confirmation dialog is being shown for a habit.
+     * Delegates to coordinator.
+     */
+    fun setPendingConfirmation(habitId: Long, type: TimerCompletionInteractor.ConfirmType) {
+        coordinator.setPendingConfirmation(habitId, type)
+    }
+
+    /**
+     * Clear the pending confirmation state.
+     * Delegates to coordinator.
+     */
+    fun clearPendingConfirmation() {
+        coordinator.clearPendingConfirmation()
     }
 }
 

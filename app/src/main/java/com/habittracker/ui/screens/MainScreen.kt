@@ -379,7 +379,16 @@ fun MainScreen(
                                 habitPair.forEach { habit ->
                                     EnhancedHabitCard(
                                         habit = habit,
-                                        onMarkComplete = { viewModel.markHabitComplete(habit.id) },
+                                        onMarkComplete = {
+                                            if (timerActionHandler != null) {
+                                                // Use coordinator for proper confirmation flow
+                                                // Intent.Done checks for timer state and shows confirmation if needed
+                                                timerActionHandler.handle(TimerIntent.Done, habit.id)
+                                            } else {
+                                                // Fallback to direct completion
+                                                viewModel.markHabitComplete(habit.id)
+                                            }
+                                        },
                                         onUndoComplete = { viewModel.unmarkHabitForToday(habit.id) },
                                         showUndo = { message, onUndo ->
                                             snackbarScope.launch {
@@ -431,7 +440,16 @@ fun MainScreen(
                         ) { habit ->
                             EnhancedHabitCard(
                                 habit = habit,
-                                onMarkComplete = { viewModel.markHabitComplete(habit.id) },
+                                onMarkComplete = {
+                                    if (timerActionHandler != null) {
+                                        // Use coordinator for proper confirmation flow
+                                        // Intent.Done checks for timer state and shows confirmation if needed
+                                        timerActionHandler.handle(TimerIntent.Done, habit.id)
+                                    } else {
+                                        // Fallback to direct completion
+                                        viewModel.markHabitComplete(habit.id)
+                                    }
+                                },
                                 onUndoComplete = { viewModel.unmarkHabitForToday(habit.id) },
                                 showUndo = { message, onUndo ->
                                     snackbarScope.launch {
@@ -716,4 +734,5 @@ private fun ConfirmType.toAnalyticsValue(): String = when (this) {
     ConfirmType.BelowMinDuration -> "below_min_duration"
     ConfirmType.DiscardNonZeroSession -> "discard_non_zero_session"
     ConfirmType.EndPomodoroEarly -> "end_pomodoro_early"
+    ConfirmType.CompleteWithoutTimer -> "complete_without_timer"
 }

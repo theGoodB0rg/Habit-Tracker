@@ -144,7 +144,8 @@ data class SmartTimingPreferences(
     val preferredReminderStyle: ReminderStyle = ReminderStyle.GENTLE,
     val autoLevelUp: Boolean = true,  // Allow automatic feature discovery
     val showLevelUpPrompts: Boolean = true,  // Show benefits of next level
-    val currentEngagementLevel: UserEngagementLevel = UserEngagementLevel.Casual
+    val currentEngagementLevel: UserEngagementLevel = UserEngagementLevel.Casual,
+    val askToCompleteWithoutTimer: Boolean = true // Ask for confirmation when completing without timer
 )
 
 // Level Up Notification Data

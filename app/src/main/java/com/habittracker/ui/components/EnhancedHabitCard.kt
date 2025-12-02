@@ -145,7 +145,10 @@ fun EnhancedHabitCard(
     var confirmBelowMin by remember { mutableStateOf<Int?>(null) }
     var confirmDiscardElapsedSec by remember { mutableStateOf<Int?>(null) }
     // Phase 5: End Pomodoro Early confirmation
+    // Phase 5: End Pomodoro Early confirmation
     var confirmEndPomodoroEarly by remember { mutableStateOf<Boolean>(false) }
+    // New: Complete without timer confirmation
+    var confirmCompleteWithoutTimer by remember { mutableStateOf(false) }
 
     if (handler != null) {
         TimerActionEventEffect(
@@ -161,6 +164,9 @@ fun EnhancedHabitCard(
                     }
                     ConfirmType.EndPomodoroEarly -> {
                         confirmEndPomodoroEarly = true
+                    }
+                    ConfirmType.CompleteWithoutTimer -> {
+                        confirmCompleteWithoutTimer = true
                     }
                 }
             },
@@ -390,8 +396,9 @@ fun EnhancedHabitCard(
                                             outcome.actions.forEach { act ->
                                                 when (act) {
                                                     is com.habittracker.timerux.TimerCompletionInteractor.Action.StartTimer -> {
-                                                        val dur = timing?.estimatedDuration
-                                                        timerController.start(habit.id, com.habittracker.ui.models.timing.TimerType.SIMPLE, dur)
+                                                        val overrideDuration = act.durationOverrideSec?.let { java.time.Duration.ofSeconds(it.toLong()) }
+                                                        val durationToUse = overrideDuration ?: timing?.estimatedDuration
+                                                        timerController.start(act.habitId, com.habittracker.ui.models.timing.TimerType.SIMPLE, durationToUse)
                                                     }
                                                     is com.habittracker.timerux.TimerCompletionInteractor.Action.PauseTimer -> timerController.pause()
                                                     is com.habittracker.timerux.TimerCompletionInteractor.Action.ResumeTimer -> timerController.resume()
@@ -426,7 +433,11 @@ fun EnhancedHabitCard(
                                                     confirmDiscardElapsedSec = (outcome.payload as? Int) ?: 0
                                                 }
                                                 com.habittracker.timerux.TimerCompletionInteractor.ConfirmType.EndPomodoroEarly -> {
+
                                                     confirmEndPomodoroEarly = true
+                                                }
+                                                com.habittracker.timerux.TimerCompletionInteractor.ConfirmType.CompleteWithoutTimer -> {
+                                                    confirmCompleteWithoutTimer = true
                                                 }
                                             }
                                         }
@@ -564,14 +575,14 @@ fun EnhancedHabitCard(
                                     confirmBelowMin = null
                                     if (handler != null) {
                                         handler.handle(
-                                            TimerIntent.Done,
+                                            TimerIntent.StopWithoutComplete,
                                             habit.id,
                                             TimerActionCoordinator.DecisionContext(
-                                                confirmation = TimerActionCoordinator.ConfirmationOverride.COMPLETE_BELOW_MINIMUM
+                                                confirmation = TimerActionCoordinator.ConfirmationOverride.LOG_PARTIAL_BELOW_MINIMUM
                                             )
                                         )
                                     } else {
-                                        onMarkComplete()
+                                        timerController.stop()
                                         showUndo("Logged as partial. Undo") { onUndoComplete() }
                                     }
                                 }) { Text("Log partial") }
@@ -606,6 +617,132 @@ fun EnhancedHabitCard(
                         },
                         dismissButton = {
                             TextButton(onClick = { confirmDiscardElapsedSec = null }) { Text("Cancel") }
+                        }
+                    )
+
+                }
+
+                // Complete without timer confirmation dialog
+                if (confirmCompleteWithoutTimer) {
+                    var dontAskAgain by remember { mutableStateOf(false) }
+                    
+                    // Signal to coordinator that dialog is open (prevents conflicting actions)
+                    LaunchedEffect(Unit) {
+                        handler?.setPendingConfirmation(habit.id, ConfirmType.CompleteWithoutTimer)
+                    }
+                    
+                    AlertDialog(
+                        onDismissRequest = {
+                            confirmCompleteWithoutTimer = false
+                            handler?.clearPendingConfirmation()
+                        },
+                        title = { Text("Complete without tracking time?") },
+                        text = {
+                            Column {
+                                Text(
+                                    "You have a timer enabled for this habit. Would you like to:",
+                                    style = MaterialTheme.typography.bodyMedium
+                                )
+                                Spacer(modifier = Modifier.height(12.dp))
+                                
+                                // Option explanations
+                                Column(modifier = Modifier.padding(start = 8.dp)) {
+                                    Row(verticalAlignment = Alignment.CenterVertically) {
+                                        Icon(
+                                            Icons.Filled.Check,
+                                            contentDescription = null,
+                                            modifier = Modifier.size(16.dp),
+                                            tint = MaterialTheme.colorScheme.primary
+                                        )
+                                        Spacer(Modifier.width(8.dp))
+                                        Text(
+                                            "Complete without timing",
+                                            style = MaterialTheme.typography.bodySmall
+                                        )
+                                    }
+                                    Spacer(Modifier.height(8.dp))
+                                    Row(verticalAlignment = Alignment.CenterVertically) {
+                                        Icon(
+                                            Icons.Filled.Timer,
+                                            contentDescription = null,
+                                            modifier = Modifier.size(16.dp),
+                                            tint = MaterialTheme.colorScheme.secondary
+                                        )
+                                        Spacer(Modifier.width(8.dp))
+                                        Text(
+                                            "Start timer for this session",
+                                            style = MaterialTheme.typography.bodySmall
+                                        )
+                                    }
+                                }
+                                
+                                Spacer(modifier = Modifier.height(16.dp))
+                                Row(
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    modifier = Modifier.clickable { dontAskAgain = !dontAskAgain }
+                                ) {
+                                    Checkbox(
+                                        checked = dontAskAgain,
+                                        onCheckedChange = { dontAskAgain = it }
+                                    )
+                                    Spacer(modifier = Modifier.width(8.dp))
+                                    Text("Don't ask me again", style = MaterialTheme.typography.bodyMedium)
+                                }
+                            }
+                        },
+                        confirmButton = {
+                            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                                // PRIMARY: Complete Anyway (per user preference)
+                                Button(
+                                    onClick = {
+                                        confirmCompleteWithoutTimer = false
+                                        handler?.clearPendingConfirmation()
+                                        if (dontAskAgain) {
+                                            timingViewModel.setAskToCompleteWithoutTimer(false)
+                                        }
+                                        if (handler != null) {
+                                            handler.handle(
+                                                TimerIntent.Done,
+                                                habit.id,
+                                                TimerActionCoordinator.DecisionContext(
+                                                    confirmation = TimerActionCoordinator.ConfirmationOverride.COMPLETE_WITHOUT_TIMER
+                                                )
+                                            )
+                                        } else {
+                                            onMarkComplete()
+                                        }
+                                    }
+                                ) {
+                                    Text("Complete Anyway")
+                                }
+                                
+                                // SECONDARY: Start Timer
+                                TextButton(
+                                    onClick = {
+                                        confirmCompleteWithoutTimer = false
+                                        handler?.clearPendingConfirmation()
+                                        // Start timer for this habit
+                                        val duration = habit.timing?.estimatedDuration ?: Duration.ofMinutes(25)
+                                        onStartTimer(habit, duration)
+                                    }
+                                ) {
+                                    Icon(
+                                        Icons.Filled.Timer,
+                                        contentDescription = null,
+                                        modifier = Modifier.size(18.dp)
+                                    )
+                                    Spacer(Modifier.width(4.dp))
+                                    Text("Start Timer")
+                                }
+                            }
+                        },
+                        dismissButton = {
+                            TextButton(onClick = {
+                                confirmCompleteWithoutTimer = false
+                                handler?.clearPendingConfirmation()
+                            }) {
+                                Text("Cancel")
+                            }
                         }
                     )
                 }

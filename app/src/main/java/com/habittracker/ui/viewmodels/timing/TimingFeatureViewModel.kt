@@ -217,6 +217,15 @@ class TimingFeatureViewModel @Inject constructor(
         }
     }
     
+    fun setAskToCompleteWithoutTimer(enabled: Boolean) {
+        viewModelScope.launch {
+            _smartTimingPreferences.value = _smartTimingPreferences.value.copy(
+                askToCompleteWithoutTimer = enabled
+            )
+            saveUserPreferences()
+        }
+    }
+
     // MARK: - Private Methods
     
     private fun loadUserPreferences() {
@@ -236,7 +245,8 @@ class TimingFeatureViewModel @Inject constructor(
                         autoLevelUp = prefs.autoLevelUp,
                         showLevelUpPrompts = prefs.showLevelUpPrompts,
                         preferredReminderStyle = prefs.reminderStyle,
-                        timerDefaultDuration = prefs.timerDefaultDuration
+                        timerDefaultDuration = prefs.timerDefaultDuration,
+                        askToCompleteWithoutTimer = prefs.askToCompleteWithoutTimer
                     )
                     // Keep engagement level unchanged (not persisted yet)
                     _userEngagementLevel.value = _smartTimingPreferences.value.currentEngagementLevel
@@ -257,6 +267,7 @@ class TimingFeatureViewModel @Inject constructor(
                 timingPreferencesRepository.setShowLevelUpPrompts(prefs.showLevelUpPrompts)
                 timingPreferencesRepository.setReminderStyle(prefs.preferredReminderStyle)
                 timingPreferencesRepository.setTimerDefaultDuration(prefs.timerDefaultDuration)
+                timingPreferencesRepository.setAskToCompleteWithoutTimer(prefs.askToCompleteWithoutTimer)
             } catch (e: Exception) {
                 _errorMessages.tryEmit("Failed to save preferences")
             }
