@@ -65,6 +65,7 @@ class TimerActionCoordinator @Inject constructor(
         data class Undo(val message: String) : UiEvent
         data class Tip(val message: String) : UiEvent
         data class Confirm(val habitId: Long, val type: ConfirmType, val payload: Any?) : UiEvent
+        data class Completed(val habitId: Long) : UiEvent
     }
 
     sealed interface TimerActionTelemetry {
@@ -251,6 +252,10 @@ class TimerActionCoordinator @Inject constructor(
         when (val outcome = decision.outcome) {
             is TimerOutcome.Execute -> {
                 emitTelemetry(TimerActionTelemetry.Executed(habitId, resolvedIntent))
+                // Check if completion action was executed and emit event
+                if (outcome.actions.any { it is TimerAction.CompleteToday }) {
+                    emitUiEvent(UiEvent.Completed(habitId))
+                }
             }
             is TimerOutcome.Confirm -> {
                 emitUiEvent(UiEvent.Confirm(habitId, outcome.type, outcome.payload))

@@ -165,303 +165,125 @@ fun EnhancedHabitCard(
                     ConfirmType.EndPomodoroEarly -> {
                         confirmEndPomodoroEarly = true
                     }
-                    ConfirmType.CompleteWithoutTimer -> {
-                        confirmCompleteWithoutTimer = true
-                    }
-                }
-            },
-            onSnackbar = { message -> showUndo(message) {} },
-            onUndo = { message -> showUndo(message) { onUndoComplete() } },
-            onTip = { message -> showUndo(message) {} }
-        )
-    }
-
-    var showControlSheet by remember { mutableStateOf(false) }
-    // Optional note dialog for partials
-    var showNoteDialog by remember { mutableStateOf(false) }
-    var pendingPartialNote by remember { mutableStateOf("") }
-    val partialVm: com.habittracker.ui.viewmodels.timing.PartialSessionViewModel = hiltViewModel()
-    Card(
-        modifier = modifier
-            .fillMaxWidth()
-            .clickable {
-                if (hasAnyCompletion) {
-                    onClick()
-                } else {
-                    // Professional redirect instead of a crashy navigation
-                    showUndo("No analytics for this habit yet — complete it at least once.") { }
-                }
-            }
-            // Anchor for tutorial/tooltips to highlight the card
-            .then(rememberTooltipTarget("habit_card"))
-            .then(rememberTooltipTarget("enhanced_habit_card")),
-        elevation = CardDefaults.cardElevation(
-            defaultElevation = if (isCompletedToday) 6.dp else 3.dp,
-            pressedElevation = if (isCompletedToday) 8.dp else 5.dp
-        ),
-        colors = CardDefaults.cardColors(
-            containerColor = if (isCompletedToday) {
-                MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.7f)
-            } else {
-                MaterialTheme.colorScheme.surface
-            }
-        ),
-        shape = RoundedCornerShape(16.dp)
-    ) {
-        Column(
-            modifier = Modifier.padding(
-                horizontal = if (isCompact) 12.dp else 16.dp,
-                vertical = if (isCompact) 12.dp else 16.dp
-            )
-        ) {
-            // Header Row - Same as original
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.Top
-            ) {
-                Column(modifier = Modifier.weight(1f)) {
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Text(
-                            text = habit.name,
-                            style = if (isCompact) {
-                                MaterialTheme.typography.titleSmall
-                            } else {
-                                MaterialTheme.typography.titleMedium
-                            },
-                            fontWeight = FontWeight.Bold,
-                            maxLines = if (isCompact) 1 else 2,
-                            overflow = TextOverflow.Ellipsis,
-                            modifier = Modifier.weight(1f)
-                        )
-                        
-                        // Timer status indicator (subtle)
-                        if (habit.isTimerActive == true) {
-                            Spacer(modifier = Modifier.width(8.dp))
-                            Box(
-                                modifier = Modifier
-                                    .size(8.dp)
-                                    .clip(CircleShape)
-                                    .background(MaterialTheme.colorScheme.primary)
-                            )
+                                        ConfirmType.CompleteWithoutTimer -> {
+                            confirmCompleteWithoutTimer = true
                         }
                     }
-                    
-                    if (!isCompact && habit.description.isNotBlank()) {
+                },
+                onSnackbar = { message -> showUndo(message) {} },
+                onUndo = { message -> showUndo(message) { onUndoComplete() } },
+                onTip = { message -> showUndo(message) {} },
+                onCompleted = { event ->
+                    if (event.habitId == habit.id) {
+                        onMarkComplete()
+                    }
+                }
+            )
+    }
+
+    Card(
+        modifier = modifier.semantics { liveRegion = LiveRegionMode.Polite },
+        shape = RoundedCornerShape(16.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surface
+        ),
+        elevation = CardDefaults.cardElevation(
+            defaultElevation = 2.dp
+        )
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .clickable { onClick() }
+                .padding(16.dp)
+        ) {
+            // Action buttons row (kept lightweight to avoid squeezing the title)
+            Row(horizontalArrangement = Arrangement.spacedBy(4.dp), verticalAlignment = Alignment.CenterVertically) {
+                // Checkmark button
+                IconButton(
+                    onClick = {
+                        // Route through coordinator if timer is enabled to show confirmation dialog
+                        if (handler != null && habit.timing?.timerEnabled == true) {
+                            // Let coordinator decide - will show "Complete without timer?" dialog
+                            handler.handle(
+                                TimerIntent.Done,
+                                habit.id
+                            )
+                        } else {
+                            // No timer or coordinator disabled - direct completion
+                            onMarkComplete()
+                        }
+                    },
+                    enabled = controlsEnabled,
+                    modifier = controlModifier
+                        .then(Modifier.size(48.dp))
+                        // Anchor for tutorial/tooltips to highlight complete action
+                        .then(rememberTooltipTarget("habit_complete_button"))
+                ) {
+                    Icon(
+                        imageVector = if (isCompletedToday) Icons.Filled.CheckCircle else Icons.Filled.RadioButtonUnchecked,
+                        contentDescription = if (isCompletedToday) "Completed" else "Mark complete",
+                        tint = if (isCompletedToday) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant,
+                        modifier = Modifier.size(20.dp)
+                    )
+                }
+
+                Column(modifier = Modifier.weight(1f)) {
+                    Text(
+                        text = habit.name,
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.Bold,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis
+                    )
+                    if (habit.description.isNotBlank()) {
                         Text(
                             text = habit.description,
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
-                            modifier = Modifier.padding(top = 6.dp),
-                            maxLines = 2,
+                            maxLines = 1,
                             overflow = TextOverflow.Ellipsis
-                        )
-                    }
-
-                    // Friendly hint for habits with no completions yet
-                    if (!isCompact && !hasAnyCompletion) {
-                        Row(
-                            modifier = Modifier
-                                .padding(top = 6.dp),
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            Icon(
-                                imageVector = Icons.Filled.Insights,
-                                contentDescription = null,
-                                tint = MaterialTheme.colorScheme.primary,
-                                modifier = Modifier.size(16.dp)
-                            )
-                            Spacer(Modifier.width(6.dp))
-                            Text(
-                                text = "Complete once to unlock insights",
-                                style = MaterialTheme.typography.labelSmall,
-                                color = MaterialTheme.colorScheme.primary
-                            )
-                        }
-                    }
-                    
-                    // Smart timing info (Level 2+)
-                    if (!isCompact && userEngagementLevel != UserEngagementLevel.Casual) {
-                        habit.nextSuggestedTime?.let { suggestedTime ->
-                            Text(
-                                text = "💡 Optimal time: ${suggestedTime.format(java.time.format.DateTimeFormatter.ofPattern("h:mm a"))}",
-                                style = MaterialTheme.typography.labelSmall,
-                                color = MaterialTheme.colorScheme.primary,
-                                modifier = Modifier.padding(top = 4.dp)
-                            )
-                        }
-                    }
-                    
-                    // Show last completed date if available
-                    if (!isCompact && habit.lastCompletedDate != null && habit.lastCompletedDate != today) {
-                        val lastCompletedText = remember(habit.lastCompletedDate) {
-                            "Last: ${dateFormatter.format(java.sql.Date.valueOf(habit.lastCompletedDate.toString()))}"
-                        }
-                        Text(
-                            text = lastCompletedText,
-                            style = MaterialTheme.typography.labelSmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f),
-                            modifier = Modifier.padding(top = 4.dp)
                         )
                     }
                 }
                 
-                // Action buttons row (kept lightweight to avoid squeezing the title)
-                Row(horizontalArrangement = Arrangement.spacedBy(4.dp), verticalAlignment = Alignment.CenterVertically) {
-                    if (!isCompact) {
-                        // Edit (keep in header)
-                        IconButton(
-                            onClick = onEditClick,
-                            modifier = Modifier.size(48.dp)
-                        ) {
-                            Icon(
-                                imageVector = Icons.Filled.Edit,
-                                contentDescription = "Edit habit",
-                                modifier = Modifier.size(20.dp)
-                            )
-                        }
-                    }
-
-                    // Mark habit complete (always visible)
-                    IconButton(
-                        onClick = onMarkComplete,
-                        modifier = Modifier
-                            .size(48.dp)
-                            // Anchor for tutorial/tooltips to highlight complete action
-                            .then(rememberTooltipTarget("habit_complete_button"))
-                    ) {
-                        Icon(
-                            imageVector = if (isCompletedToday) Icons.Filled.CheckCircle else Icons.Filled.RadioButtonUnchecked,
-                            contentDescription = if (isCompletedToday) "Completed" else "Mark complete",
-                            tint = if (isCompletedToday) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant,
-                            modifier = Modifier.size(20.dp)
-                        )
-                    }
+                // Edit button
+                IconButton(onClick = onEditClick) {
+                    Icon(
+                        imageVector = Icons.Filled.Edit,
+                        contentDescription = "Edit habit",
+                        modifier = Modifier.size(20.dp)
+                    )
                 }
             }
-            
+
             if (!isCompact) {
-                Spacer(modifier = Modifier.height(12.dp))
-                // Error banner (ephemeral)
-                val runtimeError = errorsByHabit[habit.id]
-                AnimatedVisibility(visible = runtimeError != null) {
-                    Surface(
-                        color = MaterialTheme.colorScheme.errorContainer,
-                        contentColor = MaterialTheme.colorScheme.onErrorContainer,
-                        shape = RoundedCornerShape(8.dp)
+                // Error display
+                val runtimeError = (coordinatorState as? TimerActionCoordinator.CoordinatorState)?.error
+                if (runtimeError != null) {
+                    Card(
+                        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.errorContainer),
+                        modifier = Modifier.fillMaxWidth().padding(bottom = 8.dp)
                     ) {
                         Row(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(horizontal = 12.dp, vertical = 8.dp),
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.spacedBy(8.dp)
+                            modifier = Modifier.padding(8.dp),
+                            verticalAlignment = Alignment.CenterVertically
                         ) {
-                            IconButton(
-                                onClick = {
-                                    if (handler != null) {
-                                        handler.handle(TimerIntent.Done, habit.id)
-                                        return@IconButton
-                                    }
-                                    val localInteractor = interactor ?: return@IconButton
-                                    val timing = habit.timing
-                                    val session = habit.timerSession
-                                    val inputs = com.habittracker.timerux.TimerCompletionInteractor.Inputs(
-                                        habitId = habit.id,
-                                        timerEnabled = timing?.timerEnabled == true,
-                                        requireTimerToComplete = timing?.requireTimerToComplete == true,
-                                        minDurationSec = timing?.minDuration?.seconds?.toInt(),
-                                        targetDurationSec = timing?.estimatedDuration?.seconds?.toInt(),
-                                        timerState = when {
-                                            session?.isRunning == true -> com.habittracker.timerux.TimerCompletionInteractor.TimerState.RUNNING
-                                            session?.isPaused == true -> com.habittracker.timerux.TimerCompletionInteractor.TimerState.PAUSED
-                                            else -> com.habittracker.timerux.TimerCompletionInteractor.TimerState.IDLE
-                                        },
-                                        elapsedSec = session?.elapsedTime?.seconds?.toInt() ?: 0,
-                                        todayCompleted = habit.lastCompletedDate == java.time.LocalDate.now(),
-                                        platform = com.habittracker.timerux.TimerCompletionInteractor.Platform.APP,
-                                        singleActiveTimer = true,
-                                        timerType = session?.type,
-                                        isInBreak = session?.isInBreak == true
-                                    )
-                                    val outcome = localInteractor.decide(
-                                        if (timing?.timerEnabled == true) com.habittracker.timerux.TimerCompletionInteractor.Intent.Done
-                                        else com.habittracker.timerux.TimerCompletionInteractor.Intent.QuickComplete,
-                                        inputs
-                                    )
-                                    when (outcome) {
-                                        is com.habittracker.timerux.TimerCompletionInteractor.ActionOutcome.Execute -> {
-                                            outcome.actions.forEach { act ->
-                                                when (act) {
-                                                    is com.habittracker.timerux.TimerCompletionInteractor.Action.StartTimer -> {
-                                                        val overrideDuration = act.durationOverrideSec?.let { java.time.Duration.ofSeconds(it.toLong()) }
-                                                        val durationToUse = overrideDuration ?: timing?.estimatedDuration
-                                                        timerController.start(act.habitId, com.habittracker.ui.models.timing.TimerType.SIMPLE, durationToUse)
-                                                    }
-                                                    is com.habittracker.timerux.TimerCompletionInteractor.Action.PauseTimer -> timerController.pause()
-                                                    is com.habittracker.timerux.TimerCompletionInteractor.Action.ResumeTimer -> timerController.resume()
-                                                    is com.habittracker.timerux.TimerCompletionInteractor.Action.CompleteToday -> {
-                                                        // For Phase 1, just mark complete and rely on service to record duration separately
-                                                        onMarkComplete()
-                                                    }
-                                                    is com.habittracker.timerux.TimerCompletionInteractor.Action.SavePartial -> {
-                                                        // Log partial via repository if exposed; for now, show confirmation
-                                                        showUndo("Logged as partial. Undo") { onUndoComplete() }
-                                                    }
-                                                    is com.habittracker.timerux.TimerCompletionInteractor.Action.DiscardSession -> {
-                                                        // Stop the active session
-                                                        timerController.stop()
-                                                    }
-                                                    is com.habittracker.timerux.TimerCompletionInteractor.Action.ShowUndo -> {
-                                                        showUndo(act.message) { onUndoComplete() }
-                                                    }
-                                                    is com.habittracker.timerux.TimerCompletionInteractor.Action.ShowTip -> {
-                                                        // Non-blocking hint; optional toast/snackbar via showUndo without undo action
-                                                        showUndo(act.message) {}
-                                                    }
-                                                }
-                                            }
-                                        }
-                                        is com.habittracker.timerux.TimerCompletionInteractor.ActionOutcome.Confirm -> {
-                                            when (outcome.type) {
-                                                com.habittracker.timerux.TimerCompletionInteractor.ConfirmType.BelowMinDuration -> {
-                                                    confirmBelowMin = (outcome.payload as? Int) ?: timing?.minDuration?.seconds?.toInt()
-                                                }
-                                                com.habittracker.timerux.TimerCompletionInteractor.ConfirmType.DiscardNonZeroSession -> {
-                                                    confirmDiscardElapsedSec = (outcome.payload as? Int) ?: 0
-                                                }
-                                                com.habittracker.timerux.TimerCompletionInteractor.ConfirmType.EndPomodoroEarly -> {
-
-                                                    confirmEndPomodoroEarly = true
-                                                }
-                                                com.habittracker.timerux.TimerCompletionInteractor.ConfirmType.CompleteWithoutTimer -> {
-                                                    confirmCompleteWithoutTimer = true
-                                                }
-                                            }
-                                        }
-                                        is com.habittracker.timerux.TimerCompletionInteractor.ActionOutcome.Disallow -> {
-                                            showUndo(outcome.message) {}
-                                        }
-                                    }
-                                }
-                            ) {
-                                Icon(
-                                    imageVector = Icons.Filled.ErrorOutline,
-                                    contentDescription = "Error",
-                                    modifier = Modifier.size(18.dp)
-                                )
-                            }
+                            Icon(
+                                imageVector = Icons.Filled.ErrorOutline,
+                                contentDescription = "Error",
+                                modifier = Modifier.size(18.dp),
+                                tint = MaterialTheme.colorScheme.onErrorContainer
+                            )
+                            Spacer(modifier = Modifier.width(8.dp))
                             Text(
-                                text = runtimeError ?: "",
+                                text = runtimeError,
                                 style = MaterialTheme.typography.bodySmall,
-                                modifier = Modifier.weight(1f)
+                                color = MaterialTheme.colorScheme.onErrorContainer
                             )
                         }
                     }
                 }
-                // Primary timer controls row placed under the title to avoid replacing/squeezing text
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.spacedBy(8.dp),
@@ -721,9 +543,17 @@ fun EnhancedHabitCard(
                                     onClick = {
                                         confirmCompleteWithoutTimer = false
                                         handler?.clearPendingConfirmation()
-                                        // Start timer for this habit
-                                        val duration = habit.timing?.estimatedDuration ?: Duration.ofMinutes(25)
-                                        onStartTimer(habit, duration)
+                                        // Start timer through coordinator
+                                        if (handler != null) {
+                                            handler.handle(
+                                                TimerIntent.Start,
+                                                habit.id
+                                            )
+                                        } else {
+                                            // Fallback: use callback
+                                            val duration = habit.timing?.estimatedDuration ?: Duration.ofMinutes(25)
+                                            onStartTimer(habit, duration)
+                                        }
                                     }
                                 ) {
                                     Icon(
@@ -998,7 +828,7 @@ fun EnhancedHabitCard(
                 }
             }
         }
-    }
+
     if (showControlSheet) {
         com.habittracker.ui.components.timer.TimerControlSheet(
             onDismiss = { showControlSheet = false },
@@ -1050,4 +880,5 @@ fun EnhancedHabitCard(
         )
     }
 }
+
 
