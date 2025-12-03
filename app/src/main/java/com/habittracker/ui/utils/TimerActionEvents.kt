@@ -11,7 +11,8 @@ fun TimerActionEventEffect(
     onConfirm: (TimerActionCoordinator.UiEvent.Confirm) -> Unit = {},
     onSnackbar: (String) -> Unit = {},
     onUndo: (String) -> Unit = {},
-    onTip: (String) -> Unit = {}
+    onTip: (String) -> Unit = {},
+    onCompleted: (TimerActionCoordinator.UiEvent.Completed) -> Unit = {}
 ) {
     if (handler == null) return
 
@@ -22,6 +23,7 @@ fun TimerActionEventEffect(
                 is TimerActionCoordinator.UiEvent.Snackbar -> onSnackbar(event.message)
                 is TimerActionCoordinator.UiEvent.Undo -> onUndo(event.message)
                 is TimerActionCoordinator.UiEvent.Tip -> onTip(event.message)
+                is TimerActionCoordinator.UiEvent.Completed -> onCompleted(event)
             }
         }
     }

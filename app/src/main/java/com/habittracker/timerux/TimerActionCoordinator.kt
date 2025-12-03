@@ -252,10 +252,6 @@ class TimerActionCoordinator @Inject constructor(
         when (val outcome = decision.outcome) {
             is TimerOutcome.Execute -> {
                 emitTelemetry(TimerActionTelemetry.Executed(habitId, resolvedIntent))
-                // Check if completion action was executed and emit event
-                if (outcome.actions.any { it is TimerAction.CompleteToday }) {
-                    emitUiEvent(UiEvent.Completed(habitId))
-                }
             }
             is TimerOutcome.Confirm -> {
                 emitUiEvent(UiEvent.Confirm(habitId, outcome.type, outcome.payload))
@@ -384,6 +380,7 @@ class TimerActionCoordinator @Inject constructor(
                 remainingByHabit.remove(event.habitId)
                 pausedByHabit.remove(event.habitId)
                 markCompleted(event.habitId)
+                emitUiEvent(UiEvent.Completed(event.habitId))
             }
             is TimerEvent.Error -> {
                 if (_state.value.trackedHabitId == event.habitId) {
