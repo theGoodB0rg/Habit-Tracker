@@ -217,11 +217,55 @@ object AppTooltips {
         position = TooltipPosition.TOP
     )
     
+    // Progressive timing feature discovery tooltips
+    val timerButtonTooltip = TooltipConfig(
+        id = "timer_button",
+        title = "🆕 Timer Unlocked!",
+        description = "You've unlocked habit timers! Tap to start a focused session with countdown alerts.",
+        targetComposableKey = "timer_start_button",
+        position = TooltipPosition.TOP
+    )
+    
+    val smartSuggestionTooltip = TooltipConfig(
+        id = "smart_suggestion",
+        title = "🧠 Smart Suggestions",
+        description = "Based on your patterns, we suggest optimal times for this habit. Tap to accept!",
+        targetComposableKey = "smart_suggestion_chip",
+        position = TooltipPosition.BOTTOM
+    )
+    
+    val miniSessionBarTooltip = TooltipConfig(
+        id = "mini_session_bar",
+        title = "Active Timer",
+        description = "Your timer is running! Tap to view full controls or complete your session.",
+        targetComposableKey = "mini_session_bar",
+        position = TooltipPosition.TOP
+    )
+    
+    val timerControlsTooltip = TooltipConfig(
+        id = "timer_controls",
+        title = "Timer Controls",
+        description = "Pause, extend, or complete your timer from here. You control the session!",
+        targetComposableKey = "timer_control_sheet",
+        position = TooltipPosition.TOP
+    )
+    
     fun getAllTooltips(): List<TooltipConfig> = listOf(
     addHabitTooltip,
         markHabitCompleteTooltip,
         habitDetailTooltip,
         streakCounterTooltip,
         settingsTooltip
+    )
+    
+    /**
+     * Tooltips for progressive timing feature discovery.
+     * These are shown when users unlock new engagement levels.
+     */
+    fun getTimingFeatureTooltips(): List<TooltipConfig> = listOf(
+        timerButtonTooltip,
+        smartSuggestionTooltip,
+        miniSessionBarTooltip,
+        timerControlsTooltip
     )
 }

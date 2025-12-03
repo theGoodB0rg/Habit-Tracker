@@ -48,6 +48,10 @@ class TimingFeatureViewModel @Inject constructor(
     private val _pendingLevelUp = MutableStateFlow<LevelUpNotification?>(null)
     val pendingLevelUp: StateFlow<LevelUpNotification?> = _pendingLevelUp.asStateFlow()
     
+    // Feature discovery tooltip triggers (emitted when a feature becomes available for first time)
+    private val _featureDiscoveryTrigger = MutableSharedFlow<String>(extraBufferCapacity = 4)
+    val featureDiscoveryTrigger: SharedFlow<String> = _featureDiscoveryTrigger.asSharedFlow()
+    
     // Available features for current level
     val availableFeatures: StateFlow<List<Feature>> = userEngagementLevel.map { level ->
         featureGradualizer.getAvailableFeatures(level)
@@ -175,6 +179,9 @@ class TimingFeatureViewModel @Inject constructor(
                 
                 // Save preferences
                 saveUserPreferences()
+                
+                // Trigger feature discovery tooltips for newly unlocked features
+                triggerFeatureDiscoveryTooltips(notification.toLevel)
                 
                 // Clear notification
                 _pendingLevelUp.value = null
@@ -333,9 +340,26 @@ class TimingFeatureViewModel @Inject constructor(
                     )
                     recordLevelUpEvent(notification, accepted = true)
                     saveUserPreferences()
+                    
+                    // Trigger feature discovery tooltips for newly unlocked features
+                    triggerFeatureDiscoveryTooltips(nextLevel)
                 }
             }
         }
+    }
+    
+    /**
+     * Triggers feature discovery tooltips when a user levels up.
+     * Maps engagement levels to their unlocked timing feature tooltips.
+     */
+    private fun triggerFeatureDiscoveryTooltips(newLevel: UserEngagementLevel) {
+        val tooltipId = when (newLevel) {
+            UserEngagementLevel.Interested -> "timer_button"       // Timers unlocked
+            UserEngagementLevel.Engaged -> "smart_suggestion"      // Smart suggestions unlocked
+            UserEngagementLevel.PowerUser -> "timer_controls"       // Advanced controls unlocked
+            else -> null
+        }
+        tooltipId?.let { _featureDiscoveryTrigger.tryEmit(it) }
     }
     
     private fun getNextLevel(current: UserEngagementLevel): UserEngagementLevel? {

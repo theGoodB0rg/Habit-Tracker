@@ -37,6 +37,14 @@ import com.habittracker.ui.components.timer.MiniSessionBar
 import com.habittracker.ui.components.LoadingComponent
 import com.habittracker.nudges.viewmodel.NudgeViewModel
 import com.habittracker.nudges.ui.NudgeBannerSection
+import com.habittracker.ui.viewmodels.timing.TimingFeatureViewModel
+import com.habittracker.ui.components.timer.TimerSwitcherSheet
+import com.habittracker.ui.components.timer.TimerSwitcherSession
+import com.habittracker.ui.components.timer.rememberTimerSwitcherState
+import com.habittracker.timing.TimerBus
+import com.habittracker.timing.TimerEvent
+import com.habittracker.timing.TimerController
+import com.habittracker.ui.viewmodels.timing.TimerTickerViewModel
 import androidx.compose.ui.platform.LocalContext
 import com.habittracker.timerux.TimerActionCoordinator
 import com.habittracker.timerux.TimerCompletionInteractor.ConfirmType
@@ -96,6 +104,9 @@ fun MainScreen(
     // Tooltip integration
     val tooltipManager: TooltipManager = rememberTooltipManager()
     
+    // Timing feature progressive disclosure
+    val timingFeatureViewModel: TimingFeatureViewModel = hiltViewModel()
+    
     var isGridView by remember { mutableStateOf(false) }
     var showCompletedOnly by remember { mutableStateOf(false) }
     
@@ -107,6 +118,15 @@ fun MainScreen(
             withFrameNanos { } // ensure anchors recorded
             tooltipManager.startGuidedTour()
             guidedTourStarted = true
+        }
+    }
+    
+    // Feature discovery tooltips - show when user levels up and unlocks new timing features
+    LaunchedEffect(Unit) {
+        timingFeatureViewModel.featureDiscoveryTrigger.collect { tooltipId ->
+            // Small delay to let UI settle after level-up animation
+            kotlinx.coroutines.delay(800)
+            tooltipManager.showFeatureDiscoveryTooltip(tooltipId)
         }
     }
     
@@ -130,6 +150,87 @@ fun MainScreen(
     
     val snackbarHostState = remember { SnackbarHostState() }
     val snackbarScope = rememberCoroutineScope()
+    
+    // Timer switcher for improved single-active-timer UX
+    val timerSwitcherState = rememberTimerSwitcherState()
+    val tickerViewModel: TimerTickerViewModel = hiltViewModel()
+    val timerController = remember(context) { TimerController(context) }
+    val remainingByHabit by tickerViewModel.remainingByHabit.collectAsState()
+    val pausedByHabit by tickerViewModel.pausedByHabit.collectAsState()
+    
+    // Listen for AutoPaused events and show timer switcher sheet instead of snackbar
+    LaunchedEffect(Unit) {
+        TimerBus.events.collect { evt ->
+            if (evt is TimerEvent.AutoPaused) {
+                // Find the habit names from hydrated list
+                val pausedHabit = hydrated.find { it.id == evt.pausedHabitId }
+                val activeHabitId = hydrated.find { habit ->
+                    remainingByHabit[habit.id]?.let { it > 0 } == true && 
+                    pausedByHabit[habit.id] != true &&
+                    habit.id != evt.pausedHabitId
+                }?.id
+                
+                val activeHabit = activeHabitId?.let { id -> hydrated.find { it.id == id } }
+                
+                if (pausedHabit != null && activeHabit != null) {
+                    timerSwitcherState.show(
+                        active = TimerSwitcherSession(
+                            sessionId = 0, // Session ID not needed for display
+                            habitId = activeHabit.id,
+                            habitName = activeHabit.name,
+                            remainingMs = remainingByHabit[activeHabit.id] ?: 0L,
+                            isPaused = false,
+                            isActive = true
+                        ),
+                        paused = TimerSwitcherSession(
+                            sessionId = evt.pausedSessionId,
+                            habitId = evt.pausedHabitId,
+                            habitName = pausedHabit.name,
+                            remainingMs = remainingByHabit[evt.pausedHabitId] ?: 0L,
+                            isPaused = true,
+                            isActive = false
+                        )
+                    )
+                } else {
+                    // Fallback to snackbar if we can't identify the habits
+                    snackbarScope.launch {
+                        snackbarHostState.showSnackbar(
+                            message = "Paused previous timer",
+                            actionLabel = "Resume",
+                            duration = androidx.compose.material3.SnackbarDuration.Short
+                        ).let { result ->
+                            if (result == androidx.compose.material3.SnackbarResult.ActionPerformed) {
+                                timerController.resumeSession(evt.pausedSessionId)
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+    
+    // Timer switcher bottom sheet
+    if (timerSwitcherState.isVisible && timerSwitcherState.activeSession != null && timerSwitcherState.pausedSession != null) {
+        TimerSwitcherSheet(
+            activeSession = timerSwitcherState.activeSession!!,
+            pausedSession = timerSwitcherState.pausedSession!!,
+            onSwitchToActive = {
+                timerSwitcherState.dismiss()
+            },
+            onSwitchToPaused = {
+                // Pause current, resume paused
+                timerController.pause()
+                timerSwitcherState.pausedSession?.sessionId?.let { sessionId ->
+                    timerController.resumeSession(sessionId)
+                }
+                timerSwitcherState.dismiss()
+            },
+            onDismiss = {
+                timerSwitcherState.dismiss()
+            }
+        )
+    }
+    
     Scaffold(
         topBar = {
             TopAppBar(

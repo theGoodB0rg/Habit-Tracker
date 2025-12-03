@@ -85,6 +85,10 @@ class TimerService : Service() {
     private var gentleNudgePosted: Boolean = false
     // Analytics: mark when we completed to avoid logging discard on stop
     private var completedThisSession: Boolean = false
+    // Debouncing for notification/widget actions to prevent double-tap bugs
+    private var lastActionTime: Long = 0L
+    private var lastActionType: String? = null
+    private val actionDebounceMs = 500L
 
     override fun onBind(intent: Intent?): IBinder? = null
 
@@ -165,7 +169,20 @@ class TimerService : Service() {
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
-    when (intent?.action) {
+        val action = intent?.action
+        
+        // Apply debouncing for user-initiated actions (prevents double-tap bugs)
+        if (action in DEBOUNCED_ACTIONS) {
+            val now = System.currentTimeMillis()
+            if (action == lastActionType && (now - lastActionTime) < actionDebounceMs) {
+                Log.d("TimerService", "Debounced duplicate action: $action (${now - lastActionTime}ms)")
+                return START_STICKY
+            }
+            lastActionTime = now
+            lastActionType = action
+        }
+        
+    when (action) {
             ACTION_START -> handleStart(intent)
             ACTION_PAUSE -> handlePause()
             ACTION_RESUME -> handleResume()
@@ -721,6 +738,15 @@ class TimerService : Service() {
         const val EXTRA_TIMER_TYPE = "extra_timer_type"
         const val EXTRA_DURATION_MINUTES = "extra_duration_minutes"
     const val EXTRA_SESSION_ID = "extra_session_id"
+    
+        // Actions that should be debounced to prevent double-tap bugs
+        private val DEBOUNCED_ACTIONS = setOf(
+            ACTION_START,
+            ACTION_PAUSE,
+            ACTION_RESUME,
+            ACTION_COMPLETE,
+            ACTION_STOP
+        )
         private const val DEFAULT_MINUTES = 25L
     // Default focus profile thresholds (percent of duration)
     private val DEFAULT_FOCUS_THRESHOLDS = listOf(0,25,50,75,100)

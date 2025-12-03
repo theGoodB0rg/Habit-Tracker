@@ -94,18 +94,9 @@ fun EnhancedHabitCard(
         Modifier
     }
 
-    // Phase 2 UX: show snackbar when another timer is auto-paused due to single-active enforcement
-    LaunchedEffect(Unit) {
-        com.habittracker.timing.TimerBus.events.collect { evt ->
-            if (evt is com.habittracker.timing.TimerEvent.AutoPaused) {
-                // Ideally include habit name; fallback to generic copy per roadmap
-                showUndo("Paused previous timer — Resume") {
-                    // True exact-session resume
-                    timerController.resumeSession(evt.pausedSessionId)
-                }
-            }
-        }
-    }
+    // Note: AutoPaused events are now handled at MainScreen level with TimerSwitcherSheet
+    // for improved UX (shows both timers with explicit switch option)
+    
     val tickerViewModel: TimerTickerViewModel = hiltViewModel()
     val activeTimerVm: ActiveTimerViewModel = hiltViewModel()
     val scope = androidx.compose.runtime.rememberCoroutineScope()

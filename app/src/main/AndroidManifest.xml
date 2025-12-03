@@ -91,6 +91,20 @@
             android:exported="false"
             android:foregroundServiceType="mediaProjection|dataSync|connectedDevice" />
         
+        <!-- Unified Timer Action Receiver for widgets/notifications -->
+        <receiver
+            android:name=".timing.TimerActionReceiver"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="com.habittracker.timer.action.COORDINATED_START" />
+                <action android:name="com.habittracker.timer.action.COORDINATED_PAUSE" />
+                <action android:name="com.habittracker.timer.action.COORDINATED_RESUME" />
+                <action android:name="com.habittracker.timer.action.COORDINATED_COMPLETE" />
+                <action android:name="com.habittracker.timer.action.COORDINATED_EXTEND" />
+                <action android:name="com.habittracker.timer.action.COORDINATED_DISCARD" />
+            </intent-filter>
+        </receiver>
+        
     </application>
 
 </manifest>

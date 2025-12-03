@@ -42,7 +42,15 @@ class ProfessionalHabitsWidgetProvider : AppWidgetProvider() {
     const val EXTRA_HABIT_ID = "habit_id"
     const val EXTRA_WIDGET_ID = "widget_id"
 
-    // Mirror TimerService constants locally to avoid module dependency
+    // Coordinated action constants (routed through TimerActionReceiver for debouncing/confirmation)
+    private const val COORDINATED_ACTION_START = "com.habittracker.timer.action.COORDINATED_START"
+    private const val COORDINATED_ACTION_PAUSE = "com.habittracker.timer.action.COORDINATED_PAUSE"
+    private const val COORDINATED_ACTION_RESUME = "com.habittracker.timer.action.COORDINATED_RESUME"
+    private const val COORDINATED_ACTION_COMPLETE = "com.habittracker.timer.action.COORDINATED_COMPLETE"
+    private const val COORDINATED_EXTRA_HABIT_ID = "extra_habit_id"
+    private const val COORDINATED_EXTRA_SOURCE = "extra_source"
+
+    // Mirror TimerService constants locally to avoid module dependency (fallback only)
     private const val TS_ACTION_START = "com.habittracker.timing.action.START"
     private const val TS_ACTION_PAUSE = "com.habittracker.timing.action.PAUSE"
     private const val TS_ACTION_RESUME = "com.habittracker.timing.action.RESUME"
@@ -404,7 +412,42 @@ class ProfessionalHabitsWidgetProvider : AppWidgetProvider() {
 
     private enum class ActionType { START, PAUSE, RESUME, DONE }
 
+    /**
+     * Launch timer action through coordinated receiver for consistent debouncing and confirmation flows.
+     * Falls back to direct TimerService if broadcast fails.
+     */
     private fun launchTimerAction(context: Context, habitId: Long, type: ActionType) {
+        try {
+            val appPackage = context.packageName.replace(".widget", "")
+            
+            // Prefer coordinated actions via broadcast receiver (provides debouncing + coordinator parity)
+            val coordinatedAction = when (type) {
+                ActionType.START -> COORDINATED_ACTION_START
+                ActionType.PAUSE -> COORDINATED_ACTION_PAUSE
+                ActionType.RESUME -> COORDINATED_ACTION_RESUME
+                ActionType.DONE -> COORDINATED_ACTION_COMPLETE
+            }
+            
+            val broadcastIntent = Intent(coordinatedAction).apply {
+                setPackage(appPackage)
+                putExtra(COORDINATED_EXTRA_HABIT_ID, habitId)
+                putExtra(COORDINATED_EXTRA_SOURCE, "widget")
+            }
+            
+            context.sendBroadcast(broadcastIntent)
+            android.util.Log.d("WidgetProvider", "Timer action sent via coordinator: $coordinatedAction, habitId=$habitId")
+            
+        } catch (e: Exception) {
+            android.util.Log.w("WidgetProvider", "Coordinated timer action failed, falling back to service: ${e.message}")
+            // Fallback to direct service call
+            launchTimerActionFallback(context, habitId, type)
+        }
+    }
+    
+    /**
+     * Fallback: Direct TimerService call when coordinated broadcast fails.
+     */
+    private fun launchTimerActionFallback(context: Context, habitId: Long, type: ActionType) {
         try {
             val appPackage = context.packageName.replace(".widget", "")
             val serviceClass = "$appPackage.timing.TimerService"
@@ -430,7 +473,7 @@ class ProfessionalHabitsWidgetProvider : AppWidgetProvider() {
                 }
             }
         } catch (e: Exception) {
-            android.util.Log.w("WidgetProvider", "Timer action failed: ${e.message}")
+            android.util.Log.w("WidgetProvider", "Timer action fallback failed: ${e.message}")
         }
     }
     

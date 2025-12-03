@@ -295,6 +295,43 @@ class TooltipManager @Inject constructor(
     }
     
     /**
+     * Shows a feature discovery tooltip when a user unlocks a new timing feature.
+     * These are one-time tooltips that help users understand newly available features.
+     * 
+     * @param featureTooltipId The ID of the timing feature tooltip to show (e.g., "timer_button")
+     */
+    fun showFeatureDiscoveryTooltip(featureTooltipId: String) {
+        viewModelScope.launch {
+            tooltipMutex.withLock {
+                try {
+                    // Skip if already active or already shown
+                    if (_isTooltipActive.value) return@withLock
+                    if (onboardingPreferences.isTooltipShown(featureTooltipId)) return@withLock
+                    
+                    // Find from timing feature tooltips
+                    val tooltip = AppTooltips.getTimingFeatureTooltips().find { it.id == featureTooltipId }
+                    if (tooltip != null) {
+                        // Wait briefly for anchor to be registered
+                        kotlinx.coroutines.delay(300)
+                        val anchorReady = com.habittracker.onboarding.components.TooltipCoordinateManager.getTarget(tooltip.targetComposableKey) != null
+                        if (!anchorReady) {
+                            println("TooltipManager: Feature tooltip anchor not ready: ${tooltip.targetComposableKey}")
+                            return@withLock
+                        }
+                        
+                        _currentTooltip.value = tooltip
+                        _isTooltipActive.value = true
+                        _currentTooltipIndex.value = -1 // Single tooltip mode
+                        println("TooltipManager: Showing feature discovery tooltip: $featureTooltipId")
+                    }
+                } catch (e: Exception) {
+                    handleError("Failed to show feature discovery tooltip: $featureTooltipId", e)
+                }
+            }
+        }
+    }
+    
+    /**
      * Safe cleanup when ViewModel is cleared
      */
     override fun onCleared() {
