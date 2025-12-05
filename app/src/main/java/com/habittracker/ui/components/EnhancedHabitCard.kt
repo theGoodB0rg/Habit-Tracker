@@ -163,7 +163,13 @@ fun EnhancedHabitCard(
             },
             onSnackbar = { message -> showUndo(message) {} },
             onUndo = { message -> showUndo(message) { onUndoComplete() } },
-            onTip = { message -> showUndo(message) {} }
+            onTip = { message -> showUndo(message) {} },
+            onCompleted = { event ->
+                // When coordinator signals completion, mark the habit as done
+                if (event.habitId == habit.id) {
+                    onMarkComplete()
+                }
+            }
         )
     }
 
@@ -336,12 +342,28 @@ fun EnhancedHabitCard(
                             // Anchor for tutorial/tooltips to highlight complete action
                             .then(rememberTooltipTarget("habit_complete_button"))
                     ) {
-                        Icon(
-                            imageVector = if (isCompletedToday) Icons.Filled.CheckCircle else Icons.Filled.RadioButtonUnchecked,
-                            contentDescription = if (isCompletedToday) "Completed" else "Mark complete",
-                            tint = if (isCompletedToday) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant,
-                            modifier = Modifier.size(20.dp)
-                        )
+                        // Larger, more prominent completion indicator
+                        Box(
+                            modifier = Modifier
+                                .size(32.dp)
+                                .then(
+                                    if (isCompletedToday) {
+                                        Modifier
+                                            .clip(CircleShape)
+                                            .background(MaterialTheme.colorScheme.primary)
+                                    } else {
+                                        Modifier
+                                    }
+                                ),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Icon(
+                                imageVector = if (isCompletedToday) Icons.Filled.Check else Icons.Filled.RadioButtonUnchecked,
+                                contentDescription = if (isCompletedToday) "Completed" else "Mark complete",
+                                tint = if (isCompletedToday) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurfaceVariant,
+                                modifier = Modifier.size(if (isCompletedToday) 20.dp else 28.dp)
+                            )
+                        }
                     }
                 }
             }

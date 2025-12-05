@@ -51,7 +51,8 @@ fun EditHabitScreen(
     var showDeleteDialog by remember { mutableStateOf(false) }
     // Phase UIX-1 internal flag (set to true for developer validation)
     val enableTimerFeatureFlag = true
-    var timerEnabled by remember { mutableStateOf(false) }
+    // Default timer enabled to true - users can disable per-habit if they prefer no timer
+    var timerEnabled by remember { mutableStateOf(true) }
     var customDurationText by remember { mutableStateOf("") }
     var autoCompleteOnTarget by remember { mutableStateOf(false) }
     var minDurationText by remember { mutableStateOf("") }

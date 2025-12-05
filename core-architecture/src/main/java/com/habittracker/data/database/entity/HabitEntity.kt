@@ -33,7 +33,8 @@ data class HabitEntity(
     val isActive: Boolean = true,
     // Phase UIX-1 additions (timer foundations)
     // Whether per-habit timer functionality is enabled for this habit (feature gated in UI)
-    val timerEnabled: Boolean = false,
+    // Default is true - users can disable per-habit if they prefer no timer
+    val timerEnabled: Boolean = true,
     // Optional custom duration override in minutes (null = use global default)
     val customDurationMinutes: Int? = null,
     // Optional reference to an alert profile id

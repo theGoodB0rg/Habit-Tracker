@@ -15,7 +15,7 @@ import java.time.LocalTime
 data class HabitTiming(
     val preferredTime: LocalTime? = null,           // "I like to read at 8 PM"
     val estimatedDuration: Duration? = null,        // "Usually takes 30 minutes"
-    val timerEnabled: Boolean = false,              // "Show me a timer"
+    val timerEnabled: Boolean = true,               // Default enabled - users disable per-habit if desired
     val minDuration: Duration? = null,              // Minimum required to count as done
     val requireTimerToComplete: Boolean = false,    // Disallow completion without timer
     val autoCompleteOnTarget: Boolean = false,      // Auto-complete when reaching target

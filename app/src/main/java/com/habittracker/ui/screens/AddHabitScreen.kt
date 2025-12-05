@@ -2,11 +2,13 @@ package com.habittracker.ui.screens
 
 import androidx.compose.animation.*
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.selection.selectable
+import androidx.compose.foundation.selection.toggleable
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
@@ -16,8 +18,14 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.role
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.semantics.stateDescription
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardCapitalization
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -35,6 +43,13 @@ fun AddHabitScreen(
     var selectedFrequency by remember { mutableStateOf("Daily") }
     var selectedIconId by remember { mutableStateOf(0) }
     var showIconPicker by remember { mutableStateOf(false) }
+    
+    // Timer & Focus settings - default to timer enabled
+    var timerEnabled by remember { mutableStateOf(true) }
+    var customDurationText by remember { mutableStateOf("") }
+    var minDurationText by remember { mutableStateOf("") }
+    var requireTimerToComplete by remember { mutableStateOf(false) }
+    var autoCompleteOnTarget by remember { mutableStateOf(false) }
     
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     
@@ -187,6 +202,215 @@ fun AddHabitScreen(
                 }
             }
             
+            // Focus Setup - Quick Presets
+            Card {
+                Column(modifier = Modifier.padding(16.dp)) {
+                    Text(
+                        "Focus Setup",
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.Medium
+                    )
+                    Text(
+                        "Quick presets for habits that benefit from focused practice",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                    Spacer(modifier = Modifier.height(12.dp))
+                    
+                    LazyRow(
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        item {
+                            FilterChip(
+                                onClick = {
+                                    timerEnabled = true
+                                    requireTimerToComplete = true
+                                    customDurationText = "25"
+                                },
+                                label = { Text("Focus Session (25 min)") },
+                                selected = timerEnabled && requireTimerToComplete && customDurationText == "25",
+                                leadingIcon = if (timerEnabled && requireTimerToComplete && customDurationText == "25") {
+                                    { Icon(Icons.Filled.CheckCircle, contentDescription = null, modifier = Modifier.size(18.dp)) }
+                                } else {
+                                    { Icon(Icons.Filled.Timer, contentDescription = null, modifier = Modifier.size(18.dp)) }
+                                }
+                            )
+                        }
+                        item {
+                            FilterChip(
+                                onClick = {
+                                    timerEnabled = true
+                                    requireTimerToComplete = true
+                                    customDurationText = "15"
+                                },
+                                label = { Text("Short Focus (15 min)") },
+                                selected = timerEnabled && requireTimerToComplete && customDurationText == "15",
+                                leadingIcon = if (timerEnabled && requireTimerToComplete && customDurationText == "15") {
+                                    { Icon(Icons.Filled.CheckCircle, contentDescription = null, modifier = Modifier.size(18.dp)) }
+                                } else {
+                                    { Icon(Icons.Filled.Timelapse, contentDescription = null, modifier = Modifier.size(18.dp)) }
+                                }
+                            )
+                        }
+                        item {
+                            FilterChip(
+                                onClick = {
+                                    timerEnabled = false
+                                    requireTimerToComplete = false
+                                    customDurationText = ""
+                                },
+                                label = { Text("Quick Check-off") },
+                                selected = !timerEnabled && !requireTimerToComplete,
+                                leadingIcon = if (!timerEnabled && !requireTimerToComplete) {
+                                    { Icon(Icons.Filled.CheckCircle, contentDescription = null, modifier = Modifier.size(18.dp)) }
+                                } else {
+                                    { Icon(Icons.Filled.Speed, contentDescription = null, modifier = Modifier.size(18.dp)) }
+                                }
+                            )
+                        }
+                    }
+                }
+            }
+
+            // Timer & Focus Card
+            Card {
+                Column(modifier = Modifier.padding(16.dp)) {
+                    Text(
+                        "Timer & Focus",
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.Medium
+                    )
+                    Spacer(modifier = Modifier.height(12.dp))
+                    
+                    // Enable timer toggle
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .semantics(mergeDescendants = true) {
+                                role = Role.Switch
+                                contentDescription = "Enable per-habit timer. Adds a customizable session duration for this habit."
+                                stateDescription = if (timerEnabled) "On" else "Off"
+                            }
+                            .toggleable(value = timerEnabled, role = Role.Switch, onValueChange = { timerEnabled = it })
+                    ) {
+                        Column(Modifier.weight(1f)) {
+                            Text("Enable timer", fontWeight = FontWeight.SemiBold)
+                            Text(
+                                "Adds a timer button with customizable duration.",
+                                style = MaterialTheme.typography.bodySmall
+                            )
+                        }
+                        Switch(
+                            checked = timerEnabled,
+                            onCheckedChange = null
+                        )
+                    }
+                    
+                    AnimatedVisibility(visible = timerEnabled) {
+                        Column(modifier = Modifier.padding(top = 12.dp)) {
+                            OutlinedTextField(
+                                value = customDurationText,
+                                onValueChange = { value ->
+                                    if (value.length <= 3 && value.all { it.isDigit() }) customDurationText = value
+                                    if (value.isEmpty()) customDurationText = ""
+                                },
+                                label = { Text("Custom Duration (min)") },
+                                placeholder = { Text("e.g. 25") },
+                                modifier = Modifier.fillMaxWidth(),
+                                singleLine = true,
+                                keyboardOptions = KeyboardOptions.Default.copy(keyboardType = KeyboardType.Number),
+                                supportingText = { Text("Leave blank to use global default") }
+                            )
+
+                            Spacer(Modifier.height(12.dp))
+
+                            // Minimum duration to count as done
+                            OutlinedTextField(
+                                value = minDurationText,
+                                onValueChange = { value ->
+                                    if (value.length <= 3 && value.all { it.isDigit() }) minDurationText = value
+                                    else if (value.isEmpty()) minDurationText = ""
+                                },
+                                label = { Text("Minimum duration to count (min)") },
+                                placeholder = { Text("optional, e.g. 5") },
+                                modifier = Modifier.fillMaxWidth(),
+                                singleLine = true,
+                                keyboardOptions = KeyboardOptions.Default.copy(keyboardType = KeyboardType.Number),
+                                supportingText = { Text("Below this, a confirm dialog will appear") }
+                            )
+
+                            Spacer(Modifier.height(16.dp))
+
+                            // Require timer to complete toggle
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.SpaceBetween,
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .semantics(mergeDescendants = true) {
+                                        role = Role.Switch
+                                        contentDescription = "Require timer to complete. Prevent quick check-off; user must use the timer."
+                                        stateDescription = if (requireTimerToComplete) "On" else "Off"
+                                    }
+                                    .toggleable(value = requireTimerToComplete, role = Role.Switch, onValueChange = { requireTimerToComplete = it })
+                            ) {
+                                Column(Modifier.weight(1f)) {
+                                    Row(verticalAlignment = Alignment.CenterVertically) {
+                                        Icon(
+                                            Icons.Filled.Timer,
+                                            contentDescription = null,
+                                            modifier = Modifier.size(20.dp),
+                                            tint = MaterialTheme.colorScheme.primary
+                                        )
+                                        Spacer(modifier = Modifier.width(8.dp))
+                                        Text("Require timer to complete", fontWeight = FontWeight.SemiBold)
+                                    }
+                                    Text(
+                                        "Users must start the timer before marking as done. Promotes focused habit practice.",
+                                        style = MaterialTheme.typography.bodySmall,
+                                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                                    )
+                                }
+                                Switch(
+                                    checked = requireTimerToComplete,
+                                    onCheckedChange = null
+                                )
+                            }
+
+                            Spacer(Modifier.height(12.dp))
+
+                            // Auto-complete at target toggle
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.SpaceBetween,
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .semantics(mergeDescendants = true) {
+                                        role = Role.Switch
+                                        contentDescription = "Auto-complete at target. Automatically mark done when reaching the target duration."
+                                        stateDescription = if (autoCompleteOnTarget) "On" else "Off"
+                                    }
+                                    .toggleable(value = autoCompleteOnTarget, role = Role.Switch, onValueChange = { autoCompleteOnTarget = it })
+                            ) {
+                                Column(Modifier.weight(1f)) {
+                                    Text("Auto-complete at target", fontWeight = FontWeight.SemiBold)
+                                    Text(
+                                        "Automatically mark done when reaching the target duration.",
+                                        style = MaterialTheme.typography.bodySmall
+                                    )
+                                }
+                                Switch(
+                                    checked = autoCompleteOnTarget,
+                                    onCheckedChange = null
+                                )
+                            }
+                        }
+                    }
+                }
+            }
+            
             // Error message
             uiState.errorMessage?.let { message ->
                 Card(
@@ -212,7 +436,12 @@ fun AddHabitScreen(
                             name = habitName.trim(),
                             description = habitDescription.trim(),
                             frequency = selectedFrequency,
-                            iconId = selectedIconId
+                            iconId = selectedIconId,
+                            timerEnabled = timerEnabled,
+                            customDurationMinutes = customDurationText.toIntOrNull(),
+                            minDurationMinutes = minDurationText.toIntOrNull(),
+                            requireTimerToComplete = requireTimerToComplete,
+                            autoCompleteOnTarget = autoCompleteOnTarget
                         )
                     }
                 },

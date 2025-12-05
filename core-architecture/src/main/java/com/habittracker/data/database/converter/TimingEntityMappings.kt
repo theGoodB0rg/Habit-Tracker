@@ -18,7 +18,7 @@ fun HabitTiming.toEntity(habitId: Long): HabitTimingEntity {
         habitId = habitId,
         preferredTime = preferredTime?.toString(),
         estimatedDurationMinutes = targetDuration?.toMinutes()?.toInt(),
-        timerEnabled = false, // Set from UI model if needed
+        timerEnabled = true, // Default enabled - users disable per-habit if desired
         reminderStyle = reminderStyle.name,
         isSchedulingEnabled = smartSchedulingEnabled,
         createdAt = System.currentTimeMillis(),

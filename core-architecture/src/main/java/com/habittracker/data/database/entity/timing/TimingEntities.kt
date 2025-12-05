@@ -39,7 +39,7 @@ data class HabitTimingEntity(
     val estimatedDurationMinutes: Int? = null,      // Duration in minutes
     
     @ColumnInfo(name = "timer_enabled")
-    val timerEnabled: Boolean = false,
+    val timerEnabled: Boolean = true,               // Default enabled - users disable per-habit if desired
 
     // Phase 1: Guard-rails
     @ColumnInfo(name = "min_duration_minutes")

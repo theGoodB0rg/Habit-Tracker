@@ -319,7 +319,14 @@ class TimerActionCoordinator @Inject constructor(
                 }
                 is TimerAction.PauseTimer -> timerController.pause()
                 is TimerAction.ResumeTimer -> timerController.resume()
-                is TimerAction.CompleteToday -> timerController.complete()
+                is TimerAction.CompleteToday -> {
+                    // Complete the timer session if one is active
+                    timerController.complete()
+                    // Always emit Completed event so UI can mark habit as done
+                    // (timerController.complete() only works if there's an active session,
+                    // but we still need to mark the habit complete even without a timer)
+                    emitUiEvent(UiEvent.Completed(action.habitId))
+                }
                 is TimerAction.SavePartial -> {
                     timerController.stop()
                     appScope.launch {

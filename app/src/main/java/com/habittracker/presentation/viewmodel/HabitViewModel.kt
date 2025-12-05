@@ -109,7 +109,12 @@ class HabitViewModel @Inject constructor(
         name: String,
         description: String,
         frequency: String,
-        iconId: Int
+        iconId: Int,
+        timerEnabled: Boolean = true,
+        customDurationMinutes: Int? = null,
+        minDurationMinutes: Int? = null,
+        requireTimerToComplete: Boolean = false,
+        autoCompleteOnTarget: Boolean = false
     ) {
         viewModelScope.launch {
             try {
@@ -122,10 +127,28 @@ class HabitViewModel @Inject constructor(
                     iconId = iconId,
                     createdDate = java.util.Date(),
                     streakCount = 0,
-                    lastCompletedDate = null
+                    lastCompletedDate = null,
+                    timerEnabled = timerEnabled,
+                    customDurationMinutes = customDurationMinutes
                 )
                 
-                habitRepository.insertHabit(habit)
+                val habitId = habitRepository.insertHabit(habit)
+                
+                // Create timing configuration if timer settings provided
+                if (timerEnabled && (minDurationMinutes != null || requireTimerToComplete || autoCompleteOnTarget || customDurationMinutes != null)) {
+                    val duration = customDurationMinutes?.let { java.time.Duration.ofMinutes(it.toLong()) }
+                    val minDuration = minDurationMinutes?.let { java.time.Duration.ofMinutes(it.toLong()) }
+                    
+                    val timing = com.habittracker.ui.models.timing.HabitTiming(
+                        estimatedDuration = duration,
+                        minDuration = minDuration,
+                        requireTimerToComplete = requireTimerToComplete,
+                        autoCompleteOnTarget = autoCompleteOnTarget,
+                        timerEnabled = timerEnabled
+                    )
+                    habitRepository.saveHabitTiming(habitId, timing)
+                }
+                
                 refreshStreaks()
                 
                 _uiState.value = _uiState.value.copy(

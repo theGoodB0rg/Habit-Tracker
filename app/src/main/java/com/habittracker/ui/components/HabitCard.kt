@@ -135,7 +135,7 @@ fun HabitCard(
                     IconButton(
                         onClick = onMarkComplete,
                         modifier = Modifier
-                            .size(32.dp)
+                            .size(40.dp)
                             .then(rememberTooltipTarget("habit_complete_button"))
                     ) {
                         AnimatedContent(
@@ -145,19 +145,26 @@ fun HabitCard(
                             },
                             label = "completion_animation"
                         ) { completed ->
-                            if (completed) {
+                            // Larger, more prominent completion indicator
+                            Box(
+                                modifier = Modifier
+                                    .size(32.dp)
+                                    .then(
+                                        if (completed) {
+                                            Modifier
+                                                .clip(CircleShape)
+                                                .background(MaterialTheme.colorScheme.primary)
+                                        } else {
+                                            Modifier
+                                        }
+                                    ),
+                                contentAlignment = Alignment.Center
+                            ) {
                                 Icon(
-                                    imageVector = Icons.Filled.CheckCircle,
-                                    contentDescription = "Mark incomplete",
-                                    tint = MaterialTheme.colorScheme.primary,
-                                    modifier = Modifier.size(20.dp)
-                                )
-                            } else {
-                                Icon(
-                                    imageVector = Icons.Filled.RadioButtonUnchecked,
-                                    contentDescription = "Mark complete",
-                                    tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                                    modifier = Modifier.size(20.dp)
+                                    imageVector = if (completed) Icons.Filled.Check else Icons.Filled.RadioButtonUnchecked,
+                                    contentDescription = if (completed) "Mark incomplete" else "Mark complete",
+                                    tint = if (completed) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurfaceVariant,
+                                    modifier = Modifier.size(if (completed) 20.dp else 28.dp)
                                 )
                             }
                         }
