@@ -71,7 +71,11 @@ fun SimpleTimerButton(
 ) {
     val context = LocalContext.current
     val timingViewModel: com.habittracker.ui.viewmodels.timing.TimingFeatureViewModel = hiltViewModel()
-    val timersEnabled = timingViewModel.isFeatureEnabled(Feature.SIMPLE_TIMER)
+    val globalTimersEnabled = timingViewModel.isFeatureEnabled(Feature.SIMPLE_TIMER)
+    // Per-habit timer setting - true by default if timing config is null
+    val habitTimerEnabled = habit.timing?.timerEnabled != false
+    // Timer is enabled if BOTH global feature AND per-habit setting are enabled
+    val timersEnabled = globalTimersEnabled && habitTimerEnabled
     val defaultDuration = habit.estimatedDuration ?: Duration.ofMinutes(25)
 
     val timerTickerViewModel: TimerTickerViewModel = hiltViewModel()
@@ -99,7 +103,8 @@ fun SimpleTimerButton(
     }
 
     val displayLabel = when {
-        !timersEnabled -> "Start (Enable)"
+        !globalTimersEnabled -> "Start (Enable)"
+        !habitTimerEnabled -> "Timer Off"
         waitingForService -> "Starting..."
         coordinatorTimerState == TimerCompletionInteractor.TimerState.RUNNING && isTrackedHabit -> "Active"
         coordinatorTimerState == TimerCompletionInteractor.TimerState.PAUSED && isTrackedHabit -> "Resume"
@@ -109,7 +114,8 @@ fun SimpleTimerButton(
     }
 
     val enabled = when {
-        !timersEnabled -> true
+        !globalTimersEnabled -> true  // Allow enabling global feature
+        !habitTimerEnabled -> false   // Disabled at habit level - must edit habit settings
         waitingForService -> false
         coordinatorTimerState == TimerCompletionInteractor.TimerState.RUNNING && isTrackedHabit -> false
         isActiveWithoutCoordinator && handler == null -> false
@@ -117,6 +123,7 @@ fun SimpleTimerButton(
     }
 
     val leadingIcon = when {
+        !habitTimerEnabled -> Icons.Default.TimerOff
         waitingForService -> Icons.Default.HourglassTop
         coordinatorTimerState == TimerCompletionInteractor.TimerState.PAUSED && isTrackedHabit -> Icons.Default.PlayArrow
         coordinatorTimerState == TimerCompletionInteractor.TimerState.RUNNING && isTrackedHabit -> Icons.Default.CheckCircle
@@ -133,8 +140,13 @@ fun SimpleTimerButton(
 
     AssistChip(
         onClick = {
-            if (!timersEnabled) {
+            if (!globalTimersEnabled) {
+                // Enable global timer feature first
                 timingViewModel.enableFeature(Feature.SIMPLE_TIMER)
+            }
+            if (!habitTimerEnabled) {
+                // Timer disabled at habit level - button should be disabled, this is a no-op fallback
+                return@AssistChip
             }
             val duration = defaultDuration
             onStartTimer(habit, duration)
@@ -154,7 +166,8 @@ fun SimpleTimerButton(
             Icon(
                 imageVector = leadingIcon,
                 contentDescription = when {
-                    !timersEnabled -> "Timer disabled, enable in settings"
+                    !globalTimersEnabled -> "Timer feature disabled, tap to enable"
+                    !habitTimerEnabled -> "Timer disabled for this habit, edit habit to enable"
                     waitingForService -> "Starting timer"
                     displayLabel == "Resume" -> "Resume timer"
                     displayLabel == "Active" -> "Timer running"

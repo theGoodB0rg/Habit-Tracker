@@ -1,13 +1,13 @@
 # Timer UI Flow Fix Plan
 **Date**: December 20, 2025  
-**Status**: Phase 1 In Progress - Critical Fixes Being Implemented
+**Status**: Phase 1 Complete - Critical Fixes Implemented
 
 ## 📊 Implementation Progress
 
 | Phase | Description | Status |
 |-------|-------------|--------|
 | 1.2 | Fix Timer Requirement Logic | ✅ COMPLETED |
-| 1.1 | Fix Timer State Sync | 🔄 Verifying |
+| 1.1 | Fix Timer State Sync | ✅ COMPLETED |
 | 1.3 | Add Visual Debounce Feedback | ⏳ Pending |
 | 2.x | Enhanced Flow Control | ⏳ Pending |
 | 3.x | UX Improvements | ⏳ Pending |
@@ -16,12 +16,28 @@
 
 ## 🔴 Critical Issues Discovered
 
-### 1. **Timer State Sync Issue** (CRITICAL)
+### 1. **Timer State Sync Issue** (CRITICAL) - ✅ FIXED
 **Problem**: The habit card shows "Start (Enable)" with "Timer disabled, enable in settings" message, BUT the actual habit settings show timer is ENABLED with "Require timer to complete" turned ON.
 
-**Root Cause**: UI state is not properly syncing with database state for timing settings.
+**Root Cause**: `SimpleTimerButton` in `TimingUIComponents.kt` was only checking the global `Feature.SIMPLE_TIMER` flag, not the per-habit `timerEnabled` setting. These are two different things:
+- Global feature flag: Whether user has "discovered" timers app-wide
+- Per-habit setting: Whether timer is enabled for this specific habit
 
-**Impact**: Confusing UX - users see conflicting messages about timer state.
+**Fix Applied** (Dec 20, 2025):
+```kotlin
+// BEFORE (broken):
+val timersEnabled = timingViewModel.isFeatureEnabled(Feature.SIMPLE_TIMER)
+
+// AFTER (fixed):
+val globalTimersEnabled = timingViewModel.isFeatureEnabled(Feature.SIMPLE_TIMER)
+val habitTimerEnabled = habit.timing?.timerEnabled != false
+val timersEnabled = globalTimersEnabled && habitTimerEnabled
+```
+
+**Additional improvements**:
+- Button now shows "Timer Off" with `TimerOff` icon when per-habit timer is disabled
+- Clear accessibility labels distinguish global vs per-habit timer state
+- Button is disabled when per-habit timer is off (must edit habit to enable)
 
 **Evidence**:
 - Home screen shows: "Timer disabled, enable in settings"
