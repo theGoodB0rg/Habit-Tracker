@@ -1,6 +1,6 @@
 # Timer UI Flow Fix Plan
 **Date**: December 20, 2025  
-**Status**: ✅ Phase 1 COMPLETE - All Critical Fixes Implemented & Committed
+**Status**: ✅ Phase 1 & Phase 2 COMPLETE - All Critical & Enhanced Fixes Implemented
 
 ## 📊 Implementation Progress
 
@@ -8,8 +8,10 @@
 |-------|-------------|--------|
 | 1.2 | Fix Timer Requirement Logic | ✅ COMPLETED & Committed |
 | 1.1 | Fix Timer State Sync | ✅ COMPLETED & Committed |
-| 1.3 | Add Visual Debounce Feedback | ✅ COMPLETED |
-| 2.x | Enhanced Flow Control | ⏳ Pending |
+| 1.3 | Add Visual Debounce Feedback | ✅ COMPLETED & Committed |
+| 2.1 | Protect All Timer Controls | ✅ COMPLETED |
+| 2.2 | Confirmation Dialog Management | ✅ COMPLETED |
+| 2.3 | Timeout Recovery | ✅ COMPLETED |
 | 3.x | UX Improvements | ⏳ Pending |
 
 ---
@@ -191,39 +193,34 @@ onClick = {
 
 ### Phase 2: Enhanced Flow Control
 
-#### 2.1 Prevent Rapid Clicks on All Interactive Elements
-**Elements to protect**:
-- Mark complete button
-- Timer start/pause/resume buttons  
-- Quick complete actions
-- Smart suggestion buttons
+### Phase 2: Enhanced Flow Control - ✅ ALL COMPLETED
 
-**Implementation**:
-- Extend `disableDuringTimerAction` modifier to all interactive timer controls
-- Add visual feedback (opacity, loading spinner) during debounce
-- Ensure coordinator state properly clears after action completes
+#### 2.1 Prevent Rapid Clicks on All Interactive Elements - ✅ COMPLETED
+**Fix Applied** (Dec 20, 2025):
+- SmartSuggestionCard now checks `controlsEnabled` before triggering timer start
+- Added `controlModifier` to SmartSuggestionCard for visual feedback
 
-#### 2.2 Improve Confirmation Dialog Management
-**File**: `app/src/main/java/com/habittracker/ui/components/EnhancedHabitCard.kt`
+#### 2.2 Improve Confirmation Dialog Management - ✅ COMPLETED
+**Fix Applied** (Dec 20, 2025):
+- Added `LaunchedEffect` with `setPendingConfirmation()` to all 4 confirmation dialogs:
+  - EndPomodoroEarly
+  - BelowMinDuration
+  - DiscardNonZeroSession
+  - CompleteWithoutTimer (already had it)
+- Added `clearPendingConfirmation()` calls to ALL dismiss paths (confirm, cancel, backdrop dismiss)
+- Coordinator already blocks new actions when `pendingConfirmHabitId` matches
 
-**Actions**:
-- Before showing confirmation dialog, call `handler.setPendingConfirmation(habitId, type)`
-- After dialog dismissed, call `handler.clearPendingConfirmation()`
-- Check `coordinatorState.pendingConfirmHabitId` before allowing new actions
-- Prevent dialog stacking by checking if dialog is already open
+#### 2.3 Add Smart Recovery from Failed States - ✅ COMPLETED
+**Fix Applied** (Dec 20, 2025):
+- Added 5-second `waitingTimeoutMs` constant to TimerActionCoordinator
+- `startWaitingTimeout()` called when `waitingForService` is set to true
+- `cancelWaitingTimeout()` called in:
+  - `updateTrackedState()` when waiting=false
+  - `markCompleted()` 
+  - `TimerEvent.Error` handler
+- On timeout: resets state and emits "Action timed out. Please try again." snackbar
 
-#### 2.3 Add Smart Recovery from Failed States
-**Scenarios**:
-- Timer service crashes mid-session
-- Network/disk error during completion
-- App killed while timer running
-
-**Implementation**:
-- Add timeout for `waitingForService` state (e.g., 5 seconds)
-- On timeout, show error message and reset coordinator state
-- Add crash recovery in coordinator to restore from `TimerSession` table on app restart
-
-### Phase 3: User Experience Improvements
+### Phase 3: User Experience Improvements (PENDING)
 
 #### 3.1 Clearer Timer State Indicators
 **Changes**:

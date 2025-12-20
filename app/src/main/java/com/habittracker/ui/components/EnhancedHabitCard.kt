@@ -563,13 +563,21 @@ fun EnhancedHabitCard(
 
                 // Phase 5: Simple confirm dialog for ending Pomodoro focus early
                 if (confirmEndPomodoroEarly) {
+                    // Signal to coordinator that dialog is open (prevents conflicting actions)
+                    LaunchedEffect(Unit) {
+                        handler?.setPendingConfirmation(habit.id, ConfirmType.EndPomodoroEarly)
+                    }
                     AlertDialog(
-                        onDismissRequest = { confirmEndPomodoroEarly = false },
+                        onDismissRequest = { 
+                            confirmEndPomodoroEarly = false
+                            handler?.clearPendingConfirmation()
+                        },
                         title = { Text("End focus early?") },
                         text = { Text("End and complete the current Pomodoro?") },
                         confirmButton = {
                             TextButton(onClick = {
                                 confirmEndPomodoroEarly = false
+                                handler?.clearPendingConfirmation()
                                 if (handler != null) {
                                     handler.handle(
                                         TimerIntent.Done,
@@ -585,7 +593,10 @@ fun EnhancedHabitCard(
                             }) { Text("End & Complete") }
                         },
                         dismissButton = {
-                            TextButton(onClick = { confirmEndPomodoroEarly = false }) { Text("Keep Focus") }
+                            TextButton(onClick = { 
+                                confirmEndPomodoroEarly = false
+                                handler?.clearPendingConfirmation()
+                            }) { Text("Keep Focus") }
                         }
                     )
                 }
@@ -593,13 +604,21 @@ fun EnhancedHabitCard(
                 // Below-min confirm dialog (Phase 1 guard-rail)
                 val minSec = confirmBelowMin
                 if (minSec != null) {
+                    // Signal to coordinator that dialog is open (prevents conflicting actions)
+                    LaunchedEffect(minSec) {
+                        handler?.setPendingConfirmation(habit.id, ConfirmType.BelowMinDuration)
+                    }
                     AlertDialog(
-                        onDismissRequest = { confirmBelowMin = null },
+                        onDismissRequest = { 
+                            confirmBelowMin = null
+                            handler?.clearPendingConfirmation()
+                        },
                         title = { Text("Below minimum duration") },
                         text = { Text("Below your minimum ${minSec / 60}m. Complete anyway or log as partial?") },
                         confirmButton = {
                             TextButton(onClick = {
                                 confirmBelowMin = null
+                                handler?.clearPendingConfirmation()
                                 if (handler != null) {
                                     handler.handle(
                                         TimerIntent.Done,
@@ -616,9 +635,13 @@ fun EnhancedHabitCard(
                         },
                         dismissButton = {
                             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                                TextButton(onClick = { confirmBelowMin = null }) { Text("Keep timing") }
+                                TextButton(onClick = { 
+                                    confirmBelowMin = null
+                                    handler?.clearPendingConfirmation()
+                                }) { Text("Keep timing") }
                                 TextButton(onClick = {
                                     confirmBelowMin = null
+                                    handler?.clearPendingConfirmation()
                                     if (handler != null) {
                                         handler.handle(
                                             TimerIntent.StopWithoutComplete,
@@ -640,13 +663,21 @@ fun EnhancedHabitCard(
                 // Discard non-zero session confirmation
                 val discardSec = confirmDiscardElapsedSec
                 if (discardSec != null) {
+                    // Signal to coordinator that dialog is open (prevents conflicting actions)
+                    LaunchedEffect(discardSec) {
+                        handler?.setPendingConfirmation(habit.id, ConfirmType.DiscardNonZeroSession)
+                    }
                     AlertDialog(
-                        onDismissRequest = { confirmDiscardElapsedSec = null },
+                        onDismissRequest = { 
+                            confirmDiscardElapsedSec = null
+                            handler?.clearPendingConfirmation()
+                        },
                         title = { Text("Discard session?") },
                         text = { Text("Discard ${discardSec / 60}m session?") },
                         confirmButton = {
                             TextButton(onClick = {
                                 confirmDiscardElapsedSec = null
+                                handler?.clearPendingConfirmation()
                                 if (handler != null) {
                                     handler.handle(
                                         TimerIntent.StopWithoutComplete,
@@ -662,7 +693,10 @@ fun EnhancedHabitCard(
                             }) { Text("Discard") }
                         },
                         dismissButton = {
-                            TextButton(onClick = { confirmDiscardElapsedSec = null }) { Text("Cancel") }
+                            TextButton(onClick = { 
+                                confirmDiscardElapsedSec = null
+                                handler?.clearPendingConfirmation()
+                            }) { Text("Cancel") }
                         }
                     )
 
@@ -982,6 +1016,9 @@ fun EnhancedHabitCard(
                         SmartSuggestionCard(
                             suggestion = suggestion,
                             onApplySuggestion = { 
+                                // Debounce protection: ignore if action in progress
+                                if (!controlsEnabled) return@SmartSuggestionCard
+                                
                                 if (!timingVm.isFeatureEnabled(Feature.SIMPLE_TIMER)) {
                                     timingVm.enableFeature(Feature.SIMPLE_TIMER)
                                 }
@@ -1003,7 +1040,8 @@ fun EnhancedHabitCard(
                             onDismissSuggestion = { 
                                 onDismissSuggestion(it)
                                 timingVm.recordSuggestionInteraction(it, accepted = false)
-                            }
+                            },
+                            modifier = controlModifier
                         )
                     }
                 }

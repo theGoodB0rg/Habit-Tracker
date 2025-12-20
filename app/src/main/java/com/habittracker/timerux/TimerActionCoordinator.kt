@@ -111,11 +111,44 @@ class TimerActionCoordinator @Inject constructor(
     private var reservedIntent: TimerIntent? = null
     private var reservedHabitId: Long? = null
     private val debounceMs = 500L
+    
+    // Timeout recovery: cancel waitingForService after this duration
+    private val waitingTimeoutMs = 5000L
+    private var waitingTimeoutJob: kotlinx.coroutines.Job? = null
 
     init {
         appScope.launch {
             TimerBus.events.collect(::onTimerEvent)
         }
+    }
+    
+    /**
+     * Starts a timeout that will reset waitingForService state if no response
+     * is received from the timer service within the timeout window.
+     */
+    private fun startWaitingTimeout(habitId: Long) {
+        waitingTimeoutJob?.cancel()
+        waitingTimeoutJob = appScope.launch {
+            kotlinx.coroutines.delay(waitingTimeoutMs)
+            // If still waiting for this habit, reset state and show error
+            if (_state.value.waitingForService && _state.value.trackedHabitId == habitId) {
+                _state.value = _state.value.copy(
+                    waitingForService = false,
+                    lastOutcome = null
+                )
+                inFlightIntent = null
+                inFlightHabitId = null
+                emitUiEvent(UiEvent.Snackbar("Action timed out. Please try again."))
+            }
+        }
+    }
+    
+    /**
+     * Cancels any pending timeout when we receive a response.
+     */
+    private fun cancelWaitingTimeout() {
+        waitingTimeoutJob?.cancel()
+        waitingTimeoutJob = null
     }
 
     suspend fun decide(
@@ -221,6 +254,8 @@ class TimerActionCoordinator @Inject constructor(
                 is TimerOutcome.Execute -> {
                     lastActionAt = now
                     promoteReservationToInFlight(redirectedIntent, habitId)
+                    // Start timeout to recover if service doesn't respond
+                    startWaitingTimeout(habitId)
                     _state.value.copy(
                         trackedHabitId = habitId,
                         waitingForService = true,
@@ -391,6 +426,8 @@ class TimerActionCoordinator @Inject constructor(
             }
             is TimerEvent.Error -> {
                 if (_state.value.trackedHabitId == event.habitId) {
+                    // Cancel timeout since we got a response (even if it's an error)
+                    cancelWaitingTimeout()
                     _state.value = _state.value.copy(
                         waitingForService = false,
                         trackedHabitId = null,
@@ -428,6 +465,8 @@ class TimerActionCoordinator @Inject constructor(
                 paused = paused
             )
             if (!waiting) {
+                // Cancel timeout since we got a response
+                cancelWaitingTimeout()
                 inFlightIntent = null
                 inFlightHabitId = null
             }
@@ -436,6 +475,8 @@ class TimerActionCoordinator @Inject constructor(
 
     private fun markCompleted(habitId: Long) {
         if (_state.value.trackedHabitId == habitId) {
+            // Cancel timeout since we got a response
+            cancelWaitingTimeout()
             _state.value = _state.value.copy(
                 waitingForService = false,
                 trackedHabitId = null,
