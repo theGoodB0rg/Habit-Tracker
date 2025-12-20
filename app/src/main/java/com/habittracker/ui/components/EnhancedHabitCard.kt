@@ -60,6 +60,8 @@ fun EnhancedHabitCard(
     // Phase 1: Provide an undo snackbar hook from parent Scaffold
     onUndoComplete: () -> Unit = {},
     showUndo: (message: String, onUndo: () -> Unit) -> Unit = { _, _ -> },
+    // Show informational messages without an Undo action
+    showMessage: (message: String) -> Unit = { },
     onClick: () -> Unit,
     onEditClick: () -> Unit,
     onStartTimer: (HabitUiModel, Duration) -> Unit = { _, _ -> },
@@ -69,8 +71,17 @@ fun EnhancedHabitCard(
     onOvertimeComplete: (HabitUiModel) -> Unit = {},
     modifier: Modifier = Modifier,
     isCompact: Boolean = false,
-    timingViewModel: TimingFeatureViewModel = hiltViewModel()
+    // Hoisted ViewModels to prevent SlotTable corruption when used in LazyList
+    timingViewModel: TimingFeatureViewModel? = null,
+    tickerViewModel: TimerTickerViewModel? = null,
+    activeTimerVm: ActiveTimerViewModel? = null,
+    partialSessionVm: com.habittracker.ui.viewmodels.timing.PartialSessionViewModel? = null
 ) {
+    // Use provided ViewModels or fallback to hiltViewModel() for standalone usage
+    val timingVm = timingViewModel ?: hiltViewModel<TimingFeatureViewModel>()
+    val tickerVm = tickerViewModel ?: hiltViewModel<TimerTickerViewModel>()
+    val activeVm = activeTimerVm ?: hiltViewModel<ActiveTimerViewModel>()
+    val partialVm = partialSessionVm ?: hiltViewModel<com.habittracker.ui.viewmodels.timing.PartialSessionViewModel>()
     val today = LocalDate.now()
     val isCompletedToday = habit.lastCompletedDate == today
     // Only allow navigating to details/analytics if the habit has been completed at least once
@@ -97,24 +108,22 @@ fun EnhancedHabitCard(
     // Note: AutoPaused events are now handled at MainScreen level with TimerSwitcherSheet
     // for improved UX (shows both timers with explicit switch option)
     
-    val tickerViewModel: TimerTickerViewModel = hiltViewModel()
-    val activeTimerVm: ActiveTimerViewModel = hiltViewModel()
     val scope = androidx.compose.runtime.rememberCoroutineScope()
 
     // Local error banner state (collect from TimingFeatureViewModel)
     var errorBanner by remember { mutableStateOf<String?>(null) }
     LaunchedEffect(Unit) {
-        timingViewModel.errorMessages.collect { msg ->
+        timingVm.errorMessages.collect { msg ->
             errorBanner = msg
             // Auto-dismiss after a short delay to avoid persistent clutter
             kotlinx.coroutines.delay(4_000)
             if (errorBanner == msg) errorBanner = null
         }
     }
-    val pausedByHabit by tickerViewModel.pausedByHabit.collectAsState()
-    val errorsByHabit by tickerViewModel.errorsByHabit.collectAsState()
+    val pausedByHabit by tickerVm.pausedByHabit.collectAsState()
+    val errorsByHabit by tickerVm.errorsByHabit.collectAsState()
     val isPaused = pausedByHabit[habit.id] == true
-    val remainingByHabit by tickerViewModel.remainingByHabit.collectAsState()
+    val remainingByHabit by tickerVm.remainingByHabit.collectAsState()
     val isActive = remainingByHabit[habit.id]?.let { it > 0 } == true
     val pausedForUi = if (handler != null && coordinatorState.trackedHabitId == habit.id) {
         coordinatorState.paused
@@ -123,8 +132,8 @@ fun EnhancedHabitCard(
     }
     
     // Timing feature state
-    val userEngagementLevel by timingViewModel.userEngagementLevel.collectAsState()
-    // val availableFeatures by timingViewModel.availableFeatures.collectAsState() // currently unused
+    val userEngagementLevel by timingVm.userEngagementLevel.collectAsState()
+    // val availableFeatures by timingVm.availableFeatures.collectAsState() // currently unused
     
     // Date formatter for future use
     val dateFormatter = remember { SimpleDateFormat("MMM dd", Locale.getDefault()) }
@@ -161,9 +170,9 @@ fun EnhancedHabitCard(
                     }
                 }
             },
-            onSnackbar = { message -> showUndo(message) {} },
+            onSnackbar = { message -> showMessage(message) },
             onUndo = { message -> showUndo(message) { onUndoComplete() } },
-            onTip = { message -> showUndo(message) {} },
+            onTip = { message -> showMessage(message) },
             onCompleted = { event ->
                 // When coordinator signals completion, mark the habit as done
                 if (event.habitId == habit.id) {
@@ -177,7 +186,6 @@ fun EnhancedHabitCard(
     // Optional note dialog for partials
     var showNoteDialog by remember { mutableStateOf(false) }
     var pendingPartialNote by remember { mutableStateOf("") }
-    val partialVm: com.habittracker.ui.viewmodels.timing.PartialSessionViewModel = hiltViewModel()
     Card(
         modifier = modifier
             .fillMaxWidth()
@@ -186,7 +194,7 @@ fun EnhancedHabitCard(
                     onClick()
                 } else {
                     // Professional redirect instead of a crashy navigation
-                    showUndo("No analytics for this habit yet — complete it at least once.") { }
+                    showMessage("No analytics for this habit yet — complete it at least once.")
                 }
             }
             // Anchor for tutorial/tooltips to highlight the card
@@ -324,15 +332,13 @@ fun EnhancedHabitCard(
                     // Mark habit complete (always visible)
                     IconButton(
                         onClick = {
-                            // Route through coordinator if timer is enabled to show confirmation dialog
-                            if (handler != null && habit.timing?.timerEnabled == true) {
-                                // Let coordinator decide - will show "Complete without timer?" dialog
-                                handler.handle(
-                                    TimerIntent.Done,
-                                    habit.id
-                                )
+                            // ALWAYS route through coordinator to respect requireTimerToComplete
+                            // The coordinator checks both timerEnabled AND requireTimerToComplete
+                            // and will show appropriate dialogs or disallow messages
+                            if (handler != null) {
+                                handler.handle(TimerIntent.Done, habit.id)
                             } else {
-                                // No timer or coordinator disabled - direct completion
+                                // Fallback only when coordinator is disabled
                                 onMarkComplete()
                             }
                         },
@@ -444,8 +450,8 @@ fun EnhancedHabitCard(
                                                         showUndo(act.message) { onUndoComplete() }
                                                     }
                                                     is com.habittracker.timerux.TimerCompletionInteractor.Action.ShowTip -> {
-                                                        // Non-blocking hint; optional toast/snackbar via showUndo without undo action
-                                                        showUndo(act.message) {}
+                                                        // Non-blocking hint; show without undo action
+                                                        showMessage(act.message)
                                                     }
                                                 }
                                             }
@@ -468,7 +474,8 @@ fun EnhancedHabitCard(
                                             }
                                         }
                                         is com.habittracker.timerux.TimerCompletionInteractor.ActionOutcome.Disallow -> {
-                                            showUndo(outcome.message) {}
+                                            // Use showMessage (no Undo action) since nothing was done
+                                            showMessage(outcome.message)
                                         }
                                     }
                                 }
@@ -637,7 +644,7 @@ fun EnhancedHabitCard(
                                     )
                                 } else {
                                     timerController.stop()
-                                    showUndo("Session discarded") {}
+                                    showMessage("Session discarded")
                                 }
                             }) { Text("Discard") }
                         },
@@ -724,7 +731,7 @@ fun EnhancedHabitCard(
                                         confirmCompleteWithoutTimer = false
                                         handler?.clearPendingConfirmation()
                                         if (dontAskAgain) {
-                                            timingViewModel.setAskToCompleteWithoutTimer(false)
+                                            timingVm.setAskToCompleteWithoutTimer(false)
                                         }
                                         if (handler != null) {
                                             handler.handle(
@@ -858,7 +865,7 @@ fun EnhancedHabitCard(
                     }
                     
                     // Avoid double-timer: show duration when inactive, countdown when active
-                    val timersEnabled = timingViewModel.isFeatureEnabled(Feature.SIMPLE_TIMER)
+                    val timersEnabled = timingVm.isFeatureEnabled(Feature.SIMPLE_TIMER)
                     if (!isActive && timersEnabled) {
                         val durMinutes = habit.estimatedDuration?.toMinutes() ?: 25
                         AssistChip(
@@ -872,7 +879,7 @@ fun EnhancedHabitCard(
                         )
                     }
                     if (isActive) {
-                        val uiState by activeTimerVm.state.collectAsState()
+                        val uiState by activeVm.state.collectAsState()
                         if (uiState.active && uiState.habitId == habit.id) {
                             val prefsVm: com.habittracker.ui.viewmodels.timing.TimingAudioSettingsViewModel = androidx.hilt.navigation.compose.hiltViewModel()
                             val prefs by prefsVm.prefs.collectAsState()
@@ -896,7 +903,7 @@ fun EnhancedHabitCard(
                 }
 
                 // Phase UIX-11: Gentle overtime nudge (appears once overtime >= 1m)
-                val overtimeByHabit by tickerViewModel.overtimeByHabit.collectAsState()
+                val overtimeByHabit by tickerVm.overtimeByHabit.collectAsState()
                 val overtimeMs = overtimeByHabit[habit.id] ?: 0L
                 AnimatedVisibility(visible = overtimeMs >= 60_000L) {
                     Surface(
@@ -962,8 +969,8 @@ fun EnhancedHabitCard(
                         SmartSuggestionCard(
                             suggestion = suggestion,
                             onApplySuggestion = { 
-                                if (!timingViewModel.isFeatureEnabled(Feature.SIMPLE_TIMER)) {
-                                    timingViewModel.enableFeature(Feature.SIMPLE_TIMER)
+                                if (!timingVm.isFeatureEnabled(Feature.SIMPLE_TIMER)) {
+                                    timingVm.enableFeature(Feature.SIMPLE_TIMER)
                                 }
                                 val dur = it.suggestedDuration
                                     ?: habit.estimatedDuration
@@ -978,11 +985,11 @@ fun EnhancedHabitCard(
                                 } else {
                                     timerController.start(habit.id, TimerType.SIMPLE, dur)
                                 }
-                                timingViewModel.recordSuggestionInteraction(it, accepted = true)
+                                timingVm.recordSuggestionInteraction(it, accepted = true)
                             },
                             onDismissSuggestion = { 
                                 onDismissSuggestion(it)
-                                timingViewModel.recordSuggestionInteraction(it, accepted = false)
+                                timingVm.recordSuggestionInteraction(it, accepted = false)
                             }
                         )
                     }
@@ -1016,7 +1023,7 @@ fun EnhancedHabitCard(
                         
                         // Timer indicator in compact view
                         if (habit.hasTimer == true && 
-                            timingViewModel.isFeatureEnabled(Feature.SIMPLE_TIMER)) {
+                            timingVm.isFeatureEnabled(Feature.SIMPLE_TIMER)) {
                             Text(
                                 text = "⏱️",
                                 style = MaterialTheme.typography.bodySmall
@@ -1038,7 +1045,7 @@ fun EnhancedHabitCard(
             onDismiss = { showControlSheet = false },
             onLogPartial = { _ ->
                 // real persistence using PartialSessionViewModel
-                val uiState = activeTimerVm.state.value
+                val uiState = activeVm.state.value
                 val total = uiState.totalMs
                 val rem = uiState.remainingMs
                 val elapsedMs = (total - rem).coerceAtLeast(0)
