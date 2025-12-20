@@ -220,32 +220,33 @@ onClick = {
   - `TimerEvent.Error` handler
 - On timeout: resets state and emits "Action timed out. Please try again." snackbar
 
-### Phase 3: User Experience Improvements (PENDING)
+### Phase 3: User Experience Improvements ✅ COMPLETE
 
-#### 3.1 Clearer Timer State Indicators
-**Changes**:
-- Show real-time timer state in habit card header
-- Use different button styles for different timer states:
-  - **Idle**: "Start Timer" (primary button)
-  - **Running**: "Pause" + "Complete" buttons
-  - **Paused**: "Resume" + "Complete" buttons
-  - **Disabled**: Gray out with tooltip explaining why
-- Add tooltip on "Timer Required" badge explaining behavior
+#### 3.1 Clearer Timer State Indicators ✅
+**Implemented**:
+- Added TooltipBox to "Timer Required" badge in EnhancedHabitCard
+- Badge is now tappable/hoverable to show explanation
+- Tooltip explains: "Start the timer first, then tap to mark complete"
 
-#### 3.2 Inline Error Messages
-**Instead of just Snackbar**:
-- Show inline error below habit card when action disallowed
-- Animate error in/out smoothly
-- Auto-dismiss after 3-4 seconds
-- Use color-coded banners (error = red, warning = yellow, info = blue)
+#### 3.2 Inline Error Messages ✅
+**Implemented**:
+- Added `inlineActionError` state in EnhancedHabitCard
+- Timer-related Disallow messages (containing "timer" + "requires"/"start") now show as inline banner
+- Inline banner uses tertiaryContainer color with Timer icon
+- AnimatedVisibility with fadeIn/expandVertically animations
+- Auto-dismiss after 4 seconds
+- Dismissible via close button
+- Non-timer snackbar messages continue to use standard showMessage
 
-#### 3.3 Progressive Disclosure for Timer Settings
-**Problem**: Users might not understand "Require timer to complete"
-
-**Solution**:
-- Add info icon next to setting with explanation
-- Show example flow when toggling setting
-- Add onboarding tooltip first time user enables this setting
+#### 3.3 Progressive Disclosure for Timer Settings ✅
+**Implemented**:
+- Added info icon with RichTooltip next to "Require timer to complete" setting
+- Tooltip shows title "Timer Required Mode" with detailed explanation
+- Applied to both EditHabitScreen and AddHabitScreen
+- Tooltip explains:
+  - What happens when enabled
+  - How the checkmark button changes
+  - Why this setting is useful for focused habit practice
 
 ---
 

@@ -15,6 +15,7 @@ import androidx.compose.material3.SwitchDefaults
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
+import androidx.compose.material.icons.outlined.Info
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -476,6 +477,32 @@ fun EditHabitScreen(
                                             )
                                             Spacer(modifier = Modifier.width(8.dp))
                                             Text("Require timer to complete", fontWeight = FontWeight.SemiBold)
+                                            Spacer(modifier = Modifier.width(4.dp))
+                                            TooltipBox(
+                                                positionProvider = TooltipDefaults.rememberRichTooltipPositionProvider(),
+                                                tooltip = {
+                                                    RichTooltip(
+                                                        title = { Text("Timer Required Mode") },
+                                                        text = { 
+                                                            Text(
+                                                                "When enabled, you must start the timer before marking this habit complete. " +
+                                                                "The checkmark button will show a timer icon instead, and tapping it will " +
+                                                                "display a reminder to start the timer first.\n\n" +
+                                                                "This helps ensure you actually spend focused time on the habit rather than " +
+                                                                "just checking it off."
+                                                            )
+                                                        }
+                                                    )
+                                                },
+                                                state = rememberTooltipState()
+                                            ) {
+                                                Icon(
+                                                    Icons.Outlined.Info,
+                                                    contentDescription = "Learn more about timer required mode",
+                                                    modifier = Modifier.size(16.dp),
+                                                    tint = MaterialTheme.colorScheme.onSurfaceVariant
+                                                )
+                                            }
                                         }
                                         Text(
                                             "Users must start the timer before marking as done. Promotes focused habit practice.",

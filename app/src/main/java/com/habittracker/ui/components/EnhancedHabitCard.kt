@@ -8,6 +8,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
+import androidx.compose.material.icons.outlined.Timer
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -120,6 +121,17 @@ fun EnhancedHabitCard(
             if (errorBanner == msg) errorBanner = null
         }
     }
+    
+    // Inline action error state - shows when actions are disallowed (e.g., "Start timer to complete")
+    var inlineActionError by remember { mutableStateOf<String?>(null) }
+    // Auto-dismiss inline error after 4 seconds
+    LaunchedEffect(inlineActionError) {
+        if (inlineActionError != null) {
+            kotlinx.coroutines.delay(4_000)
+            inlineActionError = null
+        }
+    }
+    
     val pausedByHabit by tickerVm.pausedByHabit.collectAsState()
     val errorsByHabit by tickerVm.errorsByHabit.collectAsState()
     val isPaused = pausedByHabit[habit.id] == true
@@ -170,7 +182,15 @@ fun EnhancedHabitCard(
                     }
                 }
             },
-            onSnackbar = { message -> showMessage(message) },
+            onSnackbar = { message ->
+                // Show timer-related disallow messages as inline errors for better visibility
+                if (message.contains("timer", ignoreCase = true) &&
+                    (message.contains("requires", ignoreCase = true) || message.contains("start", ignoreCase = true))) {
+                    inlineActionError = message
+                } else {
+                    showMessage(message)
+                }
+            },
             onUndo = { message -> showUndo(message) { onUndoComplete() } },
             onTip = { message -> showMessage(message) },
             onCompleted = { event ->
@@ -507,6 +527,50 @@ fun EnhancedHabitCard(
                         }
                     }
                 }
+                
+                // Inline action error banner (timer-related disallow messages)
+                AnimatedVisibility(
+                    visible = inlineActionError != null,
+                    enter = fadeIn() + expandVertically(),
+                    exit = fadeOut() + shrinkVertically()
+                ) {
+                    Surface(
+                        color = MaterialTheme.colorScheme.tertiaryContainer,
+                        contentColor = MaterialTheme.colorScheme.onTertiaryContainer,
+                        shape = RoundedCornerShape(8.dp),
+                        modifier = Modifier.padding(top = 8.dp)
+                    ) {
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(horizontal = 12.dp, vertical = 10.dp),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(8.dp)
+                        ) {
+                            Icon(
+                                imageVector = Icons.Outlined.Timer,
+                                contentDescription = null,
+                                modifier = Modifier.size(20.dp)
+                            )
+                            Text(
+                                text = inlineActionError ?: "",
+                                style = MaterialTheme.typography.bodySmall,
+                                modifier = Modifier.weight(1f)
+                            )
+                            IconButton(
+                                onClick = { inlineActionError = null },
+                                modifier = Modifier.size(24.dp)
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Default.Close,
+                                    contentDescription = "Dismiss",
+                                    modifier = Modifier.size(16.dp)
+                                )
+                            }
+                        }
+                    }
+                }
+                
                 // Primary timer controls row placed under the title to avoid replacing/squeezing text
                 Row(
                     modifier = Modifier.fillMaxWidth(),
@@ -885,30 +949,40 @@ fun EnhancedHabitCard(
                         }
                     )
                     
-                    // Timer required indicator - prominent display
+                    // Timer required indicator - prominent display with tooltip
                     if (habit.timing?.requireTimerToComplete == true) {
-                        AssistChip(
-                            onClick = { },
-                            leadingIcon = { 
-                                Icon(
-                                    Icons.Filled.Timer, 
-                                    contentDescription = "Timer required to complete", 
-                                    modifier = Modifier.size(16.dp)
-                                ) 
+                        TooltipBox(
+                            positionProvider = TooltipDefaults.rememberPlainTooltipPositionProvider(),
+                            tooltip = {
+                                PlainTooltip {
+                                    Text("You must start the timer before completing this habit")
+                                }
                             },
-                            label = { 
-                                Text(
-                                    text = "Timer Required",
-                                    style = MaterialTheme.typography.bodySmall,
-                                    fontWeight = FontWeight.Medium
+                            state = rememberTooltipState()
+                        ) {
+                            AssistChip(
+                                onClick = { },
+                                leadingIcon = { 
+                                    Icon(
+                                        Icons.Filled.Timer, 
+                                        contentDescription = "Timer required to complete", 
+                                        modifier = Modifier.size(16.dp)
+                                    ) 
+                                },
+                                label = { 
+                                    Text(
+                                        text = "Timer Required",
+                                        style = MaterialTheme.typography.bodySmall,
+                                        fontWeight = FontWeight.Medium
+                                    )
+                                },
+                                colors = AssistChipDefaults.assistChipColors(
+                                    containerColor = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.3f),
+                                    labelColor = MaterialTheme.colorScheme.primary,
+                                    leadingIconContentColor = MaterialTheme.colorScheme.primary
                                 )
-                            },
-                            colors = AssistChipDefaults.assistChipColors(
-                                containerColor = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.3f),
-                                labelColor = MaterialTheme.colorScheme.primary,
-                                leadingIconContentColor = MaterialTheme.colorScheme.primary
                             )
-                        )
+                        }
                     }
                     
                     // Avoid double-timer: show duration when inactive, countdown when active

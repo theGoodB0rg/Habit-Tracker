@@ -38,6 +38,8 @@ import com.habittracker.ui.components.LoadingComponent
 import com.habittracker.nudges.viewmodel.NudgeViewModel
 import com.habittracker.nudges.ui.NudgeBannerSection
 import com.habittracker.ui.viewmodels.timing.TimingFeatureViewModel
+import com.habittracker.ui.viewmodels.timing.ActiveTimerViewModel
+import com.habittracker.ui.viewmodels.timing.PartialSessionViewModel
 import com.habittracker.ui.components.timer.TimerSwitcherSheet
 import com.habittracker.ui.components.timer.TimerSwitcherSession
 import com.habittracker.ui.components.timer.rememberTimerSwitcherState
@@ -154,6 +156,8 @@ fun MainScreen(
     // Timer switcher for improved single-active-timer UX
     val timerSwitcherState = rememberTimerSwitcherState()
     val tickerViewModel: TimerTickerViewModel = hiltViewModel()
+    val activeTimerViewModel: ActiveTimerViewModel = hiltViewModel()
+    val partialSessionViewModel: PartialSessionViewModel = hiltViewModel()
     val timerController = remember(context) { TimerController(context) }
     val remainingByHabit by tickerViewModel.remainingByHabit.collectAsState()
     val pausedByHabit by tickerViewModel.pausedByHabit.collectAsState()
@@ -500,6 +504,11 @@ fun MainScreen(
                                                 if (res == SnackbarResult.ActionPerformed) onUndo()
                                             }
                                         },
+                                        showMessage = { message ->
+                                            snackbarScope.launch {
+                                                snackbarHostState.showSnackbar(message = message)
+                                            }
+                                        },
                                         onClick = {
                                             // Only navigate when there is at least one completion
                                             if (habit.lastCompletedDate != null) {
@@ -524,7 +533,12 @@ fun MainScreen(
                                             )
                                         },
                                         isCompact = true,
-                                        modifier = Modifier.weight(1f)
+                                        modifier = Modifier.weight(1f),
+                                        // Hoisted ViewModels to prevent SlotTable crashes in LazyList
+                                        timingViewModel = timingFeatureViewModel,
+                                        tickerViewModel = tickerViewModel,
+                                        activeTimerVm = activeTimerViewModel,
+                                        partialSessionVm = partialSessionViewModel
                                     )
                                 }
                                 // Fill remaining space if odd number of items
@@ -561,6 +575,11 @@ fun MainScreen(
                                         if (res == SnackbarResult.ActionPerformed) onUndo()
                                     }
                                 },
+                                showMessage = { message ->
+                                    snackbarScope.launch {
+                                        snackbarHostState.showSnackbar(message = message)
+                                    }
+                                },
                                 onClick = {
                                     // Only navigate when there is at least one completion
                                     if (habit.lastCompletedDate != null) {
@@ -586,7 +605,12 @@ fun MainScreen(
                                 },
                                 modifier = Modifier
                                     .fillMaxWidth()
-                                    .animateItemPlacement()
+                                    .animateItemPlacement(),
+                                // Hoisted ViewModels to prevent SlotTable crashes in LazyList
+                                timingViewModel = timingFeatureViewModel,
+                                tickerViewModel = tickerViewModel,
+                                activeTimerVm = activeTimerViewModel,
+                                partialSessionVm = partialSessionViewModel
                             )
                         }
                     }
