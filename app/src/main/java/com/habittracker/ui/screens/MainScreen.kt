@@ -22,6 +22,8 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.async
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.collectLatest
 import com.habittracker.analytics.presentation.viewmodel.AnalyticsViewModel
@@ -156,17 +158,99 @@ fun MainScreen(
     val snackbarScope = rememberCoroutineScope()
     // Route navigation requests through a shared flow to decouple from LazyColumn composition/measurement
     val habitDetailNavRequests = remember { MutableSharedFlow<Long>(extraBufferCapacity = 1) }
-    // Ensure undo snackbars auto-dismiss and replace any existing one to avoid sticking on screen
+    // Track last snackbar to suppress rapid repeats
+    var lastSnackbar by remember { mutableStateOf<Pair<String, Long>?>(null) }
+    // Gate to prevent overlapping/replays; only one visible at a time
+    var snackbarBusy by remember { mutableStateOf(false) }
+    var lastAnySnackbarTime by remember { mutableStateOf(0L) }
+    // Track last UI event signature to drop rapid duplicates coming from shared handlers
+    var lastUiEventSignature by remember { mutableStateOf<Pair<String, Long>?>(null) }
+    fun shouldSkipSnackbar(message: String): Boolean {
+        val now = System.currentTimeMillis()
+        val last = lastSnackbar
+        val sameMessage = last != null && last.first == message && (now - last.second) < 8000
+        val recentAny = (now - lastAnySnackbarTime) < 5000
+        return sameMessage || recentAny
+    }
+
+    // Ensure undo snackbars auto-dismiss and replace any existing one to avoid sticking on screen, and suppress repeats
     val showUndoSnackbar: (String, () -> Unit) -> Unit = remember(snackbarHostState) {
         { message, onUndo ->
-            snackbarScope.launch {
-                snackbarHostState.currentSnackbarData?.dismiss()
-                val res = snackbarHostState.showSnackbar(
-                    message = message,
-                    actionLabel = "Undo",
-                    duration = SnackbarDuration.Short
-                )
-                if (res == SnackbarResult.ActionPerformed) onUndo()
+            if (!(shouldSkipSnackbar(message) || snackbarBusy)) {
+                snackbarScope.launch {
+                    snackbarBusy = true
+                    val now = System.currentTimeMillis()
+                    lastSnackbar = message to now
+                    lastAnySnackbarTime = now
+                    snackbarHostState.currentSnackbarData?.dismiss()
+                    // Start snackbar and a hard timeout that will dismiss regardless after 4s
+                    val result = async {
+                        snackbarHostState.showSnackbar(
+                            message = message,
+                            actionLabel = "Undo",
+                            duration = SnackbarDuration.Short
+                        )
+                    }
+                    val timeout = launch {
+                        delay(4_000)
+                        snackbarHostState.currentSnackbarData?.dismiss()
+                    }
+                    val res = result.await()
+                    timeout.cancel()
+                    snackbarBusy = false
+                    if (res == SnackbarResult.ActionPerformed) onUndo()
+                }
+            }
+        }
+    }
+
+    val showInfoSnackbar: (String) -> Unit = remember(snackbarHostState) {
+        { message ->
+            if (!(shouldSkipSnackbar(message) || snackbarBusy)) {
+                snackbarScope.launch {
+                    snackbarBusy = true
+                    val now = System.currentTimeMillis()
+                    lastSnackbar = message to now
+                    lastAnySnackbarTime = now
+                    snackbarHostState.currentSnackbarData?.dismiss()
+                    snackbarHostState.showSnackbar(
+                        message = message,
+                        duration = SnackbarDuration.Short
+                    )
+                    delay(5_000)
+                    snackbarHostState.currentSnackbarData?.dismiss()
+                    snackbarBusy = false
+                }
+            }
+        }
+    }
+
+    // Centralized timer UI event handling to avoid per-card duplication
+    LaunchedEffect(timerActionHandler) {
+        val handler = timerActionHandler ?: return@LaunchedEffect
+        handler.events.collect { event ->
+            when (event) {
+                is TimerActionCoordinator.UiEvent.Snackbar -> {
+                    val signature = "snackbar:${event.message}"
+                    val now = System.currentTimeMillis()
+                    val last = lastUiEventSignature
+                    val isDuplicate = last != null && last.first == signature && (now - last.second) < 3000
+                    if (!isDuplicate) {
+                        lastUiEventSignature = signature to now
+                        showInfoSnackbar(event.message)
+                    }
+                }
+                is TimerActionCoordinator.UiEvent.Undo -> {
+                    val signature = "undo:${event.message}"
+                    val now = System.currentTimeMillis()
+                    val last = lastUiEventSignature
+                    val isDuplicate = last != null && last.first == signature && (now - last.second) < 3000
+                    if (!isDuplicate) {
+                        lastUiEventSignature = signature to now
+                        showUndoSnackbar(event.message) { /* undo handled by coordinator; no-op */ }
+                    }
+                }
+                else -> { /* Ignore here; handled per-habit where needed */ }
             }
         }
     }
@@ -520,11 +604,7 @@ fun MainScreen(
                                         },
                                         onUndoComplete = { viewModel.unmarkHabitForToday(habit.id) },
                                         showUndo = showUndoSnackbar,
-                                        showMessage = { message ->
-                                            snackbarScope.launch {
-                                                snackbarHostState.showSnackbar(message = message)
-                                            }
-                                        },
+                                        showMessage = showInfoSnackbar,
                                         onClick = {
                                             // Only navigate when there is at least one completion
                                             if (habit.lastCompletedDate != null) {
@@ -578,11 +658,7 @@ fun MainScreen(
                                 },
                                 onUndoComplete = { viewModel.unmarkHabitForToday(habit.id) },
                                 showUndo = showUndoSnackbar,
-                                showMessage = { message ->
-                                    snackbarScope.launch {
-                                        snackbarHostState.showSnackbar(message = message)
-                                    }
-                                },
+                                showMessage = showInfoSnackbar,
                                 onClick = {
                                     // Only navigate when there is at least one completion
                                     if (habit.lastCompletedDate != null) {

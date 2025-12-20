@@ -75,7 +75,6 @@ fun TimerControlSheet(
         remember(handler) { mutableStateOf(TimerActionCoordinator.CoordinatorState()) }
     }
     val snackbarHostState = remember { SnackbarHostState() }
-    val snackbarScope = rememberCoroutineScope()
     var confirmBelowMin by remember { mutableStateOf<Int?>(null) }
     var confirmDiscard by remember { mutableStateOf<Int?>(null) }
     var confirmEndPomodoro by remember { mutableStateOf(false) }
@@ -104,15 +103,6 @@ fun TimerControlSheet(
                         confirmCompleteWithoutTimer = true
                     }
                 }
-            },
-            onSnackbar = { message ->
-                snackbarScope.launch { snackbarHostState.showSnackbar(message) }
-            },
-            onUndo = { message ->
-                snackbarScope.launch { snackbarHostState.showSnackbar(message) }
-            },
-            onTip = { message ->
-                snackbarScope.launch { snackbarHostState.showSnackbar(message) }
             }
         )
     }

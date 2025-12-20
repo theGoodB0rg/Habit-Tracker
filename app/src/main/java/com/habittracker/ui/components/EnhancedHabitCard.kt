@@ -168,12 +168,12 @@ fun EnhancedHabitCard(
     // New: Complete without timer confirmation
     var confirmCompleteWithoutTimer by remember { mutableStateOf(false) }
 
+    // Per-card handler only for confirmations and completion; snackbar/undo routed centrally in MainScreen
     if (handler != null) {
         TimerActionEventEffect(
             handler = handler,
             onConfirm = { event ->
                 if (event.habitId != habit.id) return@TimerActionEventEffect
-                // Haptic feedback for confirmation prompts
                 haptics.trigger(TimerHapticType.CLICK)
                 when (event.type) {
                     ConfirmType.BelowMinDuration -> {
@@ -190,23 +190,8 @@ fun EnhancedHabitCard(
                     }
                 }
             },
-            onSnackbar = { message ->
-                // Haptic feedback for blocked/disallowed actions
-                haptics.trigger(TimerHapticType.ERROR)
-                // Show timer-related disallow messages as inline errors for better visibility
-                if (message.contains("timer", ignoreCase = true) &&
-                    (message.contains("requires", ignoreCase = true) || message.contains("start", ignoreCase = true))) {
-                    inlineActionError = message
-                } else {
-                    showMessage(message)
-                }
-            },
-            onUndo = { message -> showUndo(message) { onUndoComplete() } },
-            onTip = { message -> showMessage(message) },
             onCompleted = { event ->
-                // When coordinator signals completion, mark the habit as done
                 if (event.habitId == habit.id) {
-                    // Haptic celebration for completing a habit!
                     haptics.trigger(TimerHapticType.COMPLETION)
                     onMarkComplete()
                 }
