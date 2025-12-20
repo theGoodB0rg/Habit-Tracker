@@ -485,14 +485,9 @@ fun MainScreen(
                                     EnhancedHabitCard(
                                         habit = habit,
                                         onMarkComplete = {
-                                            if (timerActionHandler != null) {
-                                                // Use coordinator for proper confirmation flow
-                                                // Intent.Done checks for timer state and shows confirmation if needed
-                                                timerActionHandler.handle(TimerIntent.Done, habit.id)
-                                            } else {
-                                                // Fallback to direct completion
-                                                viewModel.markHabitComplete(habit.id)
-                                            }
+                                            // Always persist to database - this is called by coordinator
+                                            // when it decides completion should happen
+                                            viewModel.markHabitComplete(habit.id)
                                         },
                                         onUndoComplete = { viewModel.unmarkHabitForToday(habit.id) },
                                         showUndo = { message, onUndo ->
@@ -556,14 +551,9 @@ fun MainScreen(
                             EnhancedHabitCard(
                                 habit = habit,
                                 onMarkComplete = {
-                                    if (timerActionHandler != null) {
-                                        // Use coordinator for proper confirmation flow
-                                        // Intent.Done checks for timer state and shows confirmation if needed
-                                        timerActionHandler.handle(TimerIntent.Done, habit.id)
-                                    } else {
-                                        // Fallback to direct completion
-                                        viewModel.markHabitComplete(habit.id)
-                                    }
+                                    // Always persist to database - this is called by coordinator
+                                    // when it decides completion should happen
+                                    viewModel.markHabitComplete(habit.id)
                                 },
                                 onUndoComplete = { viewModel.unmarkHabitForToday(habit.id) },
                                 showUndo = { message, onUndo ->
