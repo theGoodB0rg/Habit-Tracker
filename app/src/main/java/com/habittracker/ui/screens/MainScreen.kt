@@ -156,6 +156,20 @@ fun MainScreen(
     val snackbarScope = rememberCoroutineScope()
     // Route navigation requests through a shared flow to decouple from LazyColumn composition/measurement
     val habitDetailNavRequests = remember { MutableSharedFlow<Long>(extraBufferCapacity = 1) }
+    // Ensure undo snackbars auto-dismiss and replace any existing one to avoid sticking on screen
+    val showUndoSnackbar: (String, () -> Unit) -> Unit = remember(snackbarHostState) {
+        { message, onUndo ->
+            snackbarScope.launch {
+                snackbarHostState.currentSnackbarData?.dismiss()
+                val res = snackbarHostState.showSnackbar(
+                    message = message,
+                    actionLabel = "Undo",
+                    duration = SnackbarDuration.Short
+                )
+                if (res == SnackbarResult.ActionPerformed) onUndo()
+            }
+        }
+    }
 
     LaunchedEffect(Unit) {
         habitDetailNavRequests.collectLatest { target ->
@@ -505,15 +519,7 @@ fun MainScreen(
                                             viewModel.markHabitComplete(habit.id)
                                         },
                                         onUndoComplete = { viewModel.unmarkHabitForToday(habit.id) },
-                                        showUndo = { message, onUndo ->
-                                            snackbarScope.launch {
-                                                val res = snackbarHostState.showSnackbar(
-                                                    message = message,
-                                                    actionLabel = "Undo"
-                                                )
-                                                if (res == SnackbarResult.ActionPerformed) onUndo()
-                                            }
-                                        },
+                                        showUndo = showUndoSnackbar,
                                         showMessage = { message ->
                                             snackbarScope.launch {
                                                 snackbarHostState.showSnackbar(message = message)
@@ -571,15 +577,7 @@ fun MainScreen(
                                     viewModel.markHabitComplete(habit.id)
                                 },
                                 onUndoComplete = { viewModel.unmarkHabitForToday(habit.id) },
-                                showUndo = { message, onUndo ->
-                                    snackbarScope.launch {
-                                        val res = snackbarHostState.showSnackbar(
-                                            message = message,
-                                            actionLabel = "Undo"
-                                        )
-                                        if (res == SnackbarResult.ActionPerformed) onUndo()
-                                    }
-                                },
+                                showUndo = showUndoSnackbar,
                                 showMessage = { message ->
                                     snackbarScope.launch {
                                         snackbarHostState.showSnackbar(message = message)
