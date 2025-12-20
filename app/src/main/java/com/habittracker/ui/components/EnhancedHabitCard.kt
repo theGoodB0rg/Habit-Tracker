@@ -41,6 +41,8 @@ import com.habittracker.timerux.TimerCompletionInteractor.Intent as TimerIntent
 import com.habittracker.timerux.resolveTimerUxEntryPoint
 import com.habittracker.timing.TimerFeatureFlags
 import com.habittracker.ui.modifiers.disableDuringTimerAction
+import com.habittracker.ui.modifiers.rememberTimerHaptics
+import com.habittracker.ui.modifiers.TimerHapticType
 import com.habittracker.ui.utils.TimerActionEventEffect
 
 /**
@@ -105,6 +107,9 @@ fun EnhancedHabitCard(
     } else {
         Modifier
     }
+    
+    // Haptic feedback controller for timer actions
+    val haptics = rememberTimerHaptics()
 
     // Note: AutoPaused events are now handled at MainScreen level with TimerSwitcherSheet
     // for improved UX (shows both timers with explicit switch option)
@@ -167,6 +172,8 @@ fun EnhancedHabitCard(
             handler = handler,
             onConfirm = { event ->
                 if (event.habitId != habit.id) return@TimerActionEventEffect
+                // Haptic feedback for confirmation prompts
+                haptics.trigger(TimerHapticType.CLICK)
                 when (event.type) {
                     ConfirmType.BelowMinDuration -> {
                         confirmBelowMin = (event.payload as? Int) ?: habit.timing?.minDuration?.seconds?.toInt()
@@ -183,6 +190,8 @@ fun EnhancedHabitCard(
                 }
             },
             onSnackbar = { message ->
+                // Haptic feedback for blocked/disallowed actions
+                haptics.trigger(TimerHapticType.ERROR)
                 // Show timer-related disallow messages as inline errors for better visibility
                 if (message.contains("timer", ignoreCase = true) &&
                     (message.contains("requires", ignoreCase = true) || message.contains("start", ignoreCase = true))) {
@@ -196,6 +205,8 @@ fun EnhancedHabitCard(
             onCompleted = { event ->
                 // When coordinator signals completion, mark the habit as done
                 if (event.habitId == habit.id) {
+                    // Haptic celebration for completing a habit!
+                    haptics.trigger(TimerHapticType.COMPLETION)
                     onMarkComplete()
                 }
             }
@@ -358,6 +369,8 @@ fun EnhancedHabitCard(
                     ) {
                         IconButton(
                             onClick = {
+                                // Haptic acknowledgment of button press
+                                haptics.trigger(TimerHapticType.CLICK)
                                 // ALWAYS route through coordinator to respect requireTimerToComplete
                                 // The coordinator checks both timerEnabled AND requireTimerToComplete
                                 // and will show appropriate dialogs or disallow messages
