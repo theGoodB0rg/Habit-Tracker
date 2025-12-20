@@ -330,45 +330,58 @@ fun EnhancedHabitCard(
                     }
 
                     // Mark habit complete (always visible)
-                    IconButton(
-                        onClick = {
-                            // ALWAYS route through coordinator to respect requireTimerToComplete
-                            // The coordinator checks both timerEnabled AND requireTimerToComplete
-                            // and will show appropriate dialogs or disallow messages
-                            if (handler != null) {
-                                handler.handle(TimerIntent.Done, habit.id)
-                            } else {
-                                // Fallback only when coordinator is disabled
-                                onMarkComplete()
-                            }
-                        },
-                        enabled = controlsEnabled,
+                    Box(
                         modifier = controlModifier
                             .then(Modifier.size(48.dp))
-                            // Anchor for tutorial/tooltips to highlight complete action
-                            .then(rememberTooltipTarget("habit_complete_button"))
+                            .then(rememberTooltipTarget("habit_complete_button")),
+                        contentAlignment = Alignment.Center
                     ) {
-                        // Larger, more prominent completion indicator
-                        Box(
-                            modifier = Modifier
-                                .size(32.dp)
-                                .then(
-                                    if (isCompletedToday) {
-                                        Modifier
-                                            .clip(CircleShape)
-                                            .background(MaterialTheme.colorScheme.primary)
-                                    } else {
-                                        Modifier
-                                    }
-                                ),
-                            contentAlignment = Alignment.Center
+                        IconButton(
+                            onClick = {
+                                // ALWAYS route through coordinator to respect requireTimerToComplete
+                                // The coordinator checks both timerEnabled AND requireTimerToComplete
+                                // and will show appropriate dialogs or disallow messages
+                                if (handler != null) {
+                                    handler.handle(TimerIntent.Done, habit.id)
+                                } else {
+                                    // Fallback only when coordinator is disabled
+                                    onMarkComplete()
+                                }
+                            },
+                            enabled = controlsEnabled,
+                            modifier = Modifier.size(48.dp)
                         ) {
-                            Icon(
-                                imageVector = if (isCompletedToday) Icons.Filled.Check else Icons.Filled.RadioButtonUnchecked,
-                                contentDescription = if (isCompletedToday) "Completed" else "Mark complete",
-                                tint = if (isCompletedToday) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurfaceVariant,
-                                modifier = Modifier.size(if (isCompletedToday) 20.dp else 28.dp)
-                            )
+                            // Larger, more prominent completion indicator
+                            Box(
+                                modifier = Modifier
+                                    .size(32.dp)
+                                    .then(
+                                        if (isCompletedToday) {
+                                            Modifier
+                                                .clip(CircleShape)
+                                                .background(MaterialTheme.colorScheme.primary)
+                                        } else {
+                                            Modifier
+                                        }
+                                    ),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                // Show loading spinner when waiting for service, else show icon
+                                if (waitingOnThisHabit) {
+                                    CircularProgressIndicator(
+                                        modifier = Modifier.size(20.dp),
+                                        strokeWidth = 2.dp,
+                                        color = if (isCompletedToday) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.primary
+                                    )
+                                } else {
+                                    Icon(
+                                        imageVector = if (isCompletedToday) Icons.Filled.Check else Icons.Filled.RadioButtonUnchecked,
+                                        contentDescription = if (isCompletedToday) "Completed" else "Mark complete",
+                                        tint = if (isCompletedToday) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurfaceVariant,
+                                        modifier = Modifier.size(if (isCompletedToday) 20.dp else 28.dp)
+                                    )
+                                }
+                            }
                         }
                     }
                 }

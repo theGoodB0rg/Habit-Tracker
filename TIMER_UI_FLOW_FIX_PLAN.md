@@ -1,14 +1,14 @@
 # Timer UI Flow Fix Plan
 **Date**: December 20, 2025  
-**Status**: Phase 1 Complete - Critical Fixes Implemented
+**Status**: ✅ Phase 1 COMPLETE - All Critical Fixes Implemented & Committed
 
 ## 📊 Implementation Progress
 
 | Phase | Description | Status |
 |-------|-------------|--------|
-| 1.2 | Fix Timer Requirement Logic | ✅ COMPLETED |
-| 1.1 | Fix Timer State Sync | ✅ COMPLETED |
-| 1.3 | Add Visual Debounce Feedback | ⏳ Pending |
+| 1.2 | Fix Timer Requirement Logic | ✅ COMPLETED & Committed |
+| 1.1 | Fix Timer State Sync | ✅ COMPLETED & Committed |
+| 1.3 | Add Visual Debounce Feedback | ✅ COMPLETED |
 | 2.x | Enhanced Flow Control | ⏳ Pending |
 | 3.x | UX Improvements | ⏳ Pending |
 
@@ -78,15 +78,23 @@ onClick = {
 
 ---
 
-### 3. **Missing Debouncing on Quick Actions**
-**Status**: Partially implemented but not comprehensive
+### 3. **Missing Debouncing on Quick Actions** - ✅ FIXED
+**Status**: Visual feedback now implemented
 
 **Current State**: 
 - `TimerActionCoordinator` has debouncing for `Done`, `Start`, `Resume`, `Pause`, `QuickComplete` intents
 - Debounce window: 500ms
 - Uses reservation system to prevent duplicate actions
 
-**Gap**: No visual feedback when action is debounced - user doesn't know click was registered.
+**Fix Applied** (Dec 20, 2025):
+- `disableDuringTimerAction` modifier enhanced with better opacity feedback
+- Completion button now shows `CircularProgressIndicator` spinner when `waitingForService` is true
+- Added `TimerActionLoadingWrapper` composable for reusable loading overlay
+- Added `pulseWhenProcessing` modifier for subtle animated feedback
+
+**Files Changed**:
+- `TimerActionModifiers.kt`: Added new composables and enhanced existing modifier
+- `EnhancedHabitCard.kt`: Completion button shows spinner during processing
 
 ---
 
@@ -109,9 +117,30 @@ onClick = {
 
 ## 🎯 Comprehensive Fix Plan
 
-### Phase 1: Critical Fixes (Immediate)
+### Phase 1: Critical Fixes (Immediate) - ✅ ALL COMPLETED
 
-#### 1.1 Fix Timer State Sync
+#### 1.1 Fix Timer State Sync - ✅ COMPLETED
+**File**: `app/src/main/java/com/habittracker/ui/components/timing/TimingUIComponents.kt`
+
+**Fix Applied**: SimpleTimerButton now checks both global feature flag AND per-habit timerEnabled setting.
+
+#### 1.2 Fix Timer Requirement Logic - ✅ COMPLETED
+**File**: `app/src/main/java/com/habittracker/ui/components/EnhancedHabitCard.kt`
+
+**Fix Applied**: Completion button always routes through coordinator when handler is available.
+
+#### 1.3 Add Visual Debounce Feedback - ✅ COMPLETED
+**Files**: 
+- `app/src/main/java/com/habittracker/ui/modifiers/TimerActionModifiers.kt`
+- `app/src/main/java/com/habittracker/ui/components/EnhancedHabitCard.kt`
+
+**Fix Applied**: Loading spinner shows during waitingForService state.
+
+---
+
+### Phase 1 LEGACY Documentation (Original Plan)
+
+#### 1.1 Fix Timer State Sync (ORIGINAL)
 **File**: `app/src/main/java/com/habittracker/ui/models/HabitUiModel.kt`
 
 **Action**: Ensure `HabitUiModel.timing` properly reflects database state
