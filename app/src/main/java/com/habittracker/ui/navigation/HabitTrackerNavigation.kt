@@ -76,31 +76,50 @@ fun HabitTrackerNavigation(
             MainScreen(
                 viewModel = habitViewModel,
                 onNavigateToAddHabit = {
-                    navController.navigate(Screen.AddHabit.route)
+                    navController.navigate(Screen.AddHabit.route) {
+                        launchSingleTop = true
+                    }
                 },
                 onNavigateToEditHabit = { habitId ->
-                    navController.navigate(Screen.EditHabit.createRoute(habitId))
+                    navController.navigate(Screen.EditHabit.createRoute(habitId)) {
+                        launchSingleTop = true
+                    }
                 },
                 onNavigateToHabitDetail = { habitId ->
-                    navController.navigate(Screen.HabitDetail.createRoute(habitId))
+                    // Use launchSingleTop to prevent duplicate navigation crashes
+                    navController.navigate(Screen.HabitDetail.createRoute(habitId)) {
+                        launchSingleTop = true
+                    }
                 },
                 onNavigateToSettings = {
-                    navController.navigate(Screen.ThemeSettings.route)
+                    navController.navigate(Screen.ThemeSettings.route) {
+                        launchSingleTop = true
+                    }
                 },
                 onNavigateToSmartTimingSettings = {
-                    navController.navigate(Screen.SmartTimingSettings.route)
+                    navController.navigate(Screen.SmartTimingSettings.route) {
+                        launchSingleTop = true
+                    }
                 },
                 onNavigateToReminderSettings = {
-                    navController.navigate(Screen.ReminderSettings.route)
+                    navController.navigate(Screen.ReminderSettings.route) {
+                        launchSingleTop = true
+                    }
                 },
                 onNavigateToAbout = {
-                    navController.navigate(Screen.About.route)
+                    navController.navigate(Screen.About.route) {
+                        launchSingleTop = true
+                    }
                 },
                 onNavigateToAnalytics = {
-                    navController.navigate(Screen.Analytics.route)
+                    navController.navigate(Screen.Analytics.route) {
+                        launchSingleTop = true
+                    }
                 },
                 onNavigateToExport = {
-                    navController.navigate(Screen.Export.route)
+                    navController.navigate(Screen.Export.route) {
+                        launchSingleTop = true
+                    }
                 }
             )
         }
@@ -133,48 +152,18 @@ fun HabitTrackerNavigation(
             arguments = Screen.HabitDetail.arguments
         ) { backStackEntry ->
             val habitId = backStackEntry.arguments?.getLong("habitId") ?: return@composable
-            val habits by habitViewModel.habits.collectAsState(initial = emptyList())
-            val targetHabit = habits.firstOrNull { it.id == habitId }
-            if (targetHabit != null && targetHabit.lastCompletedDate == null) {
-                androidx.compose.material3.Scaffold(
-                    topBar = {
-                        androidx.compose.material3.TopAppBar(
-                            title = { androidx.compose.material3.Text("Habit Details") },
-                            navigationIcon = {
-                                androidx.compose.material3.IconButton(onClick = { navController.popBackStack() }) {
-                                    androidx.compose.material3.Icon(
-                                        imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                                        contentDescription = "Back"
-                                    )
-                                }
-                            }
-                        )
-                    }
-                ) { padding ->
-                    androidx.compose.foundation.layout.Box(
-                        modifier = androidx.compose.ui.Modifier
-                            .fillMaxSize()
-                            .padding(padding),
-                        contentAlignment = androidx.compose.ui.Alignment.Center
-                    ) {
-                        androidx.compose.material3.Text(
-                            "No analytics for this habit yet — complete it at least once.",
-                            color = androidx.compose.material3.MaterialTheme.colorScheme.onSurfaceVariant
-                        )
-                    }
+            // Removed state collection from navigation lambda to prevent SlotTable race condition
+            // HabitDetailScreen handles its own loading state internally
+            HabitDetailScreen(
+                habitId = habitId,
+                viewModel = habitViewModel,
+                onNavigateBack = {
+                    navController.popBackStack()
+                },
+                onNavigateToEdit = {
+                    navController.navigate(Screen.EditHabit.createRoute(habitId))
                 }
-            } else {
-                HabitDetailScreen(
-                    habitId = habitId,
-                    viewModel = habitViewModel,
-                    onNavigateBack = {
-                        navController.popBackStack()
-                    },
-                    onNavigateToEdit = {
-                        navController.navigate(Screen.EditHabit.createRoute(habitId))
-                    }
-                )
-            }
+            )
         }
         
         composable(Screen.ThemeSettings.route) {

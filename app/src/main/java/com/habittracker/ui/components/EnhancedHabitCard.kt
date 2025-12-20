@@ -41,6 +41,7 @@ import com.habittracker.timerux.TimerCompletionInteractor.Intent as TimerIntent
 import com.habittracker.timerux.resolveTimerUxEntryPoint
 import com.habittracker.timing.TimerFeatureFlags
 import com.habittracker.ui.modifiers.disableDuringTimerAction
+import com.habittracker.ui.modifiers.debouncedClickable
 import com.habittracker.ui.modifiers.rememberTimerHaptics
 import com.habittracker.ui.modifiers.TimerHapticType
 import com.habittracker.ui.utils.TimerActionEventEffect
@@ -220,7 +221,7 @@ fun EnhancedHabitCard(
     Card(
         modifier = modifier
             .fillMaxWidth()
-            .clickable {
+            .debouncedClickable {
                 if (hasAnyCompletion) {
                     onClick()
                 } else {

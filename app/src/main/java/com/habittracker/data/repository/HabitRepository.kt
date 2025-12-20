@@ -306,6 +306,8 @@ class HabitRepositoryImpl @Inject constructor(
     override suspend fun insertEnhancedDummyData() {
         val currentDate = Date()
         val today = LocalDate.now()
+        // Keep prebundled habits lightweight: skip seeding historical completions to avoid SlotTable crashes tied to precompleted items.
+        val seedCompletions = false
         
         val enhancedHabits = listOf(
             HabitEntity(
@@ -347,11 +349,11 @@ class HabitRepositoryImpl @Inject constructor(
         
         for (habit in enhancedHabits) {
             val habitId = habitManagementEngine.addHabit(habit)
-            
-            // Create varied completion patterns for realistic testing
+            if (!seedCompletions) continue
+
+            // Create varied completion patterns for realistic testing (disabled by default)
             when (habit.frequency) {
                 HabitFrequency.DAILY -> {
-                    // Create a pattern: some days missed, some completed
                     val pattern = listOf(1, 1, 0, 1, 1, 1, 0, 1, 1, 1, 1, 0, 1, 1, 1)
                     pattern.forEachIndexed { index, completed ->
                         if (completed == 1) {
@@ -360,13 +362,11 @@ class HabitRepositoryImpl @Inject constructor(
                     }
                 }
                 HabitFrequency.WEEKLY -> {
-                    // Completed for the last 3 weeks
                     repeat(3) { week ->
                         habitManagementEngine.markHabitAsDone(habitId, today.minusDays((week * 7).toLong()))
                     }
                 }
                 HabitFrequency.MONTHLY -> {
-                    // Completed for the last 2 months
                     habitManagementEngine.markHabitAsDone(habitId, today.minusDays(30))
                     habitManagementEngine.markHabitAsDone(habitId, today.minusDays(60))
                 }

@@ -22,6 +22,8 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.collectLatest
 import com.habittracker.analytics.presentation.viewmodel.AnalyticsViewModel
 import com.habittracker.ui.models.HabitUiModel
 import com.habittracker.onboarding.components.rememberTooltipTarget
@@ -152,6 +154,16 @@ fun MainScreen(
     
     val snackbarHostState = remember { SnackbarHostState() }
     val snackbarScope = rememberCoroutineScope()
+    // Route navigation requests through a shared flow to decouple from LazyColumn composition/measurement
+    val habitDetailNavRequests = remember { MutableSharedFlow<Long>(extraBufferCapacity = 1) }
+
+    LaunchedEffect(Unit) {
+        habitDetailNavRequests.collectLatest { target ->
+            // Post navigation until after the current frame to avoid SlotTable corruption in Lazy lists
+            withFrameNanos { }
+            onNavigateToHabitDetail(target)
+        }
+    }
     
     // Timer switcher for improved single-active-timer UX
     val timerSwitcherState = rememberTimerSwitcherState()
@@ -476,7 +488,10 @@ fun MainScreen(
                     if (isGridView) {
                         // Modern responsive grid layout
                         val chunkedHabits = filteredHabits.chunked(2)
-                        items(chunkedHabits) { habitPair ->
+                        items(
+                            items = chunkedHabits,
+                            key = { habitPair -> habitPair.map { it.id }.joinToString("-") }
+                        ) { habitPair ->
                             Row(
                                 modifier = Modifier.fillMaxWidth(),
                                 horizontalArrangement = Arrangement.spacedBy(12.dp) // Better spacing
@@ -507,7 +522,7 @@ fun MainScreen(
                                         onClick = {
                                             // Only navigate when there is at least one completion
                                             if (habit.lastCompletedDate != null) {
-                                                onNavigateToHabitDetail(habit.id)
+                                                habitDetailNavRequests.tryEmit(habit.id)
                                             } else {
                                                 snackbarScope.launch {
                                                     snackbarHostState.showSnackbar(
@@ -573,7 +588,7 @@ fun MainScreen(
                                 onClick = {
                                     // Only navigate when there is at least one completion
                                     if (habit.lastCompletedDate != null) {
-                                        onNavigateToHabitDetail(habit.id)
+                                        habitDetailNavRequests.tryEmit(habit.id)
                                     } else {
                                         snackbarScope.launch {
                                             snackbarHostState.showSnackbar(
