@@ -4,6 +4,8 @@ import androidx.compose.animation.*
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -45,6 +47,8 @@ import com.habittracker.ui.modifiers.debouncedClickable
 import com.habittracker.ui.modifiers.rememberTimerHaptics
 import com.habittracker.ui.modifiers.TimerHapticType
 import com.habittracker.ui.utils.TimerActionEventEffect
+import com.habittracker.ui.design.WindowWidthClass
+import com.habittracker.ui.design.rememberWindowWidthClass
 
 /**
  * Enhanced HabitCard with Phase 2 Progressive Timing Features
@@ -56,7 +60,7 @@ import com.habittracker.ui.utils.TimerActionEventEffect
  * - Level 3: Full timing controls
  */
 
-@OptIn(ExperimentalMaterial3Api::class, ExperimentalAnimationApi::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalAnimationApi::class, ExperimentalLayoutApi::class)
 @Composable
 fun EnhancedHabitCard(
     habit: HabitUiModel,
@@ -897,10 +901,14 @@ fun EnhancedHabitCard(
                         }
                     )
                 }
-                // Stats Row - Enhanced with timing info
-                Row(
+                val widthClass = rememberWindowWidthClass()
+                val timerSize = if (widthClass == WindowWidthClass.Compact) 60.dp else 72.dp
+
+                // Stats Row - Enhanced with timing info (wraps on small widths)
+                FlowRow(
                     modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    verticalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
                     // Show a small badge when details are gated
                     if (!hasAnyCompletion) {
@@ -1007,7 +1015,7 @@ fun EnhancedHabitCard(
                                 totalMillis = uiState.totalMs,
                                 remainingMillis = uiState.remainingMs,
                                 isPaused = uiState.paused,
-                                modifier = Modifier.size(72.dp),
+                                modifier = Modifier.size(timerSize),
                                 reducedMotion = prefs.reducedMotion
                             )
                             // Quick entry to full controls
