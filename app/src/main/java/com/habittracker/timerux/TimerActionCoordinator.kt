@@ -1,5 +1,6 @@
 package com.habittracker.timerux
 
+import com.habittracker.data.repository.HabitRepository
 import com.habittracker.data.repository.timing.TimingRepository
 import com.habittracker.data.preferences.TimingPreferencesRepository
 import com.habittracker.di.ApplicationScope
@@ -22,12 +23,14 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.launch
 import java.time.Duration
+import java.time.LocalDate
 import javax.inject.Inject
 import javax.inject.Singleton
 
 @Singleton
 class TimerActionCoordinator @Inject constructor(
     private val interactor: TimerCompletionInteractor,
+    private val habitRepository: HabitRepository,
     private val timingRepository: TimingRepository,
     private val timingPreferencesRepository: TimingPreferencesRepository,
     private val timerController: TimerController,
@@ -357,10 +360,12 @@ class TimerActionCoordinator @Inject constructor(
                 is TimerAction.CompleteToday -> {
                     // Complete the timer session if one is active
                     timerController.complete()
-                    // Always emit Completed event so UI can mark habit as done
-                    // (timerController.complete() only works if there's an active session,
-                    // but we still need to mark the habit complete even without a timer)
-                    emitUiEvent(UiEvent.Completed(action.habitId))
+                    appScope.launch {
+                        runCatching {
+                            habitRepository.markHabitAsDone(action.habitId, LocalDate.now())
+                        }.onFailure { emitUiEvent(UiEvent.Snackbar("Failed to mark complete: ${'$'}{it.message}")) }
+                        emitUiEvent(UiEvent.Completed(action.habitId))
+                    }
                 }
                 is TimerAction.SavePartial -> {
                     timerController.stop()
@@ -421,6 +426,11 @@ class TimerActionCoordinator @Inject constructor(
             is TimerEvent.Completed -> {
                 remainingByHabit.remove(event.habitId)
                 pausedByHabit.remove(event.habitId)
+                appScope.launch {
+                    runCatching {
+                        habitRepository.markHabitAsDone(event.habitId, LocalDate.now())
+                    }.onFailure { emitUiEvent(UiEvent.Snackbar("Failed to mark complete: ${'$'}{it.message}")) }
+                }
                 markCompleted(event.habitId)
                 emitUiEvent(UiEvent.Completed(event.habitId))
             }

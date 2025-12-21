@@ -4,12 +4,15 @@ import com.habittracker.data.database.dao.HabitCompletionDao
 import com.habittracker.data.database.dao.HabitDao
 import com.habittracker.data.database.entity.HabitCompletionEntity
 import com.habittracker.data.database.entity.HabitEntity
+import com.habittracker.data.database.entity.HabitFrequency
 import com.habittracker.domain.model.HabitStats
 import com.habittracker.domain.model.HabitStreak
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.first
 import java.time.LocalDate
+import java.time.temporal.TemporalAdjusters
+import java.time.temporal.WeekFields
 import java.time.temporal.ChronoUnit
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -68,8 +71,12 @@ class HabitManagementEngine @Inject constructor(
         date: LocalDate = LocalDate.now(),
         note: String? = null
     ): HabitStreak {
-        // Check if already completed today
-        if (completionDao.isHabitCompletedOnDate(habitId, date)) {
+        val habit = habitDao.getHabitById(habitId) ?: return HabitStreak(habitId, 0, 0, null)
+
+        // Enforce single completion per active period
+        val (periodStart, periodEnd) = currentPeriodRange(habit.frequency, date)
+        val periodCompletions = completionDao.getCompletionsInDateRange(habitId, periodStart, periodEnd)
+        if (periodCompletions.isNotEmpty()) {
             return getCurrentStreak(habitId)
         }
         
@@ -211,11 +218,12 @@ class HabitManagementEngine @Inject constructor(
      */
     suspend fun getTodayCompletionStatus(): Map<Long, Boolean> {
         val today = LocalDate.now()
-        val todayCompletions = completionDao.getTodayCompletions(today)
         val habits = habitDao.getAllHabits().first()
         
         return habits.associate { habit ->
-            habit.id to todayCompletions.any { it.habitId == habit.id }
+            val (periodStart, periodEnd) = currentPeriodRange(habit.frequency, today)
+            val periodCompletions = completionDao.getCompletionsInDateRange(habit.id, periodStart, periodEnd)
+            habit.id to periodCompletions.isNotEmpty()
         }
     }
     
@@ -266,5 +274,22 @@ class HabitManagementEngine @Inject constructor(
         streaks.add(currentStreak)
         
         return streaks.average()
+    }
+
+    private fun currentPeriodRange(frequency: HabitFrequency, anchorDate: LocalDate): Pair<LocalDate, LocalDate> {
+        return when (frequency) {
+            HabitFrequency.DAILY -> anchorDate to anchorDate
+            HabitFrequency.WEEKLY -> {
+                val wf = WeekFields.ISO
+                val start = anchorDate.with(wf.dayOfWeek(), 1)
+                val end = anchorDate.with(wf.dayOfWeek(), 7)
+                start to end
+            }
+            HabitFrequency.MONTHLY -> {
+                val start = anchorDate.with(TemporalAdjusters.firstDayOfMonth())
+                val end = anchorDate.with(TemporalAdjusters.lastDayOfMonth())
+                start to end
+            }
+        }
     }
 }
