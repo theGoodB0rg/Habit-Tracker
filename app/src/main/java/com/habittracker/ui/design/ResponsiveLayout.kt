@@ -1,13 +1,21 @@
 package com.habittracker.ui.design
 
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ColumnScope
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.GridItemSpan
+import androidx.compose.foundation.lazy.grid.LazyGridScope
+import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalConfiguration
-import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import kotlin.math.floor
+import kotlin.math.max
 
 /**
  * Professional Responsive Layout System
@@ -25,7 +33,8 @@ fun ResponsiveGrid(
     columns: ResponsiveInt = ResponsiveInt(compact = 1, medium = 2, expanded = 3),
     horizontalArrangement: Arrangement.Horizontal = Arrangement.spacedBy(DesignTokens.Spacing.medium),
     verticalArrangement: Arrangement.Vertical = Arrangement.spacedBy(DesignTokens.Spacing.medium),
-    content: @Composable () -> Unit
+    contentPadding: PaddingValues = PaddingValues(0.dp),
+    itemContent: LazyGridScope.() -> Unit
 ) {
     val screenSize = LocalConfiguration.current.screenWidthDp.dp
     val actualColumns = when {
@@ -33,15 +42,15 @@ fun ResponsiveGrid(
         screenSize < DesignTokens.Breakpoints.medium -> columns.medium
         else -> columns.expanded
     }
-    
-    // Implementation would use LazyVerticalGrid with calculated columns
-    // This is a simplified version for demonstration
-    Column(
+
+    LazyVerticalGrid(
         modifier = modifier,
-        verticalArrangement = verticalArrangement
-    ) {
-        content()
-    }
+        columns = GridCells.Fixed(actualColumns),
+        contentPadding = contentPadding,
+        horizontalArrangement = horizontalArrangement,
+        verticalArrangement = verticalArrangement,
+        content = itemContent
+    )
 }
 
 /**
@@ -75,6 +84,51 @@ fun responsivePadding(
         screenSize < DesignTokens.Breakpoints.compact -> compact
         screenSize < DesignTokens.Breakpoints.medium -> medium
         else -> expanded
+    }
+}
+
+enum class WindowWidthClass { Compact, Medium, Expanded }
+
+@Composable
+fun rememberWindowWidthClass(): WindowWidthClass {
+    val width = LocalConfiguration.current.screenWidthDp.dp
+    return when {
+        width < DesignTokens.Breakpoints.compact -> WindowWidthClass.Compact
+        width < DesignTokens.Breakpoints.medium -> WindowWidthClass.Medium
+        else -> WindowWidthClass.Expanded
+    }
+}
+
+@Composable
+fun rememberResponsiveHorizontalPadding(
+    compact: Dp = 12.dp,
+    medium: Dp = 16.dp,
+    expanded: Dp = 24.dp
+): Dp {
+    return when (rememberWindowWidthClass()) {
+        WindowWidthClass.Compact -> compact
+        WindowWidthClass.Medium -> medium
+        WindowWidthClass.Expanded -> expanded
+    }
+}
+
+@Composable
+fun rememberAdaptiveColumnCount(
+    minItemWidth: Dp,
+    horizontalPadding: Dp,
+    itemSpacing: Dp = DesignTokens.Spacing.medium,
+    maxColumns: Int = 4
+): Int {
+    val screenWidth = LocalConfiguration.current.screenWidthDp.dp
+    val availableWidth = max(0f, (screenWidth - (horizontalPadding * 2)).value)
+    val target = (minItemWidth + itemSpacing).value
+    val computed = if (target > 0f) floor(availableWidth / target).toInt() else 1
+    return computed.coerceIn(1, maxColumns)
+}
+
+fun LazyGridScope.fullSpanItem(content: @Composable () -> Unit) {
+    item(span = { GridItemSpan(maxLineSpan) }) {
+        content()
     }
 }
 

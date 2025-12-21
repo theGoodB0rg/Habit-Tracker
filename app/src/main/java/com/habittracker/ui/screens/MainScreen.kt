@@ -4,7 +4,20 @@ import androidx.compose.animation.*
 import androidx.compose.animation.core.*
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.ExperimentalFoundationApi
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.consumeWindowInsets
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
@@ -39,6 +52,11 @@ import com.habittracker.ui.components.EmptyStateComponent
 import com.habittracker.ui.components.EnhancedHabitCard
 import com.habittracker.ui.components.timer.MiniSessionBar
 import com.habittracker.ui.components.LoadingComponent
+import com.habittracker.ui.design.WindowWidthClass
+import com.habittracker.ui.design.fullSpanItem
+import com.habittracker.ui.design.rememberAdaptiveColumnCount
+import com.habittracker.ui.design.rememberResponsiveHorizontalPadding
+import com.habittracker.ui.design.rememberWindowWidthClass
 import com.habittracker.nudges.viewmodel.NudgeViewModel
 import com.habittracker.nudges.ui.NudgeBannerSection
 import com.habittracker.ui.viewmodels.timing.TimingFeatureViewModel
@@ -504,147 +522,93 @@ fun MainScreen(
     },
         snackbarHost = { SnackbarHost(hostState = snackbarHostState) }
     ) { paddingValues ->
+        val widthClass = rememberWindowWidthClass()
+        val horizontalPadding = rememberResponsiveHorizontalPadding()
+        val minCardWidth = when (widthClass) {
+            WindowWidthClass.Compact -> 260.dp
+            WindowWidthClass.Medium -> 320.dp
+            WindowWidthClass.Expanded -> 360.dp
+        }
+        val gridColumns = rememberAdaptiveColumnCount(
+            minItemWidth = minCardWidth,
+            horizontalPadding = horizontalPadding,
+            itemSpacing = 12.dp,
+            maxColumns = 3
+        )
+        val contentPadding = PaddingValues(
+            start = horizontalPadding,
+            end = horizontalPadding,
+            top = paddingValues.calculateTopPadding() + 8.dp,
+            bottom = paddingValues.calculateBottomPadding() + 88.dp
+        )
+
         Box(
-            modifier = Modifier.fillMaxSize()
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(paddingValues)
+                .consumeWindowInsets(paddingValues)
         ) {
-            // Main scrollable content
-            LazyColumn(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(paddingValues),
-                contentPadding = PaddingValues(
-                    start = 16.dp,
-                    end = 16.dp,
-                    top = 8.dp,
-                    bottom = 88.dp // Extra space for FAB with proper breathing room
-                ),
-                verticalArrangement = Arrangement.spacedBy(16.dp) // Increased spacing for better hierarchy
-            ) {
-                // Progress indicator
-                if (uiState.isLoading) {
-                    item {
-                        LoadingComponent()
+            if (isGridView) {
+                LazyVerticalGrid(
+                    columns = GridCells.Fixed(gridColumns),
+                    modifier = Modifier.fillMaxSize(),
+                    contentPadding = contentPadding,
+                    horizontalArrangement = Arrangement.spacedBy(12.dp),
+                    verticalArrangement = Arrangement.spacedBy(16.dp)
+                ) {
+                    if (uiState.isLoading) {
+                        fullSpanItem { LoadingComponent() }
                     }
-                }
-                
-                // Messages with improved styling
-                uiState.errorMessage?.let { message ->
-                    item {
-                        MessageCard(
-                            message = message,
-                            isError = true,
+
+                    uiState.errorMessage?.let { message ->
+                        fullSpanItem {
+                            MessageCard(
+                                message = message,
+                                isError = true,
+                                modifier = Modifier.fillMaxWidth()
+                            )
+                        }
+                    }
+
+                    uiState.successMessage?.let { message ->
+                        fullSpanItem {
+                            MessageCard(
+                                message = message,
+                                isError = false,
+                                modifier = Modifier.fillMaxWidth()
+                            )
+                        }
+                    }
+
+                    fullSpanItem {
+                        NudgeBannerSection(
+                            viewModel = nudgeViewModel,
                             modifier = Modifier.fillMaxWidth()
                         )
                     }
-                }
-                
-                uiState.successMessage?.let { message ->
-                    item {
-                        MessageCard(
-                            message = message,
-                            isError = false,
-                            modifier = Modifier.fillMaxWidth()
-                        )
+
+                    if (hydrated.isNotEmpty()) {
+                        fullSpanItem {
+                            StatisticsCard(
+                                habits = hydrated,
+                                modifier = Modifier.fillMaxWidth()
+                            )
+                        }
                     }
-                }
-                
-                // Nudge banners section with better spacing
-                item {
-                    NudgeBannerSection(
-                        viewModel = nudgeViewModel,
-                        modifier = Modifier.fillMaxWidth()
-                    )
-                }
-                
-                // Removed temporary test nudge banner to avoid interference
-                
-                // Statistics Card with modern design
-                if (hydrated.isNotEmpty()) {
-                    item {
-                        StatisticsCard(
-                            habits = hydrated,
-                            modifier = Modifier.fillMaxWidth()
-                        )
-                    }
-                }
-                
-                // Content
-                if (filteredHabits.isEmpty() && !uiState.isLoading) {
-                    item {
-                        EmptyStateComponent(
-                            title = if (showCompletedOnly) "No completed habits today" else "No habits yet",
-                            description = if (showCompletedOnly) "Complete some habits to see them here!" else "Start building better habits today",
-                            actionText = if (!showCompletedOnly) "Add Your First Habit" else null,
-                            onAction = if (!showCompletedOnly) onNavigateToAddHabit else null,
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .height(280.dp) // Optimized height for better proportions
-                        )
-                    }
-                } else {
-                    // Habit items with improved responsive grid
-                    if (isGridView) {
-                        // Modern responsive grid layout
-                        val chunkedHabits = filteredHabits.chunked(2)
-                        items(
-                            items = chunkedHabits,
-                            key = { habitPair -> habitPair.map { it.id }.joinToString("-") }
-                        ) { habitPair ->
-                            Row(
-                                modifier = Modifier.fillMaxWidth(),
-                                horizontalArrangement = Arrangement.spacedBy(12.dp) // Better spacing
-                            ) {
-                                habitPair.forEach { habit ->
-                                    EnhancedHabitCard(
-                                        habit = habit,
-                                        onMarkComplete = {
-                                            // Always persist to database - this is called by coordinator
-                                            // when it decides completion should happen
-                                            viewModel.markHabitComplete(habit.id)
-                                        },
-                                        onUndoComplete = { viewModel.unmarkHabitForToday(habit.id) },
-                                        showUndo = showUndoSnackbar,
-                                        showMessage = showInfoSnackbar,
-                                        onClick = {
-                                            // Only navigate when there is at least one completion
-                                            if (habit.lastCompletedDate != null) {
-                                                habitDetailNavRequests.tryEmit(habit.id)
-                                            } else {
-                                                snackbarScope.launch {
-                                                    snackbarHostState.showSnackbar(
-                                                        message = "No analytics for this habit yet — complete it at least once."
-                                                    )
-                                                }
-                                            }
-                                        },
-                                        onEditClick = { onNavigateToEditHabit(habit.id) },
-                                        onOvertimeExtend = {
-                                            analyticsViewModel.trackScreenVisit("OvertimeExtend", fromScreen = "EnhancedHabitCard")
-                                        },
-                                        onOvertimeComplete = {
-                                            analyticsViewModel.trackHabitCompletion(
-                                                habitId = it.id.toString(),
-                                                habitName = it.name,
-                                                isCompleted = true
-                                            )
-                                        },
-                                        isCompact = true,
-                                        modifier = Modifier.weight(1f),
-                                        // Hoisted ViewModels to prevent SlotTable crashes in LazyList
-                                        timingViewModel = timingFeatureViewModel,
-                                        tickerViewModel = tickerViewModel,
-                                        activeTimerVm = activeTimerViewModel,
-                                        partialSessionVm = partialSessionViewModel
-                                    )
-                                }
-                                // Fill remaining space if odd number of items
-                                if (habitPair.size == 1) {
-                                    Spacer(modifier = Modifier.weight(1f))
-                                }
-                            }
+
+                    if (filteredHabits.isEmpty() && !uiState.isLoading) {
+                        fullSpanItem {
+                            EmptyStateComponent(
+                                title = if (showCompletedOnly) "No completed habits today" else "No habits yet",
+                                description = if (showCompletedOnly) "Complete some habits to see them here!" else "Start building better habits today",
+                                actionText = if (!showCompletedOnly) "Add Your First Habit" else null,
+                                onAction = if (!showCompletedOnly) onNavigateToAddHabit else null,
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .heightIn(min = 220.dp)
+                            )
                         }
                     } else {
-                        // Enhanced list view with proper spacing
                         items(
                             items = filteredHabits,
                             key = { it.id }
@@ -652,15 +616,117 @@ fun MainScreen(
                             EnhancedHabitCard(
                                 habit = habit,
                                 onMarkComplete = {
-                                    // Always persist to database - this is called by coordinator
-                                    // when it decides completion should happen
                                     viewModel.markHabitComplete(habit.id)
                                 },
                                 onUndoComplete = { viewModel.unmarkHabitForToday(habit.id) },
                                 showUndo = showUndoSnackbar,
                                 showMessage = showInfoSnackbar,
                                 onClick = {
-                                    // Only navigate when there is at least one completion
+                                    if (habit.lastCompletedDate != null) {
+                                        habitDetailNavRequests.tryEmit(habit.id)
+                                    } else {
+                                        snackbarScope.launch {
+                                            snackbarHostState.showSnackbar(
+                                                message = "No analytics for this habit yet — complete it at least once."
+                                            )
+                                        }
+                                    }
+                                },
+                                onEditClick = { onNavigateToEditHabit(habit.id) },
+                                onOvertimeExtend = {
+                                    analyticsViewModel.trackScreenVisit("OvertimeExtend", fromScreen = "EnhancedHabitCard")
+                                },
+                                onOvertimeComplete = {
+                                    analyticsViewModel.trackHabitCompletion(
+                                        habitId = it.id.toString(),
+                                        habitName = it.name,
+                                        isCompleted = true
+                                    )
+                                },
+                                isCompact = widthClass == WindowWidthClass.Compact,
+                                modifier = Modifier.fillMaxWidth(),
+                                timingViewModel = timingFeatureViewModel,
+                                tickerViewModel = tickerViewModel,
+                                activeTimerVm = activeTimerViewModel,
+                                partialSessionVm = partialSessionViewModel
+                            )
+                        }
+                    }
+                }
+            } else {
+                LazyColumn(
+                    modifier = Modifier.fillMaxSize(),
+                    contentPadding = contentPadding,
+                    verticalArrangement = Arrangement.spacedBy(16.dp)
+                ) {
+                    if (uiState.isLoading) {
+                        item {
+                            LoadingComponent()
+                        }
+                    }
+
+                    uiState.errorMessage?.let { message ->
+                        item {
+                            MessageCard(
+                                message = message,
+                                isError = true,
+                                modifier = Modifier.fillMaxWidth()
+                            )
+                        }
+                    }
+
+                    uiState.successMessage?.let { message ->
+                        item {
+                            MessageCard(
+                                message = message,
+                                isError = false,
+                                modifier = Modifier.fillMaxWidth()
+                            )
+                        }
+                    }
+
+                    item {
+                        NudgeBannerSection(
+                            viewModel = nudgeViewModel,
+                            modifier = Modifier.fillMaxWidth()
+                        )
+                    }
+
+                    if (hydrated.isNotEmpty()) {
+                        item {
+                            StatisticsCard(
+                                habits = hydrated,
+                                modifier = Modifier.fillMaxWidth()
+                            )
+                        }
+                    }
+
+                    if (filteredHabits.isEmpty() && !uiState.isLoading) {
+                        item {
+                            EmptyStateComponent(
+                                title = if (showCompletedOnly) "No completed habits today" else "No habits yet",
+                                description = if (showCompletedOnly) "Complete some habits to see them here!" else "Start building better habits today",
+                                actionText = if (!showCompletedOnly) "Add Your First Habit" else null,
+                                onAction = if (!showCompletedOnly) onNavigateToAddHabit else null,
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .heightIn(min = 220.dp)
+                            )
+                        }
+                    } else {
+                        items(
+                            items = filteredHabits,
+                            key = { it.id }
+                        ) { habit ->
+                            EnhancedHabitCard(
+                                habit = habit,
+                                onMarkComplete = {
+                                    viewModel.markHabitComplete(habit.id)
+                                },
+                                onUndoComplete = { viewModel.unmarkHabitForToday(habit.id) },
+                                showUndo = showUndoSnackbar,
+                                showMessage = showInfoSnackbar,
+                                onClick = {
                                     if (habit.lastCompletedDate != null) {
                                         habitDetailNavRequests.tryEmit(habit.id)
                                     } else {
@@ -685,7 +751,6 @@ fun MainScreen(
                                 modifier = Modifier
                                     .fillMaxWidth()
                                     .animateItemPlacement(),
-                                // Hoisted ViewModels to prevent SlotTable crashes in LazyList
                                 timingViewModel = timingFeatureViewModel,
                                 tickerViewModel = tickerViewModel,
                                 activeTimerVm = activeTimerViewModel,
@@ -695,15 +760,13 @@ fun MainScreen(
                     }
                 }
             }
-            
-            // Removed intrusive NudgeOverlay to prevent blocking UI
-            
-            // Tooltip display for guided tour
+
             TooltipDisplay(tooltipManager = tooltipManager)
-            // Mini session bar overlay (Phase UIX-5)
-            Box(modifier = Modifier
-                .fillMaxWidth()
-                .align(Alignment.BottomCenter)) {
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .align(Alignment.BottomCenter)
+            ) {
                 MiniSessionBar()
             }
         }

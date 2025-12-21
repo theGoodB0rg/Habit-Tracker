@@ -31,6 +31,9 @@ import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.habittracker.presentation.viewmodel.HabitViewModel
+import com.habittracker.ui.design.WindowWidthClass
+import com.habittracker.ui.design.rememberResponsiveHorizontalPadding
+import com.habittracker.ui.design.rememberWindowWidthClass
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -140,14 +143,25 @@ fun EditHabitScreen(
             )
         }
     ) { paddingValues ->
-        Column(
+        val widthClass = rememberWindowWidthClass()
+        val horizontalPadding = rememberResponsiveHorizontalPadding()
+        val maxContentWidth = if (widthClass == WindowWidthClass.Expanded) 840.dp else 720.dp
+
+        Box(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(paddingValues)
-                .verticalScroll(rememberScrollState())
-                .padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(16.dp)
+                .consumeWindowInsets(paddingValues)
         ) {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .widthIn(max = maxContentWidth)
+                    .align(Alignment.TopCenter)
+                    .verticalScroll(rememberScrollState())
+                    .padding(horizontal = horizontalPadding, vertical = 16.dp),
+                verticalArrangement = Arrangement.spacedBy(16.dp)
+            ) {
             // Habit Info Card
             Card(
                 colors = CardDefaults.cardColors(
@@ -182,6 +196,7 @@ fun EditHabitScreen(
                             )
                         }
                         Column {
+                    }
                             Text(
                                 "Created",
                                 style = MaterialTheme.typography.bodySmall,
@@ -726,10 +741,11 @@ private fun EditIconPicker(
     val icons = getAvailableIcons()
     
     LazyVerticalGrid(
-        columns = GridCells.Fixed(6),
-        modifier = modifier.height(200.dp),
+        columns = GridCells.Adaptive(minSize = 56.dp),
+        modifier = modifier.heightIn(max = 240.dp),
         horizontalArrangement = Arrangement.spacedBy(8.dp),
-        verticalArrangement = Arrangement.spacedBy(8.dp)
+        verticalArrangement = Arrangement.spacedBy(8.dp),
+        contentPadding = PaddingValues(4.dp)
     ) {
         items(icons) { (id, icon) ->
             IconButton(
