@@ -1,14 +1,17 @@
 package com.habittracker.timing.alert
 
 import android.content.Context
+import android.media.AudioAttributes
+import android.media.AudioFocusRequest
+import android.media.AudioManager
+import android.media.SoundPool
 import android.os.Build
+import android.os.Bundle
 import android.os.VibrationEffect
 import android.os.Vibrator
 import android.speech.tts.TextToSpeech
 import android.util.Log
 import com.habittracker.timing.AlertType
-import android.media.SoundPool
-import android.media.AudioAttributes
 import java.util.concurrent.ConcurrentHashMap
 import java.util.Locale
 import javax.inject.Inject
@@ -59,9 +62,13 @@ class AlertEngineImpl @Inject constructor(
             }
     }
     private val loaded = ConcurrentHashMap<Int, Int>() // resId -> soundId
+    private val audioManager: AudioManager by lazy { context.getSystemService(Context.AUDIO_SERVICE) as AudioManager }
+    private var focusRequest: AudioFocusRequest? = null
     private var tts: TextToSpeech? = null
     private var ttsReady = false
     private var preloaded = false
+
+    private val ttsVolumeFloor = 0.2f // prevent effectively silent utterances
 
     init {
         // Eagerly initialize TTS and preload sounds on creation
@@ -72,6 +79,12 @@ class AlertEngineImpl @Inject constructor(
         ttsReady = status == TextToSpeech.SUCCESS
         if (ttsReady) {
             tts?.language = Locale.getDefault()
+            tts?.setAudioAttributes(
+                AudioAttributes.Builder()
+                    .setUsage(AudioAttributes.USAGE_ASSISTANCE_ACCESSIBILITY)
+                    .setContentType(AudioAttributes.CONTENT_TYPE_SPEECH)
+                    .build()
+            )
             Log.d("AlertEngine", "TTS initialized successfully")
         } else {
             Log.w("AlertEngine", "TTS initialization failed with status: $status")
@@ -140,10 +153,66 @@ class AlertEngineImpl @Inject constructor(
                 }
             }
             if (channels.haptics) vibrate(type)
-            if (channels.spokenText != null && ttsReady) {
-                tts?.speak(channels.spokenText, TextToSpeech.QUEUE_ADD, null, "alert-${type.name}")
+            val spoken = channels.spokenText
+            if (spoken != null) {
+                if (!ttsReady) {
+                    Log.w("AlertEngine", "TTS not ready; skipping spoken alert for ${type.name}")
+                } else {
+                    val vol = channels.volume.coerceIn(ttsVolumeFloor, 1f)
+                    val focusGained = requestAudioFocus()
+                    val params = Bundle().apply {
+                        putFloat(TextToSpeech.Engine.KEY_PARAM_VOLUME, vol)
+                        putInt(TextToSpeech.Engine.KEY_PARAM_STREAM, AudioManager.STREAM_MUSIC)
+                    }
+                    val utteranceId = "alert-${type.name}-${System.currentTimeMillis()}"
+                    Log.d(
+                        "AlertEngine",
+                        "Speaking alert type=${type.name} vol=$vol focusGained=$focusGained text='${spoken.take(64)}'"
+                    )
+                    tts?.speak(spoken, TextToSpeech.QUEUE_ADD, params, utteranceId)
+                    if (focusGained) abandonAudioFocus()
+                }
             }
         }.onFailure { Log.w("AlertEngine", "playAlert failed", it) }
+    }
+
+    private fun requestAudioFocus(): Boolean {
+        return try {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                val attrs = AudioAttributes.Builder()
+                    .setUsage(AudioAttributes.USAGE_ASSISTANCE_ACCESSIBILITY)
+                    .setContentType(AudioAttributes.CONTENT_TYPE_SPEECH)
+                    .build()
+                val req = AudioFocusRequest.Builder(AudioManager.AUDIOFOCUS_GAIN_TRANSIENT_MAY_DUCK)
+                    .setAudioAttributes(attrs)
+                    .setOnAudioFocusChangeListener { /* no-op */ }
+                    .build()
+                focusRequest = req
+                audioManager.requestAudioFocus(req) == AudioManager.AUDIOFOCUS_REQUEST_GRANTED
+            } else {
+                @Suppress("DEPRECATION")
+                audioManager.requestAudioFocus(
+                    null,
+                    AudioManager.STREAM_MUSIC,
+                    AudioManager.AUDIOFOCUS_GAIN_TRANSIENT_MAY_DUCK
+                ) == AudioManager.AUDIOFOCUS_REQUEST_GRANTED
+            }
+        } catch (e: Exception) {
+            Log.w("AlertEngine", "Audio focus request failed", e)
+            false
+        }
+    }
+
+    private fun abandonAudioFocus() {
+        try {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                focusRequest?.let { audioManager.abandonAudioFocusRequest(it) }
+            } else {
+                @Suppress("DEPRECATION") audioManager.abandonAudioFocus(null)
+            }
+        } catch (e: Exception) {
+            Log.w("AlertEngine", "Audio focus abandon failed", e)
+        }
     }
 
     private fun vibrate(type: AlertType) {
