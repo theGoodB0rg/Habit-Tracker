@@ -902,7 +902,7 @@ fun EnhancedHabitCard(
                     )
                 }
                 val widthClass = rememberWindowWidthClass()
-                val timerSize = if (widthClass == WindowWidthClass.Compact) 60.dp else 72.dp
+                val timerSize = if (widthClass == WindowWidthClass.Compact) 72.dp else 84.dp
 
                 // Stats Row - Enhanced with timing info (wraps on small widths)
                 FlowRow(

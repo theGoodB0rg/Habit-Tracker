@@ -41,7 +41,7 @@ fun RadialTimer(
     remainingMillis: Long,
     isPaused: Boolean,
     modifier: Modifier = Modifier,
-    strokeWidth: Dp = 10.dp,
+    strokeWidth: Dp = 8.dp,
     reducedMotion: Boolean = false,
 ) {
     val percent by remember(totalMillis, remainingMillis) {
@@ -111,14 +111,18 @@ fun RadialTimer(
             Text(
                 text = if (isPaused) stringResource(id = R.string.paused_label) else timeStr,
                 style = MaterialTheme.typography.headlineSmall,
-                textAlign = TextAlign.Center
+                textAlign = TextAlign.Center,
+                maxLines = 1,
+                softWrap = false
             )
         } else {
             Crossfade(targetState = isPaused, label = "pausedLabel") { paused ->
                 Text(
                     text = if (paused) stringResource(id = R.string.paused_label) else timeStr,
                     style = MaterialTheme.typography.headlineSmall,
-                    textAlign = TextAlign.Center
+                    textAlign = TextAlign.Center,
+                    maxLines = 1,
+                    softWrap = false
                 )
             }
         }
