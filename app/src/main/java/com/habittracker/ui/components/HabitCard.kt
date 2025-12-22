@@ -20,8 +20,8 @@ import androidx.compose.ui.unit.dp
 import com.habittracker.ui.models.HabitUiModel
 import com.habittracker.onboarding.components.rememberTooltipTarget
 import com.habittracker.ui.models.timing.HabitTiming
+import com.habittracker.domain.isCompletedThisPeriod
 import java.text.SimpleDateFormat
-import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 import java.util.*
 
@@ -35,8 +35,7 @@ fun HabitCard(
     modifier: Modifier = Modifier,
     isCompact: Boolean = false
 ) {
-    val today = LocalDate.now()
-    val isCompletedToday = habit.lastCompletedDate == today
+    val isCompletedToday = isCompletedThisPeriod(habit.frequency, habit.lastCompletedDate)
     val hasAnyCompletion = habit.lastCompletedDate != null
     
     // Date formatter for future use (e.g., showing last completed date)
@@ -103,7 +102,7 @@ fun HabitCard(
                     }
                     
                     // Show last completed date if available with better spacing
-                    if (!isCompact && habit.lastCompletedDate != null && habit.lastCompletedDate != today) {
+                    if (!isCompact && habit.lastCompletedDate != null && !isCompletedToday) {
                         val lastCompletedText = remember(habit.lastCompletedDate) {
                             "Last: ${dateFormatter.format(java.sql.Date.valueOf(habit.lastCompletedDate.toString()))}"
                         }

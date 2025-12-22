@@ -6,7 +6,7 @@ import com.habittracker.nudges.scheduler.NudgeScheduler
 import com.habittracker.nudges.usecase.HabitAnalysisData
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.first
-import java.time.LocalDate
+import com.habittracker.domain.isCompletedThisPeriod
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -49,7 +49,7 @@ class NudgeService @Inject constructor(
             val habits = habitRepository.getAllHabits().first()
             val habitsData = habits.map { habit ->
                 val stats = createHabitStats(habit.id) // This would normally come from a stats repository
-                val isCompletedToday = habit.lastCompletedDate == LocalDate.now()
+                val isCompletedToday = isCompletedThisPeriod(habit.frequency, habit.lastCompletedDate)
                 
                 HabitAnalysisData(
                     habitId = habit.id,
@@ -79,7 +79,7 @@ class NudgeService @Inject constructor(
                     habitName = habit.name,
                     stats = stats,
                     lastCompletedDate = habit.lastCompletedDate,
-                    isCompletedToday = true
+                    isCompletedToday = isCompletedThisPeriod(habit.frequency, habit.lastCompletedDate)
                 )
                 
                 nudgeScheduler.generateNudgesForHabit(habitData)

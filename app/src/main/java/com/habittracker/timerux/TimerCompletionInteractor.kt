@@ -43,10 +43,19 @@ class TimerCompletionInteractor @Inject constructor() {
     }
 
     sealed interface Action {
-    data class StartTimer(val habitId: Long, val durationOverrideSec: Int? = null): Action
+        data class StartTimer(val habitId: Long, val durationOverrideSec: Int? = null): Action
         data class PauseTimer(val habitId: Long): Action
         data class ResumeTimer(val habitId: Long): Action
-        data class CompleteToday(val habitId: Long, val logDuration: Boolean, val partial: Boolean = false): Action
+        /**
+         * persistDirectly=true means write completion immediately (no timer event expected).
+         * persistDirectly=false means rely on the timer service Completed event to persist.
+         */
+        data class CompleteToday(
+            val habitId: Long,
+            val logDuration: Boolean,
+            val partial: Boolean = false,
+            val persistDirectly: Boolean = false
+        ): Action
         data class SavePartial(val habitId: Long, val durationSec: Int): Action
         data class DiscardSession(val habitId: Long): Action
         data class ShowUndo(val message: String): Action
@@ -65,7 +74,10 @@ class TimerCompletionInteractor @Inject constructor() {
                     return ActionOutcome.Disallow("This habit requires using the timer. Tap the timer button to start.")
                 }
                 ActionOutcome.Execute(
-                    actions = listOf(Action.CompleteToday(inputs.habitId, logDuration = false), Action.ShowUndo("Marked as done. Undo")),
+                    actions = listOf(
+                        Action.CompleteToday(inputs.habitId, logDuration = false, persistDirectly = true),
+                        Action.ShowUndo("Marked as done. Undo")
+                    ),
                     undoable = true
                 )
             }
@@ -97,7 +109,10 @@ class TimerCompletionInteractor @Inject constructor() {
                         return ActionOutcome.Confirm(ConfirmType.CompleteWithoutTimer)
                     }
                     return ActionOutcome.Execute(
-                        actions = listOf(Action.CompleteToday(inputs.habitId, logDuration = false), Action.ShowUndo("Completed without timing. Undo")),
+                        actions = listOf(
+                            Action.CompleteToday(inputs.habitId, logDuration = false, persistDirectly = true),
+                            Action.ShowUndo("Completed without timing. Undo")
+                        ),
                         undoable = true
                     )
                 }
@@ -115,7 +130,11 @@ class TimerCompletionInteractor @Inject constructor() {
                     && (inputs.targetDurationSec != null && inputs.elapsedSec < inputs.targetDurationSec)) {
                     return ActionOutcome.Confirm(ConfirmType.EndPomodoroEarly, inputs.elapsedSec)
                 }
-                val actions = mutableListOf<Action>(Action.CompleteToday(inputs.habitId, logDuration = true), Action.ShowUndo("Marked as done. Undo"))
+                val actions = mutableListOf<Action>(
+                    // Timer path: rely on service Completed event to persist
+                    Action.CompleteToday(inputs.habitId, logDuration = true, persistDirectly = false),
+                    Action.ShowUndo("Marked as done. Undo")
+                )
                 if (smallProgress) {
                     // Optionally show a first-time tip; keep as action for now
                     actions.add(Action.ShowTip("You can time this habit."))

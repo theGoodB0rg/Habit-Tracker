@@ -32,6 +32,7 @@ import com.habittracker.ui.components.analytics.DurationSparkline
 import com.habittracker.ui.viewmodels.analytics.HabitTimingAnalyticsViewModel
 import androidx.hilt.navigation.compose.hiltViewModel
 import java.time.Duration
+import com.habittracker.domain.isCompletedThisPeriod
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 import java.time.format.TextStyle
@@ -134,8 +135,7 @@ fun HabitDetailScreen(
         return
     }
     
-    val today = LocalDate.now()
-    val isCompletedToday = habit.lastCompletedDate == today
+    val isCompletedToday = isCompletedThisPeriod(habit.frequency, habit.lastCompletedDate)
     
     Scaffold(
         topBar = {
@@ -720,7 +720,8 @@ private fun MonthlyOverviewCard(
             // In a real app, you'd calculate actual completion data
             val daysInMonth = LocalDate.now().lengthOfMonth()
             val completedDays = minOf(habit.streakCount, daysInMonth)
-            val completionRate = (completedDays.toFloat() / daysInMonth * 100).toInt()
+            val completionFraction = (completedDays.toFloat() / daysInMonth.toFloat()).coerceIn(0f, 1f)
+            val completionRate = (completionFraction * 100).toInt()
             
             Row(
                 modifier = Modifier.fillMaxWidth(),
@@ -761,7 +762,7 @@ private fun MonthlyOverviewCard(
             
             // Progress bar
             LinearProgressIndicator(
-                progress = { completionRate / 100f },
+                progress = { completionFraction },
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(8.dp)

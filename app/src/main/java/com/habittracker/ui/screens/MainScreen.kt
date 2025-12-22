@@ -76,6 +76,7 @@ import com.habittracker.timerux.TimerCompletionInteractor.Intent as TimerIntent
 import com.habittracker.timerux.resolveTimerUxEntryPoint
 import com.habittracker.timing.TimerFeatureFlags
 import com.habittracker.ui.utils.TimerActionTelemetryEffect
+import com.habittracker.domain.isCompletedThisPeriod
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 
@@ -157,7 +158,7 @@ fun MainScreen(
     // Filter habits based on toggle and convert to UI models
     val filteredHabits = remember(hydrated, showCompletedOnly) {
         val filtered = if (showCompletedOnly) {
-            hydrated.filter { it.lastCompletedDate == LocalDate.now() }
+            hydrated.filter { isCompletedThisPeriod(it.frequency, it.lastCompletedDate) }
         } else {
             hydrated
         }
@@ -778,9 +779,8 @@ private fun StatisticsCard(
     habits: List<HabitUiModel>,
     modifier: Modifier = Modifier
 ) {
-    val today = LocalDate.now()
-    val completedToday = habits.count { 
-        it.lastCompletedDate == today
+    val completedToday = habits.count { habit ->
+        isCompletedThisPeriod(habit.frequency, habit.lastCompletedDate)
     }
     val totalStreak = habits.sumOf { it.streakCount }
     val avgStreak = if (habits.isNotEmpty()) totalStreak / habits.size else 0

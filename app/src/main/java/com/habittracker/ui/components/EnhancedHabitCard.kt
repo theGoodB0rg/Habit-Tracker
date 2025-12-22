@@ -32,8 +32,8 @@ import com.habittracker.ui.viewmodels.timing.ActiveTimerViewModel
 import com.habittracker.ui.components.timer.RadialTimer
 import com.habittracker.ui.viewmodels.timing.TimerTickerViewModel
 import com.habittracker.onboarding.components.rememberTooltipTarget
+import com.habittracker.domain.isCompletedThisPeriod
 import java.text.SimpleDateFormat
-import java.time.LocalDate
 import java.time.Duration
 import java.util.*
 import kotlinx.coroutines.launch
@@ -90,8 +90,7 @@ fun EnhancedHabitCard(
     val tickerVm = tickerViewModel ?: hiltViewModel<TimerTickerViewModel>()
     val activeVm = activeTimerVm ?: hiltViewModel<ActiveTimerViewModel>()
     val partialVm = partialSessionVm ?: hiltViewModel<com.habittracker.ui.viewmodels.timing.PartialSessionViewModel>()
-    val today = LocalDate.now()
-    val isCompletedToday = habit.lastCompletedDate == today
+    val isCompletedToday = isCompletedThisPeriod(habit.frequency, habit.lastCompletedDate)
     // Only allow navigating to details/analytics if the habit has been completed at least once
     val hasAnyCompletion = habit.lastCompletedDate != null
     val context = androidx.compose.ui.platform.LocalContext.current
@@ -321,7 +320,7 @@ fun EnhancedHabitCard(
                     }
                     
                     // Show last completed date if available
-                    if (!isCompact && habit.lastCompletedDate != null && habit.lastCompletedDate != today) {
+                    if (!isCompact && habit.lastCompletedDate != null && !isCompletedToday) {
                         val lastCompletedText = remember(habit.lastCompletedDate) {
                             "Last: ${dateFormatter.format(java.sql.Date.valueOf(habit.lastCompletedDate.toString()))}"
                         }
@@ -448,7 +447,7 @@ fun EnhancedHabitCard(
                                             else -> com.habittracker.timerux.TimerCompletionInteractor.TimerState.IDLE
                                         },
                                         elapsedSec = session?.elapsedTime?.seconds?.toInt() ?: 0,
-                                        todayCompleted = habit.lastCompletedDate == java.time.LocalDate.now(),
+                                        todayCompleted = isCompletedThisPeriod(habit.frequency, habit.lastCompletedDate),
                                         platform = com.habittracker.timerux.TimerCompletionInteractor.Platform.APP,
                                         singleActiveTimer = true,
                                         timerType = session?.type,

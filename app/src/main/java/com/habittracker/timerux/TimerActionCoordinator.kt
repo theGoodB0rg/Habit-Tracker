@@ -358,13 +358,17 @@ class TimerActionCoordinator @Inject constructor(
                 is TimerAction.PauseTimer -> timerController.pause()
                 is TimerAction.ResumeTimer -> timerController.resume()
                 is TimerAction.CompleteToday -> {
-                    // Complete the timer session if one is active
-                    timerController.complete()
-                    appScope.launch {
-                        runCatching {
-                            habitRepository.markHabitAsDone(action.habitId, LocalDate.now())
-                        }.onFailure { emitUiEvent(UiEvent.Snackbar("Failed to mark complete: ${'$'}{it.message}")) }
-                        emitUiEvent(UiEvent.Completed(action.habitId))
+                    if (action.persistDirectly) {
+                        // No timer event expected; persist immediately and surface UI event
+                        appScope.launch {
+                            runCatching {
+                                habitRepository.markHabitAsDone(action.habitId, LocalDate.now())
+                            }.onFailure { emitUiEvent(UiEvent.Snackbar("Failed to mark complete: ${'$'}{it.message}")) }
+                            emitUiEvent(UiEvent.Completed(action.habitId))
+                        }
+                    } else {
+                        // Timer path: ask service to complete; persistence will occur on TimerEvent.Completed
+                        timerController.complete()
                     }
                 }
                 is TimerAction.SavePartial -> {
