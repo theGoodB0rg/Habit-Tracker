@@ -29,6 +29,7 @@ data class HabitCompletionEntity(
     val habitId: Long,
     val completedDate: LocalDate,
     val completedAt: LocalDateTime,
+    val periodKey: String,
     val note: String? = null
 )
 

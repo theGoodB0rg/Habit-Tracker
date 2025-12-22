@@ -7,6 +7,7 @@ import com.habittracker.data.database.entity.HabitEntity
 import com.habittracker.data.database.entity.HabitFrequency
 import com.habittracker.domain.model.HabitStats
 import com.habittracker.domain.model.HabitStreak
+import com.habittracker.core.PeriodKeyCalculator
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.first
@@ -74,17 +75,16 @@ class HabitManagementEngine @Inject constructor(
         val habit = habitDao.getHabitById(habitId) ?: return HabitStreak(habitId, 0, 0, null)
 
         // Enforce single completion per active period
-        val (periodStart, periodEnd) = currentPeriodRange(habit.frequency, date)
-        val periodCompletions = completionDao.getCompletionsInDateRange(habitId, periodStart, periodEnd)
-        if (periodCompletions.isNotEmpty()) {
-            return getCurrentStreak(habitId)
-        }
+        val periodKey = PeriodKeyCalculator.fromDate(habit.frequency, date)
+        val alreadyCompleted = completionDao.isHabitCompletedForPeriod(habitId, periodKey)
+        if (alreadyCompleted) return getCurrentStreak(habitId)
         
         // Add completion record
         val completion = HabitCompletionEntity(
             habitId = habitId,
             completedDate = date,
             completedAt = java.time.LocalDateTime.now(),
+            periodKey = periodKey,
             note = note
         )
         completionDao.insertCompletion(completion)
@@ -99,7 +99,11 @@ class HabitManagementEngine @Inject constructor(
      * Unmark habit (remove completion for a specific date)
      */
     suspend fun unmarkHabitForDate(habitId: Long, date: LocalDate) {
-        completionDao.deleteCompletion(habitId, date)
+        val habit = habitDao.getHabitById(habitId)
+        val freq = habit?.frequency ?: HabitFrequency.DAILY
+        val periodKey = PeriodKeyCalculator.fromDate(freq, date)
+        // Remove by period to stay aligned with uniqueness
+        completionDao.deleteCompletionForPeriod(habitId, periodKey)
         updateHabitStreaks(habitId)
     }
     
@@ -219,11 +223,9 @@ class HabitManagementEngine @Inject constructor(
     suspend fun getTodayCompletionStatus(): Map<Long, Boolean> {
         val today = LocalDate.now()
         val habits = habitDao.getAllHabits().first()
-        
         return habits.associate { habit ->
-            val (periodStart, periodEnd) = currentPeriodRange(habit.frequency, today)
-            val periodCompletions = completionDao.getCompletionsInDateRange(habit.id, periodStart, periodEnd)
-            habit.id to periodCompletions.isNotEmpty()
+            val key = PeriodKeyCalculator.fromDate(habit.frequency, today)
+            habit.id to completionDao.isHabitCompletedForPeriod(habit.id, key)
         }
     }
     

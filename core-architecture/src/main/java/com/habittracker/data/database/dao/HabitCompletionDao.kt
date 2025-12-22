@@ -43,6 +43,12 @@ interface HabitCompletionDao {
      */
     @Query("SELECT COUNT(*) > 0 FROM habit_completions WHERE habitId = :habitId AND completedDate = :date")
     suspend fun isHabitCompletedOnDate(habitId: Long, date: LocalDate): Boolean
+
+    @Query("SELECT COUNT(*) > 0 FROM habit_completions WHERE habitId = :habitId AND periodKey = :periodKey")
+    suspend fun isHabitCompletedForPeriod(habitId: Long, periodKey: String): Boolean
+
+    @Query("DELETE FROM habit_completions WHERE habitId = :habitId AND periodKey = :periodKey")
+    suspend fun deleteCompletionForPeriod(habitId: Long, periodKey: String)
     
     /**
      * Get the last completion date for a habit

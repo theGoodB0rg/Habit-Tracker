@@ -4,8 +4,8 @@ A single source of truth for the timer-to-habit completion work. Keep this file 
 
 ## Current next actions
 - Finalize Phase 2 spec: confirm the embedded rules are approved and mark Phase 2 ready for implementation.
-- Design period-key + duplicate prevention (Phase 4 design prep): decide storage/DAO/repo approach for per-period idempotency across app and widget paths.
-- Plan timer->completion wiring (Phase 3 prep): map TimerService/TimerActionCoordinator changes and tests to enforce flags and idempotency.
+- Phase 3 validation: add tests for timer-completion path and run build (e.g., ./gradlew test assembleDebug).
+- Phase 4 implementation/validation: period-key uniqueness now added (schema + migration + repo/widget idempotency). Next: add tests and run build.
 
 ## Authoritative directives (do not dilute)
 - This plan is fixed from the user’s supplied phases and guardrails. Do not “reinterpret” or simplify; keep these intact.
@@ -90,7 +90,17 @@ A single source of truth for the timer-to-habit completion work. Keep this file 
 - Deliverable: Data/DAO/repo logic (or schema) enforcing uniqueness; tests across daily/weekly/monthly.
 - Validation: Unit tests for duplicates; APK build.
 - Commit label: "Enforce single completion per period".
-- Status: Not started.
+- Status: Implementation in progress (schema + migration + repo/widget idempotency added; tests/build pending).
+
+**Phase 4 implementation so far**
+- Added `periodKey` to `habit_completions` with unique index `(habitId, periodKey)` and migration 7→8 to backfill, dedupe, and enforce uniqueness.
+- Shared `PeriodKeyCalculator` (daily yyyy-MM-dd, weekly isoYear-Www, monthly yyyy-MM).
+- Repository paths (app core + widget) compute periodKey and check idempotency before writes; deletes use periodKey.
+- Export mapping updated to include periodKey.
+
+**Remaining validation for Phase 4**
+- Add tests for daily/weekly/monthly duplicate prevention and mixed triggers (timer + manual, app + widget).
+- Run build/tests (e.g., ./gradlew test assembleDebug).
 
 ### Phase 5 — UI/UX adjustments
 - Goal: Update habit cards/detail to show completed-this-period state and disable duplicate completes; add snackbar/toast on auto-complete; button state updates immediately.

@@ -24,7 +24,7 @@ import java.time.LocalDateTime
     indices = [
         Index(value = ["habitId"]),
         Index(value = ["completedDate"]),
-        Index(value = ["habitId", "completedDate"], unique = true)
+        Index(value = ["habitId", "periodKey"], unique = true)
     ]
 )
 data class HabitCompletionEntity(
@@ -32,10 +32,12 @@ data class HabitCompletionEntity(
     val id: Long = 0,
     
     val habitId: Long,
-    
+
     val completedDate: LocalDate,
-    
+
     val completedAt: LocalDateTime,
-    
+
+    val periodKey: String = "",
+
     val note: String? = null
 )

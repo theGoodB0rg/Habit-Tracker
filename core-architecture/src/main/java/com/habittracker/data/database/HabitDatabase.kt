@@ -39,7 +39,7 @@ import kotlinx.coroutines.launch
         TimerAlertProfileEntity::class,
         PartialSessionEntity::class
     ],
-    version = 7, // Incremented for partial sessions table
+        version = 8, // Incremented for period key on completions
     exportSchema = false
 )
 @TypeConverters(DatabaseConverters::class)
@@ -73,7 +73,7 @@ abstract class HabitDatabase : RoomDatabase() {
                     HabitDatabase::class.java,
                     DATABASE_NAME
                 )
-                .addMigrations(MIGRATION_3_4, MIGRATION_4_5, MIGRATION_5_6, MIGRATION_6_7)
+                    .addMigrations(MIGRATION_3_4, MIGRATION_4_5, MIGRATION_5_6, MIGRATION_6_7, MIGRATION_7_8)
                 // For very old installs (DB version 1 or 2), fall back to destructive migration.
                 // We keep explicit migrations for 3+ to preserve user data where possible.
                 .fallbackToDestructiveMigrationFrom(1, 2)
@@ -153,6 +153,86 @@ abstract class HabitDatabase : RoomDatabase() {
                 )
                 database.execSQL("CREATE INDEX IF NOT EXISTS `index_partial_sessions_habit_id` ON `partial_sessions` (`habit_id`)")
                 database.execSQL("CREATE INDEX IF NOT EXISTS `index_partial_sessions_created_at` ON `partial_sessions` (`created_at`)")
+            }
+        }
+
+        // Migration adding periodKey to habit_completions with per-period uniqueness
+        val MIGRATION_7_8 = object : Migration(7, 8) {
+            override fun migrate(database: SupportSQLiteDatabase) {
+                database.execSQL("ALTER TABLE habit_completions ADD COLUMN periodKey TEXT NOT NULL DEFAULT ''")
+
+                val freqByHabit = mutableMapOf<Long, String>()
+                database.query("SELECT id, frequency FROM habits").use { cursor ->
+                    val idIdx = cursor.getColumnIndex("id")
+                    val freqIdx = cursor.getColumnIndex("frequency")
+                    while (cursor.moveToNext()) {
+                        val id = cursor.getLong(idIdx)
+                        val freq = cursor.getString(freqIdx) ?: "DAILY"
+                        freqByHabit[id] = freq
+                    }
+                }
+
+                database.query("SELECT id, habitId, completedDate FROM habit_completions").use { cursor ->
+                    val idIdx = cursor.getColumnIndex("id")
+                    val habitIdx = cursor.getColumnIndex("habitId")
+                    val dateIdx = cursor.getColumnIndex("completedDate")
+                    while (cursor.moveToNext()) {
+                        val rowId = cursor.getLong(idIdx)
+                        val habitId = cursor.getLong(habitIdx)
+                        val dateStr = cursor.getString(dateIdx) ?: continue
+                        val freq = freqByHabit[habitId] ?: "DAILY"
+                        val periodKey = computePeriodKey(freq, dateStr)
+                        database.execSQL(
+                            "UPDATE habit_completions SET periodKey = ? WHERE id = ?",
+                            arrayOf(periodKey, rowId)
+                        )
+                    }
+                }
+
+                database.execSQL("UPDATE habit_completions SET periodKey = completedDate WHERE periodKey = '' OR periodKey IS NULL")
+
+                // Deduplicate by period key per habit, keep smallest id
+                val toDelete = mutableListOf<Pair<Long, String>>()
+                database.query(
+                    """
+                        SELECT habitId, periodKey, MIN(id) as keepId
+                        FROM habit_completions
+                        GROUP BY habitId, periodKey
+                        HAVING COUNT(*) > 1
+                    """
+                ).use { cursor ->
+                    val habitIdx = cursor.getColumnIndex("habitId")
+                    val keyIdx = cursor.getColumnIndex("periodKey")
+                    val keepIdx = cursor.getColumnIndex("keepId")
+                    while (cursor.moveToNext()) {
+                        val habitId = cursor.getLong(habitIdx)
+                        val key = cursor.getString(keyIdx)
+                        val keepId = cursor.getLong(keepIdx)
+                        database.execSQL(
+                            "DELETE FROM habit_completions WHERE habitId = ? AND periodKey = ? AND id != ?",
+                            arrayOf(habitId, key, keepId)
+                        )
+                    }
+                }
+
+                database.execSQL("CREATE UNIQUE INDEX IF NOT EXISTS `index_habit_completions_habitId_periodKey` ON `habit_completions` (`habitId`, `periodKey`)")
+            }
+
+            private fun computePeriodKey(freq: String, dateStr: String): String {
+                return try {
+                    val date = java.time.LocalDate.parse(dateStr)
+                    when (freq) {
+                        "WEEKLY" -> {
+                            val week = date.get(java.time.temporal.IsoFields.WEEK_OF_WEEK_BASED_YEAR)
+                            val year = date.get(java.time.temporal.IsoFields.WEEK_BASED_YEAR)
+                            "%04d-W%02d".format(year, week)
+                        }
+                        "MONTHLY" -> "%04d-%02d".format(date.year, date.monthValue)
+                        else -> date.toString()
+                    }
+                } catch (_: Exception) {
+                    dateStr
+                }
             }
         }
 

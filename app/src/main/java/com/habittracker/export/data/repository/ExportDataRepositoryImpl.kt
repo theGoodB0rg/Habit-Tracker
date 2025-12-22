@@ -174,6 +174,7 @@ private fun AppHabitCompletionEntity.toExportEntity(): HabitCompletionEntity {
         habitId = this.habitId,
         completedDate = this.completedDate,
         completedAt = this.completedAt,
+        periodKey = this.periodKey,
         note = this.note
     )
 }

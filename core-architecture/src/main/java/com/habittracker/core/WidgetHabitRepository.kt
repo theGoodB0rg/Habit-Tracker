@@ -11,6 +11,7 @@ import com.habittracker.data.database.entity.HabitEntity
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.withContext
 import kotlinx.coroutines.Dispatchers
+import com.habittracker.core.PeriodKeyCalculator
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.LocalTime
@@ -117,11 +118,14 @@ class WidgetHabitRepository private constructor(
     suspend fun toggleHabitCompletion(habitId: Long): Boolean = withContext(Dispatchers.IO) {
         try {
             val today = LocalDate.now()
-            val isCurrentlyCompleted = completionDao.isHabitCompletedOnDate(habitId, today)
+                val habit = habitDao.getHabitById(habitId)
+                val frequency = habit?.frequency ?: com.habittracker.data.database.entity.HabitFrequency.DAILY
+                val periodKey = PeriodKeyCalculator.fromDate(frequency, today)
+                val isCurrentlyCompleted = completionDao.isHabitCompletedForPeriod(habitId, periodKey)
             
             if (isCurrentlyCompleted) {
                 // Mark as incomplete - delete the completion record
-                completionDao.deleteCompletion(habitId, today)
+                    completionDao.deleteCompletionForPeriod(habitId, periodKey)
                 
                 // Update habit streak (would need proper streak calculation logic)
                 updateHabitStreakAfterUncomplete(habitId)
@@ -129,12 +133,13 @@ class WidgetHabitRepository private constructor(
                 false // Now incomplete
             } else {
                 // Mark as complete - insert completion record
-                val completionEntity = HabitCompletionEntity(
-                    habitId = habitId,
-                    completedDate = today,
-                    completedAt = LocalDateTime.now(),
-                    note = null // Widget doesn't support notes
-                )
+                    val completionEntity = HabitCompletionEntity(
+                        habitId = habitId,
+                        completedDate = today,
+                        completedAt = LocalDateTime.now(),
+                        periodKey = periodKey,
+                        note = null // Widget doesn't support notes
+                    )
                 
                 completionDao.insertCompletion(completionEntity)
                 

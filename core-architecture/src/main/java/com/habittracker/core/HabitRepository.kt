@@ -3,6 +3,7 @@ package com.habittracker.core
 import android.content.Context
 import com.habittracker.data.database.HabitDatabase
 import com.habittracker.data.database.entity.HabitCompletionEntity
+import com.habittracker.core.PeriodKeyCalculator
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
@@ -83,10 +84,17 @@ private class DatabaseHabitRepository(private val context: Context) : HabitRepos
     }
     
     override suspend fun markHabitCompleted(habitId: Long, date: LocalDate) {
+        val habit = habitDao.getHabitById(habitId)
+        val frequency = habit?.frequency ?: com.habittracker.data.database.entity.HabitFrequency.DAILY
+        val periodKey = PeriodKeyCalculator.fromDate(frequency, date)
+        val alreadyCompleted = completionDao.isHabitCompletedForPeriod(habitId, periodKey)
+        if (alreadyCompleted) return
+
         val completionEntity = HabitCompletionEntity(
             habitId = habitId,
             completedDate = date,
             completedAt = LocalDateTime.now(),
+            periodKey = periodKey,
             note = null
         )
         completionDao.insertCompletion(completionEntity)
@@ -96,14 +104,15 @@ private class DatabaseHabitRepository(private val context: Context) : HabitRepos
     }
     
     override suspend fun toggleHabitCompletion(habitId: Long, date: LocalDate): Boolean {
-        val isCurrentlyCompleted = completionDao.isHabitCompletedOnDate(habitId, date)
-        
+        val habit = habitDao.getHabitById(habitId)
+        val frequency = habit?.frequency ?: com.habittracker.data.database.entity.HabitFrequency.DAILY
+        val periodKey = PeriodKeyCalculator.fromDate(frequency, date)
+        val isCurrentlyCompleted = completionDao.isHabitCompletedForPeriod(habitId, periodKey)
+
         return if (isCurrentlyCompleted) {
-            // Mark as incomplete
-            completionDao.deleteCompletion(habitId, date)
+            completionDao.deleteCompletionForPeriod(habitId, periodKey)
             false
         } else {
-            // Mark as complete
             markHabitCompleted(habitId, date)
             true
         }
