@@ -155,6 +155,9 @@ fun EnhancedHabitCard(
     } else {
         isPaused
     }
+
+    val isAtTarget = handler != null && coordinatorState.trackedHabitId == habit.id &&
+            coordinatorState.timerState == com.habittracker.timerux.TimerCompletionInteractor.TimerState.AT_TARGET
     
     // Timing feature state
     val userEngagementLevel by timingVm.userEngagementLevel.collectAsState()
@@ -212,6 +215,11 @@ fun EnhancedHabitCard(
                     haptics.trigger(TimerHapticType.COMPLETION)
                     showMessage("Completed for this period")
                     onMarkComplete()
+                }
+            },
+            onCompletionPrompt = { event ->
+                if (event.habitId == habit.id) {
+                    showMessage(event.message)
                 }
             }
         )
@@ -590,55 +598,74 @@ fun EnhancedHabitCard(
                 }
                 
                 // Primary timer controls row placed under the title to avoid replacing/squeezing text
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(8.dp),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    SimpleTimerButton(
-                        habit = habit,
-                        onStartTimer = { h, d ->
-                            if (!controlsEnabled) return@SimpleTimerButton
-                            onStartTimer(h, d)
+                if (isAtTarget) {
+                    Button(
+                        onClick = {
+                            haptics.trigger(TimerHapticType.CLICK)
+                            handler?.handle(TimerIntent.Done, habit.id)
                         },
-                        modifier = controlModifier
-                    )
-                    // Runtime controls only when a timer is active or paused for this habit
-                    if (isActive || isPaused) {
-                        IconButton(
-                            onClick = {
-                                if (handler != null) {
-                                    val intent = if (pausedForUi) TimerIntent.Resume else TimerIntent.Pause
-                                    handler.handle(intent, habit.id)
-                                } else {
-                                    if (isPaused) timerController.resume() else timerController.pause()
-                                }
+                        enabled = controlsEnabled,
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = MaterialTheme.colorScheme.primary,
+                            contentColor = MaterialTheme.colorScheme.onPrimary
+                        ),
+                        modifier = controlModifier.then(Modifier.fillMaxWidth().height(56.dp))
+                    ) {
+                        Icon(Icons.Filled.CheckCircle, contentDescription = null)
+                        Spacer(Modifier.width(8.dp))
+                        Text("Timer Finished! Tap to Complete", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
+                    }
+                } else {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        SimpleTimerButton(
+                            habit = habit,
+                            onStartTimer = { h, d ->
+                                if (!controlsEnabled) return@SimpleTimerButton
+                                onStartTimer(h, d)
                             },
-                            enabled = controlsEnabled,
-                            modifier = controlModifier.then(Modifier.size(48.dp))
-                        ) {
-                            Icon(
-                                imageVector = if (pausedForUi) Icons.Filled.PlayArrow else Icons.Filled.Pause,
-                                contentDescription = if (pausedForUi) "Resume timer" else "Pause timer",
-                                modifier = Modifier.size(20.dp)
-                            )
-                        }
-                        IconButton(
-                            onClick = {
-                                if (handler != null) {
-                                    handler.handle(TimerIntent.Done, habit.id)
-                                } else {
-                                    timerController.complete()
-                                }
-                            },
-                            enabled = controlsEnabled,
-                            modifier = controlModifier.then(Modifier.size(48.dp))
-                        ) {
-                            Icon(
-                                imageVector = Icons.Filled.Stop,
-                                contentDescription = "Complete session",
-                                modifier = Modifier.size(20.dp)
-                            )
+                            modifier = controlModifier
+                        )
+                        // Runtime controls only when a timer is active or paused for this habit
+                        if (isActive || isPaused) {
+                            IconButton(
+                                onClick = {
+                                    if (handler != null) {
+                                        val intent = if (pausedForUi) TimerIntent.Resume else TimerIntent.Pause
+                                        handler.handle(intent, habit.id)
+                                    } else {
+                                        if (isPaused) timerController.resume() else timerController.pause()
+                                    }
+                                },
+                                enabled = controlsEnabled,
+                                modifier = controlModifier.then(Modifier.size(48.dp))
+                            ) {
+                                Icon(
+                                    imageVector = if (pausedForUi) Icons.Filled.PlayArrow else Icons.Filled.Pause,
+                                    contentDescription = if (pausedForUi) "Resume timer" else "Pause timer",
+                                    modifier = Modifier.size(20.dp)
+                                )
+                            }
+                            IconButton(
+                                onClick = {
+                                    if (handler != null) {
+                                        handler.handle(TimerIntent.Done, habit.id)
+                                    } else {
+                                        timerController.complete()
+                                    }
+                                },
+                                enabled = controlsEnabled,
+                                modifier = controlModifier.then(Modifier.size(48.dp))
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Filled.Stop,
+                                    contentDescription = "Complete session",
+                                    modifier = Modifier.size(20.dp)
+                                )
+                            }
                         }
                     }
                 }

@@ -545,7 +545,7 @@ fun EditHabitScreen(
                                         .fillMaxWidth()
                                         .semantics(mergeDescendants = true) {
                                             role = Role.Switch
-                                            contentDescription = "Auto-complete at target. Automatically mark done when reaching the target duration."
+                                            contentDescription = "Auto-complete at target. If enabled, the habit is marked done automatically when the timer finishes."
                                             stateDescription = if (autoCompleteOnTarget) "On" else "Off"
                                         }
                                         .toggleable(value = autoCompleteOnTarget, role = Role.Switch, onValueChange = { autoCompleteOnTarget = it })
@@ -553,8 +553,10 @@ fun EditHabitScreen(
                                     Column(Modifier.weight(1f)) {
                                         Text("Auto-complete at target", fontWeight = FontWeight.SemiBold)
                                         Text(
-                                            "Automatically mark done when reaching the target duration.",
-                                            style = MaterialTheme.typography.bodySmall
+                                            if (autoCompleteOnTarget) "Automatically mark done when timer finishes"
+                                            else "Timer will prompt you to complete manually",
+                                            style = MaterialTheme.typography.bodySmall,
+                                            color = MaterialTheme.colorScheme.onSurfaceVariant
                                         )
                                     }
                                     Switch(

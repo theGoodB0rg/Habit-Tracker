@@ -69,6 +69,8 @@ class TimerActionCoordinator @Inject constructor(
         data class Tip(val message: String) : UiEvent
         data class Confirm(val habitId: Long, val type: ConfirmType, val payload: Any?) : UiEvent
         data class Completed(val habitId: Long) : UiEvent
+        // Timer completion fallback: Prompt user to complete when timer finishes without auto-complete
+        data class CompletionPrompt(val habitId: Long, val message: String) : UiEvent
     }
 
     sealed interface TimerActionTelemetry {
@@ -459,6 +461,22 @@ class TimerActionCoordinator @Inject constructor(
                 if (_state.value.trackedHabitId == event.habitId) {
                     _state.value = _state.value.copy(remainingMs = event.newTargetMs)
                 }
+            }
+            is TimerEvent.ReachedTarget -> {
+                // Timer completion fallback: Timer finished without auto-complete
+                remainingByHabit[event.habitId] = 0L
+                updateTrackedState(
+                    habitId = event.habitId,
+                    waiting = false,
+                    timerState = TimerState.AT_TARGET,
+                    remaining = 0L,
+                    paused = false
+                )
+                // Emit completion prompt UI event
+                emitUiEvent(UiEvent.CompletionPrompt(
+                    habitId = event.habitId,
+                    message = "Timer finished! Tap to complete."
+                ))
             }
             else -> Unit
         }

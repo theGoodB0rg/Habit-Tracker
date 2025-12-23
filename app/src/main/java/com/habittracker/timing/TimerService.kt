@@ -83,6 +83,8 @@ class TimerService : Service() {
     private var autoCompleteOnTarget: Boolean = false
     // Phase 2: Gentle nudge before target
     private var gentleNudgePosted: Boolean = false
+    // Timer completion fallback: Track if we've emitted ReachedTarget for this session
+    private var targetReachedEmitted: Boolean = false
     // Analytics: mark when we completed to avoid logging discard on stop
     private var completedThisSession: Boolean = false
     // Debouncing for notification/widget actions to prevent double-tap bugs
@@ -162,6 +164,7 @@ class TimerService : Service() {
                     nextAlertIndex = 0
                     postedHeadsUp = false
                     gentleNudgePosted = false
+                    targetReachedEmitted = false
                     startTicker()
                 }
             } catch (_: Exception) { /* best-effort recovery */ }
@@ -272,6 +275,7 @@ class TimerService : Service() {
                 nextAlertIndex = 0
                 postedHeadsUp = false
                 gentleNudgePosted = false
+                targetReachedEmitted = false
                 startTicker()
                 // Emit start with auto-complete flag for UI awareness
                 TimerBus.emit(TimerEvent.Started(sid, habitId, targetDurationMs, autoCompleteOnTarget))
@@ -352,6 +356,7 @@ class TimerService : Service() {
                 nextAlertIndex = 0
                 postedHeadsUp = false
                 gentleNudgePosted = false
+                targetReachedEmitted = false
                 cumulativeElapsedMs = 0L
                 startTicker()
 
@@ -472,6 +477,15 @@ class TimerService : Service() {
                     } else if (autoCompleteOnTarget) {
                         handleComplete()
                         return@launch
+                    } else {
+                        // Timer completion fallback: Emit event for manual completion prompt
+                        if (!targetReachedEmitted) {
+                            val sidSafe = sessionId
+                            if (sidSafe != null) {
+                                TimerBus.emit(TimerEvent.ReachedTarget(sidSafe, habitId, elapsedMs(now)))
+                                targetReachedEmitted = true
+                            }
+                        }
                     }
                 }
                 // Phase UIX-7: Optional heads-up notification for final 10s
@@ -667,7 +681,14 @@ class TimerService : Service() {
             String.format("%d:%02d remaining", mins, secs)
         }
         
-        val baseText = if (errorText != null) errorText else if (paused) getString(R.string.notif_timer_paused) else timeText
+        // Timer completion fallback: Show completion prompt when at target without auto-complete
+        val atTargetWithoutAutoComplete = remainingMs <= 0L && !autoCompleteOnTarget
+        val baseText = when {
+            errorText != null -> errorText
+            paused -> getString(R.string.notif_timer_paused)
+            atTargetWithoutAutoComplete -> "Timer finished! Tap to complete"
+            else -> timeText
+        }
         val title = getString(R.string.app_name)
     val builder = NotificationCompat.Builder(this, CHANNEL_ID)
             .setSmallIcon(if (paused) android.R.drawable.ic_media_pause else android.R.drawable.ic_media_play)
@@ -679,16 +700,22 @@ class TimerService : Service() {
 
         // Actions
         if (errorText == null) {
-            if (paused) {
+            if (atTargetWithoutAutoComplete) {
+                // Timer completion fallback: Prominent "Complete Now" action at target
+                builder.addAction(android.R.drawable.checkbox_on_background, "Complete Now", servicePendingIntent(ACTION_COMPLETE))
+                builder.addAction(android.R.drawable.ic_input_add, getString(R.string.action_extend_5m), servicePendingIntent(ACTION_EXTEND_5M))
+            } else if (paused) {
                 builder.addAction(android.R.drawable.ic_media_play, getString(R.string.action_resume), servicePendingIntent(ACTION_RESUME))
             } else {
                 builder.addAction(android.R.drawable.ic_media_pause, getString(R.string.action_pause), servicePendingIntent(ACTION_PAUSE))
             }
-            builder.addAction(android.R.drawable.ic_input_add, getString(R.string.action_extend_5m), servicePendingIntent(ACTION_EXTEND_5M))
-            // Quick +/-1m controls (Phase 2)
-            builder.addAction(0, getString(R.string.action_add_1m), servicePendingIntent(ACTION_ADD_1M))
-            builder.addAction(0, getString(R.string.action_sub_1m), servicePendingIntent(ACTION_SUB_1M))
-            builder.addAction(android.R.drawable.checkbox_on_background, getString(R.string.action_complete), servicePendingIntent(ACTION_COMPLETE))
+            if (!atTargetWithoutAutoComplete) {
+                builder.addAction(android.R.drawable.ic_input_add, getString(R.string.action_extend_5m), servicePendingIntent(ACTION_EXTEND_5M))
+                // Quick +/-1m controls (Phase 2)
+                builder.addAction(0, getString(R.string.action_add_1m), servicePendingIntent(ACTION_ADD_1M))
+                builder.addAction(0, getString(R.string.action_sub_1m), servicePendingIntent(ACTION_SUB_1M))
+                builder.addAction(android.R.drawable.checkbox_on_background, getString(R.string.action_complete), servicePendingIntent(ACTION_COMPLETE))
+            }
         }
         return builder.build()
     }
@@ -916,6 +943,8 @@ sealed class TimerEvent {
     data class AutoPaused(val pausedSessionId: Long, val pausedHabitId: Long) : TimerEvent()
     // Phase 5: Pomodoro segment changes
     data class SegmentChanged(val sessionId: Long, val habitId: Long, val inBreak: Boolean, val cycleCount: Int) : TimerEvent()
+    // Timer completion fallback: Emitted when timer reaches zero but auto-complete is disabled
+    data class ReachedTarget(val sessionId: Long, val habitId: Long, val elapsedMs: Long) : TimerEvent()
 }
 
 // Phase UIX-2: Alert scheduling types & bus

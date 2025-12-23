@@ -32,7 +32,7 @@ class TimerCompletionInteractor @Inject constructor() {
     )
 
     enum class Platform { APP, WIDGET, NOTIF }
-    enum class TimerState { IDLE, RUNNING, PAUSED }
+    enum class TimerState { IDLE, RUNNING, PAUSED, AT_TARGET }
 
     sealed interface Intent { object Start: Intent; object Pause: Intent; object Resume: Intent; object Done: Intent; object StopWithoutComplete: Intent; object QuickComplete: Intent }
 
