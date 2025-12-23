@@ -35,7 +35,11 @@ fun HabitCard(
     modifier: Modifier = Modifier,
     isCompact: Boolean = false
 ) {
-    val isCompletedToday = isCompletedThisPeriod(habit.frequency, habit.lastCompletedDate)
+    val completedFromModel = isCompletedThisPeriod(habit.frequency, habit.lastCompletedDate)
+    var completedThisPeriod by remember(habit.id) { mutableStateOf(completedFromModel) }
+    LaunchedEffect(completedFromModel) {
+        completedThisPeriod = completedFromModel
+    }
     val hasAnyCompletion = habit.lastCompletedDate != null
     
     // Date formatter for future use (e.g., showing last completed date)
@@ -53,11 +57,11 @@ fun HabitCard(
             }
             .then(rememberTooltipTarget("habit_card")),
         elevation = CardDefaults.cardElevation(
-            defaultElevation = if (isCompletedToday) 6.dp else 3.dp,
-            pressedElevation = if (isCompletedToday) 8.dp else 5.dp
+            defaultElevation = if (completedThisPeriod) 6.dp else 3.dp,
+            pressedElevation = if (completedThisPeriod) 8.dp else 5.dp
         ),
         colors = CardDefaults.cardColors(
-            containerColor = if (isCompletedToday) {
+            containerColor = if (completedThisPeriod) {
                 MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.7f)
             } else {
                 MaterialTheme.colorScheme.surface
@@ -102,7 +106,7 @@ fun HabitCard(
                     }
                     
                     // Show last completed date if available with better spacing
-                    if (!isCompact && habit.lastCompletedDate != null && !isCompletedToday) {
+                    if (!isCompact && habit.lastCompletedDate != null && !completedThisPeriod) {
                         val lastCompletedText = remember(habit.lastCompletedDate) {
                             "Last: ${dateFormatter.format(java.sql.Date.valueOf(habit.lastCompletedDate.toString()))}"
                         }
@@ -132,13 +136,17 @@ fun HabitCard(
                     
                     // Mark complete button
                     IconButton(
-                        onClick = onMarkComplete,
+                        onClick = {
+                            completedThisPeriod = true
+                            onMarkComplete()
+                        },
+                        enabled = !completedThisPeriod,
                         modifier = Modifier
                             .size(40.dp)
                             .then(rememberTooltipTarget("habit_complete_button"))
                     ) {
                         AnimatedContent(
-                            targetState = isCompletedToday,
+                            targetState = completedThisPeriod,
                             transitionSpec = {
                                 scaleIn() togetherWith scaleOut()
                             },
@@ -161,7 +169,7 @@ fun HabitCard(
                             ) {
                                 Icon(
                                     imageVector = if (completed) Icons.Filled.Check else Icons.Filled.RadioButtonUnchecked,
-                                    contentDescription = if (completed) "Mark incomplete" else "Mark complete",
+                                            contentDescription = if (completed) "Completed this period" else "Mark complete",
                                     tint = if (completed) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurfaceVariant,
                                     modifier = Modifier.size(if (completed) 20.dp else 28.dp)
                                 )

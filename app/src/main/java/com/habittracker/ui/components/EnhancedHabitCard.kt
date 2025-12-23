@@ -90,7 +90,11 @@ fun EnhancedHabitCard(
     val tickerVm = tickerViewModel ?: hiltViewModel<TimerTickerViewModel>()
     val activeVm = activeTimerVm ?: hiltViewModel<ActiveTimerViewModel>()
     val partialVm = partialSessionVm ?: hiltViewModel<com.habittracker.ui.viewmodels.timing.PartialSessionViewModel>()
-    val isCompletedToday = isCompletedThisPeriod(habit.frequency, habit.lastCompletedDate)
+    val completedFromModel = isCompletedThisPeriod(habit.frequency, habit.lastCompletedDate)
+    var completedThisPeriod by remember(habit.id) { mutableStateOf(completedFromModel) }
+    LaunchedEffect(completedFromModel) {
+        completedThisPeriod = completedFromModel
+    }
     // Only allow navigating to details/analytics if the habit has been completed at least once
     val hasAnyCompletion = habit.lastCompletedDate != null
     val context = androidx.compose.ui.platform.LocalContext.current
@@ -193,9 +197,20 @@ fun EnhancedHabitCard(
                     }
                 }
             },
+            onSnackbar = { message ->
+                // Surface coordinator disallow/errors immediately
+                showMessage(message)
+            },
+            onUndo = { message ->
+                // Coordinator-level undo hooks reuse parent snackbar handler
+                showUndo(message) { onUndoComplete() }
+            },
+            onTip = { tip -> showMessage(tip) },
             onCompleted = { event ->
                 if (event.habitId == habit.id) {
+                    completedThisPeriod = true
                     haptics.trigger(TimerHapticType.COMPLETION)
+                    showMessage("Completed for this period")
                     onMarkComplete()
                 }
             }
@@ -221,11 +236,11 @@ fun EnhancedHabitCard(
             .then(rememberTooltipTarget("habit_card"))
             .then(rememberTooltipTarget("enhanced_habit_card")),
         elevation = CardDefaults.cardElevation(
-            defaultElevation = if (isCompletedToday) 6.dp else 3.dp,
-            pressedElevation = if (isCompletedToday) 8.dp else 5.dp
+            defaultElevation = if (completedThisPeriod) 6.dp else 3.dp,
+            pressedElevation = if (completedThisPeriod) 8.dp else 5.dp
         ),
         colors = CardDefaults.cardColors(
-            containerColor = if (isCompletedToday) {
+            containerColor = if (completedThisPeriod) {
                 MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.7f)
             } else {
                 MaterialTheme.colorScheme.surface
@@ -320,7 +335,7 @@ fun EnhancedHabitCard(
                     }
                     
                     // Show last completed date if available
-                    if (!isCompact && habit.lastCompletedDate != null && !isCompletedToday) {
+                    if (!isCompact && habit.lastCompletedDate != null && !completedThisPeriod) {
                         val lastCompletedText = remember(habit.lastCompletedDate) {
                             "Last: ${dateFormatter.format(java.sql.Date.valueOf(habit.lastCompletedDate.toString()))}"
                         }
@@ -367,10 +382,11 @@ fun EnhancedHabitCard(
                                     handler.handle(TimerIntent.Done, habit.id)
                                 } else {
                                     // Fallback only when coordinator is disabled
+                                    completedThisPeriod = true
                                     onMarkComplete()
                                 }
                             },
-                            enabled = controlsEnabled,
+                            enabled = controlsEnabled && !completedThisPeriod,
                             modifier = Modifier.size(48.dp)
                         ) {
                             // Larger, more prominent completion indicator
@@ -378,7 +394,7 @@ fun EnhancedHabitCard(
                                 modifier = Modifier
                                     .size(32.dp)
                                     .then(
-                                        if (isCompletedToday) {
+                                        if (completedThisPeriod) {
                                             Modifier
                                                 .clip(CircleShape)
                                                 .background(MaterialTheme.colorScheme.primary)
@@ -393,14 +409,14 @@ fun EnhancedHabitCard(
                                     CircularProgressIndicator(
                                         modifier = Modifier.size(20.dp),
                                         strokeWidth = 2.dp,
-                                        color = if (isCompletedToday) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.primary
+                                        color = if (completedThisPeriod) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.primary
                                     )
                                 } else {
                                     Icon(
-                                        imageVector = if (isCompletedToday) Icons.Filled.Check else Icons.Filled.RadioButtonUnchecked,
-                                        contentDescription = if (isCompletedToday) "Completed" else "Mark complete",
-                                        tint = if (isCompletedToday) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurfaceVariant,
-                                        modifier = Modifier.size(if (isCompletedToday) 20.dp else 28.dp)
+                                        imageVector = if (completedThisPeriod) Icons.Filled.Check else Icons.Filled.RadioButtonUnchecked,
+                                        contentDescription = if (completedThisPeriod) "Completed" else "Mark complete",
+                                        tint = if (completedThisPeriod) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurfaceVariant,
+                                        modifier = Modifier.size(if (completedThisPeriod) 20.dp else 28.dp)
                                     )
                                 }
                             }
@@ -909,6 +925,30 @@ fun EnhancedHabitCard(
                     horizontalArrangement = Arrangement.spacedBy(8.dp),
                     verticalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
+                    if (completedThisPeriod) {
+                        AssistChip(
+                            onClick = { },
+                            leadingIcon = {
+                                Icon(
+                                    imageVector = Icons.Filled.CheckCircle,
+                                    contentDescription = null,
+                                    modifier = Modifier.size(16.dp),
+                                    tint = MaterialTheme.colorScheme.primary
+                                )
+                            },
+                            label = {
+                                Text(
+                                    text = "Completed this period",
+                                    style = MaterialTheme.typography.bodySmall
+                                )
+                            },
+                            colors = AssistChipDefaults.assistChipColors(
+                                containerColor = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.35f),
+                                labelColor = MaterialTheme.colorScheme.onPrimaryContainer
+                            )
+                        )
+                    }
+
                     // Show a small badge when details are gated
                     if (!hasAnyCompletion) {
                         AssistChip(

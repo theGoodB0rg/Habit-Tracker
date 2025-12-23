@@ -107,7 +107,7 @@ A single source of truth for the timer-to-habit completion work. Keep this file 
 - Deliverable: UI/state updates + tests where feasible.
 - Validation: UI/state tests if available; APK build.
 - Commit label: "Update completion UI states".
-- Status: Not started.
+- Status: In progress (cards/detail surface completed-this-period, completion buttons guard duplicates; coordinator snackbars forwarded; tests/build pending).
 
 ### Phase 6 — Regression and integration checks
 - Goal: Full test sweep; smoke timer flows (start, pause, stop-early, complete, overtime); verify persistence and period logic survive process kill.

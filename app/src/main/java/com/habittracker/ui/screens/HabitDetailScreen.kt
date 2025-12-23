@@ -135,7 +135,7 @@ fun HabitDetailScreen(
         return
     }
     
-    val isCompletedToday = isCompletedThisPeriod(habit.frequency, habit.lastCompletedDate)
+    val completedThisPeriod = isCompletedThisPeriod(habit.frequency, habit.lastCompletedDate)
     
     Scaffold(
         topBar = {
@@ -156,16 +156,18 @@ fun HabitDetailScreen(
         floatingActionButton = {
             FloatingActionButton(
                 onClick = {
-                    viewModel.markHabitComplete(habitId)
+                    if (!completedThisPeriod) {
+                        viewModel.markHabitComplete(habitId)
+                    }
                 },
-                containerColor = if (isCompletedToday) {
+                containerColor = if (completedThisPeriod) {
                     MaterialTheme.colorScheme.primary
                 } else {
                     MaterialTheme.colorScheme.primaryContainer
                 }
             ) {
                 AnimatedContent(
-                    targetState = isCompletedToday,
+                    targetState = completedThisPeriod,
                     transitionSpec = {
                         scaleIn() togetherWith scaleOut()
                     },
@@ -197,7 +199,7 @@ fun HabitDetailScreen(
         ) {
             // Habit Header Card
             item(key = "header") {
-                HabitHeaderCard(habit = habit, isCompletedToday = isCompletedToday)
+                HabitHeaderCard(habit = habit, completedThisPeriod = completedThisPeriod)
             }
             
             // Streak Statistics
@@ -447,11 +449,11 @@ private fun Sparkline(values: List<Float>, modifier: Modifier = Modifier.height(
 @Composable
 private fun HabitHeaderCard(
     habit: com.habittracker.data.database.entity.HabitEntity,
-    isCompletedToday: Boolean
+    completedThisPeriod: Boolean
 ) {
     Card(
         colors = CardDefaults.cardColors(
-            containerColor = if (isCompletedToday) {
+            containerColor = if (completedThisPeriod) {
                 MaterialTheme.colorScheme.primaryContainer
             } else {
                 MaterialTheme.colorScheme.surface
@@ -492,7 +494,7 @@ private fun HabitHeaderCard(
                 }
                 
                 // Completion status
-                if (isCompletedToday) {
+                if (completedThisPeriod) {
                     Icon(
                         imageVector = Icons.Filled.CheckCircle,
                         contentDescription = "Completed today",
@@ -509,6 +511,19 @@ private fun HabitHeaderCard(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
+                if (completedThisPeriod) {
+                    AssistChip(
+                        onClick = { },
+                        leadingIcon = {
+                            Icon(
+                                imageVector = Icons.Filled.CheckCircle,
+                                contentDescription = null,
+                                modifier = Modifier.size(16.dp)
+                            )
+                        },
+                        label = { Text("Completed this period") }
+                    )
+                }
                 AssistChip(
                     onClick = { },
                     label = { Text(habit.frequency.name.lowercase().replaceFirstChar { it.uppercase() }) }
