@@ -362,6 +362,11 @@ class TimerActionCoordinator @Inject constructor(
                 is TimerAction.CompleteToday -> {
                     if (action.persistDirectly) {
                         // No timer event expected; persist immediately and surface UI event
+                        cancelWaitingTimeout()
+                        _state.value = _state.value.copy(waitingForService = false)
+                        inFlightIntent = null
+                        inFlightHabitId = null
+                        
                         appScope.launch {
                             runCatching {
                                 habitRepository.markHabitAsDone(action.habitId, LocalDate.now())

@@ -196,11 +196,11 @@ fun MainScreen(
     val showUndoSnackbar: (String, () -> Unit) -> Unit = remember(snackbarHostState) {
         { message, onUndo ->
             if (!(shouldSkipSnackbar(message) || snackbarBusy)) {
+                snackbarBusy = true
+                val now = System.currentTimeMillis()
+                lastSnackbar = message to now
+                lastAnySnackbarTime = now
                 snackbarScope.launch {
-                    snackbarBusy = true
-                    val now = System.currentTimeMillis()
-                    lastSnackbar = message to now
-                    lastAnySnackbarTime = now
                     snackbarHostState.currentSnackbarData?.dismiss()
                     // Start snackbar and a hard timeout that will dismiss regardless after 4s
                     val result = async {
@@ -226,11 +226,11 @@ fun MainScreen(
     val showInfoSnackbar: (String) -> Unit = remember(snackbarHostState) {
         { message ->
             if (!(shouldSkipSnackbar(message) || snackbarBusy)) {
+                snackbarBusy = true
+                val now = System.currentTimeMillis()
+                lastSnackbar = message to now
+                lastAnySnackbarTime = now
                 snackbarScope.launch {
-                    snackbarBusy = true
-                    val now = System.currentTimeMillis()
-                    lastSnackbar = message to now
-                    lastAnySnackbarTime = now
                     snackbarHostState.currentSnackbarData?.dismiss()
                     snackbarHostState.showSnackbar(
                         message = message,
@@ -539,8 +539,8 @@ fun MainScreen(
         val contentPadding = PaddingValues(
             start = horizontalPadding,
             end = horizontalPadding,
-            top = paddingValues.calculateTopPadding() + 8.dp,
-            bottom = paddingValues.calculateBottomPadding() + 88.dp
+            top = 8.dp,
+            bottom = 88.dp
         )
 
         Box(
