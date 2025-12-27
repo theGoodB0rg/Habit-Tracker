@@ -54,6 +54,7 @@ private class DatabaseHabitRepository(private val context: Context) : HabitRepos
                     description = dbHabit.description,
                     iconId = dbHabit.iconId,
                     streakCount = dbHabit.streakCount,
+                    longestStreak = dbHabit.longestStreak,
                     lastCompletedDate = dbHabit.lastCompletedDate,
                     isDoneToday = false // Will be updated by getTodayCompletionStatus
                 )
@@ -72,6 +73,7 @@ private class DatabaseHabitRepository(private val context: Context) : HabitRepos
             description = dbHabit.description,
             iconId = dbHabit.iconId,
             streakCount = dbHabit.streakCount,
+            longestStreak = dbHabit.longestStreak,
             lastCompletedDate = dbHabit.lastCompletedDate,
             isDoneToday = isCompleted
         )
@@ -143,6 +145,7 @@ data class HabitEntity(
     val description: String,
     val iconId: Int = 0,
     val streakCount: Int = 0,
+    val longestStreak: Int = 0,
     val lastCompletedDate: LocalDate? = null,
     val isDoneToday: Boolean = false
 )

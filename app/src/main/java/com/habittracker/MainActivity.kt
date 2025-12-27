@@ -10,7 +10,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.lifecycleScope
-import com.habittracker.analytics.data.initialization.AnalyticsDataInitializer
+import com.habittracker.analytics.AnalyticsSyncManager
 import com.habittracker.themes.presentation.ThemeViewModel
 import com.habittracker.ui.navigation.HabitTrackerNavigation
 import com.habittracker.ui.theme.HabitTrackerTheme
@@ -22,7 +22,7 @@ import javax.inject.Inject
 class MainActivity : ComponentActivity() {
     
     @Inject
-    lateinit var analyticsDataInitializer: AnalyticsDataInitializer
+    lateinit var analyticsSyncManager: AnalyticsSyncManager
     
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -31,7 +31,8 @@ class MainActivity : ComponentActivity() {
         // Initialize analytics data in background
         lifecycleScope.launch {
             try {
-                analyticsDataInitializer.initializeSampleData()
+                // Sync real habits to analytics (clears old placeholders on first run)
+                analyticsSyncManager.syncAnalytics()
             } catch (e: Exception) {
                 // Log error but don't crash the app
                 android.util.Log.w("MainActivity", "Failed to initialize analytics data", e)

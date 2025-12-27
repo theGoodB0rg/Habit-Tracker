@@ -193,6 +193,21 @@ interface AnalyticsDao {
     @Query("DELETE FROM performance_metrics WHERE date < :cutoffDate")
     suspend fun cleanupOldPerformanceMetrics(cutoffDate: String)
 
+    @Query("DELETE FROM habit_completion_analytics")
+    suspend fun deleteAllHabitCompletions()
+
+    @Query("DELETE FROM screen_visit_analytics")
+    suspend fun deleteAllScreenVisits()
+
+    @Query("DELETE FROM user_engagement_analytics")
+    suspend fun deleteAllUserEngagement()
+
+    @Query("DELETE FROM app_session_analytics")
+    suspend fun deleteAllAppSessions()
+
+    @Query("DELETE FROM performance_metrics")
+    suspend fun deleteAllPerformanceMetrics()
+
     // ==================== COMPREHENSIVE ANALYTICS ====================
     
     @Transaction

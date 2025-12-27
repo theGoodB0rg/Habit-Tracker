@@ -141,28 +141,36 @@ fun CompletionRateChart(
                 style = Stroke(width = strokeWidth)
             )
             
-            // Completion rate arcs
+            // Completion rate arcs (Donut Chart of Distribution)
             var currentAngle = -90f
+            val totalCompletions = data.sumOf { it.completedDays }.toFloat().coerceAtLeast(1f)
+            
             data.forEach { habit ->
-                val sweepAngle = (habit.completionRate / 100f) * 360f * animatedProgress.value
+                // Calculate share of total completions
+                val share = habit.completedDays / totalCompletions
+                val sweepAngle = share * 360f * animatedProgress.value
                 val color = Color(habit.color)
                 
-                drawArc(
-                    color = color,
-                    startAngle = currentAngle,
-                    sweepAngle = sweepAngle,
-                    useCenter = false,
-                    style = Stroke(width = strokeWidth, cap = StrokeCap.Round),
-                    topLeft = Offset(center.x - radius, center.y - radius),
-                    size = Size(radius * 2, radius * 2)
-                )
-                
-                currentAngle += sweepAngle
+                if (sweepAngle > 0) {
+                    drawArc(
+                        color = color,
+                        startAngle = currentAngle,
+                        sweepAngle = sweepAngle,
+                        useCenter = false,
+                        style = Stroke(width = strokeWidth, cap = StrokeCap.Butt), // Butt cap for seamless donut
+                        topLeft = Offset(center.x - radius, center.y - radius),
+                        size = Size(radius * 2, radius * 2)
+                    )
+                    currentAngle += sweepAngle
+                }
             }
         }
         
         // Center text with average completion
-        val avgCompletion = (data.map { it.completionRate }.average() * animatedProgress.value).toInt()
+        val avgCompletion = if (data.isNotEmpty()) {
+            (data.map { it.completionRate }.average() * animatedProgress.value).toInt()
+        } else 0
+        
         Column(
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
@@ -173,7 +181,7 @@ fun CompletionRateChart(
                 color = MaterialTheme.colorScheme.primary
             )
             Text(
-                text = "Average",
+                text = "Avg Rate",
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
             )
@@ -196,30 +204,30 @@ private fun CompletionRateLegend(
         data.forEach { habit ->
             Row(
                 modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Row(
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Box(
-                        modifier = Modifier
-                            .size(12.dp)
-                            .clip(RoundedCornerShape(2.dp))
-                            .background(Color(habit.color))
-                    )
-                    
-                    Spacer(modifier = Modifier.width(8.dp))
-                    
-                    Text(
-                        text = habit.habitName,
-                        style = MaterialTheme.typography.bodyMedium,
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis,
-                        modifier = Modifier.weight(1f)
-                    )
-                }
+                // Color indicator
+                Box(
+                    modifier = Modifier
+                        .size(12.dp)
+                        .clip(RoundedCornerShape(2.dp))
+                        .background(Color(habit.color))
+                )
                 
+                Spacer(modifier = Modifier.width(12.dp))
+                
+                // Name (takes available space)
+                Text(
+                    text = habit.habitName,
+                    style = MaterialTheme.typography.bodyMedium,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                    modifier = Modifier.weight(1f)
+                )
+                
+                Spacer(modifier = Modifier.width(8.dp))
+                
+                // Stats (aligned to right)
                 Row(
                     verticalAlignment = Alignment.CenterVertically
                 ) {

@@ -129,4 +129,10 @@ object AnalyticsModule {
     ): AnalyticsDataInitializer {
         return AnalyticsDataInitializer(analyticsDao, dateUtils)
     }
+
+    @Provides
+    @Singleton
+    fun provideCoreHabitRepository(@ApplicationContext context: Context): com.habittracker.core.HabitRepository {
+        return com.habittracker.core.HabitRepository.getInstance(context)
+    }
 }

@@ -10,6 +10,7 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import javax.inject.Inject
+import java.time.LocalDate
 
 /**
  * Comprehensive ViewModel for analytics with modern state management and error handling
@@ -19,7 +20,8 @@ class AnalyticsViewModel @Inject constructor(
     private val analyticsRepository: AnalyticsRepository,
     private val getAnalyticsDataUseCase: GetAnalyticsDataUseCase,
     private val exportAnalyticsUseCase: ExportAnalyticsUseCase,
-    private val trackingUseCases: TrackingUseCases
+    private val trackingUseCases: TrackingUseCases,
+    private val coreHabitRepository: com.habittracker.core.HabitRepository
 ) : ViewModel() {
 
     // UI State
@@ -65,12 +67,59 @@ class AnalyticsViewModel @Inject constructor(
             _uiState.value = _uiState.value.copy(isLoading = true, error = null)
             
             try {
+                // Fetch real habits from core repository
+                val realHabits = try {
+                    coreHabitRepository.getAllHabits().first()
+                } catch (e: Exception) {
+                    emptyList()
+                }
+
                 getAnalyticsDataUseCase(timeFrame).collect { analyticsData ->
-                    _analyticsData.value = analyticsData
-                    processChartData(analyticsData)
+                    // Merge real habits with analytics data
+                    // 1. Map existing analytics to a map for quick lookup
+                    val analyticsMap = analyticsData.habitCompletionRates.associateBy { it.habitId }
+                    
+                    // 2. Create a new list based on REAL habits
+                    val mergedRates = realHabits.map { habit ->
+                        val habitIdStr = habit.id.toString()
+                        val existing = analyticsMap[habitIdStr]
+                        
+                        // If we have existing analytics data, use it but ensure the name is up to date
+                        if (existing != null) {
+                            existing.copy(habitName = habit.name)
+                        } else {
+                            // Otherwise create a fresh entry for the real habit
+                            CompletionRate(
+                                habitId = habitIdStr,
+                                habitName = habit.name,
+                                totalDays = 0,
+                                completedDays = 0,
+                                completionPercentage = 0.0,
+                                currentStreak = 0, // Use 0 or fetch from habit if available, but habit.streakCount might not be reliable here without sync
+                                longestStreak = 0,
+                                weeklyAverage = 0.0,
+                                monthlyAverage = 0.0,
+                                timeFrame = timeFrame,
+                                lastUpdated = LocalDate.now()
+                            )
+                        }
+                    }
+
+                    // 3. If we have real habits, use them. Otherwise fallback to analytics data (e.g. if DB is empty but analytics has sample data)
+                    // But user wants to see REAL habits, so we should prioritize real habits.
+                    // If realHabits is empty, maybe show empty state instead of sample data?
+                    // The user complained about "placeholders", so we should probably hide them if they are not in real habits.
+                    
+                    val finalRates = if (realHabits.isNotEmpty()) mergedRates else emptyList() // Hide sample data if no real habits, or show nothing?
+                    // Actually if realHabits is empty, finalRates is empty, which triggers "No Analytics Data" state, which is correct.
+                    
+                    val mergedData = analyticsData.copy(habitCompletionRates = finalRates)
+
+                    _analyticsData.value = mergedData
+                    processChartData(mergedData)
                     _uiState.value = _uiState.value.copy(
                         isLoading = false,
-                        hasData = analyticsData.habitCompletionRates.isNotEmpty()
+                        hasData = mergedData.habitCompletionRates.isNotEmpty()
                     )
                 }
             } catch (e: Exception) {
@@ -191,6 +240,7 @@ class AnalyticsViewModel @Inject constructor(
             CompletionRateChartPoint(
                 habitName = habit.habitName,
                 completionRate = habit.completionPercentage.toFloat(),
+                completedDays = habit.completedDays,
                 currentStreak = habit.currentStreak,
                 color = getHabitColor(habit.habitId)
             )
@@ -254,6 +304,7 @@ sealed class ExportState {
 data class CompletionRateChartPoint(
     val habitName: String,
     val completionRate: Float,
+    val completedDays: Int,
     val currentStreak: Int,
     val color: Long
 )

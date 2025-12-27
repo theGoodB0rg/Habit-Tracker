@@ -35,6 +35,7 @@ interface HabitRepository {
     suspend fun getHabitStats(habitId: Long): HabitStats
     suspend fun getHabitsAtRisk(): List<HabitEntity>
     suspend fun getTodayCompletionStatus(): Map<Long, Boolean>
+    suspend fun getCompletionsInDateRange(habitId: Long, startDate: LocalDate, endDate: LocalDate): List<LocalDate>
     
     // Phase 1 - Smart Timing Enhancement operations
     
@@ -137,6 +138,10 @@ class HabitRepositoryImpl @Inject constructor(
     
     override suspend fun getTodayCompletionStatus(): Map<Long, Boolean> {
         return habitManagementEngine.getTodayCompletionStatus()
+    }
+
+    override suspend fun getCompletionsInDateRange(habitId: Long, startDate: LocalDate, endDate: LocalDate): List<LocalDate> {
+        return habitManagementEngine.getCompletionsInDateRange(habitId, startDate, endDate)
     }
     
     // Phase 1 - Smart Timing Enhancement implementation

@@ -199,6 +199,13 @@ class HabitManagementEngine @Inject constructor(
             habit to streak
         }
     }
+
+    /**
+     * Get completions for a habit within a date range
+     */
+    suspend fun getCompletionsInDateRange(habitId: Long, startDate: LocalDate, endDate: LocalDate): List<LocalDate> {
+        return completionDao.getCompletionsInDateRange(habitId, startDate, endDate).map { it.completedDate }
+    }
     
     /**
      * Check if any habits are at risk of losing streaks

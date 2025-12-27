@@ -37,6 +37,7 @@ interface AnalyticsRepository {
     
     suspend fun exportAnalyticsData(format: ExportFormat): String
     suspend fun cleanupOldData(retentionDays: Int = 365)
+    suspend fun clearAllData()
 
     // Generic timer event tracking
     suspend fun trackTimerEvent(
@@ -326,6 +327,14 @@ class AnalyticsRepositoryImpl @Inject constructor(
         analyticsDao.cleanupOldEngagementData(cutoffDate)
         analyticsDao.cleanupOldSessions(cutoffDate)
         analyticsDao.cleanupOldPerformanceMetrics(cutoffDate)
+    }
+
+    override suspend fun clearAllData() {
+        analyticsDao.deleteAllHabitCompletions()
+        analyticsDao.deleteAllScreenVisits()
+        analyticsDao.deleteAllUserEngagement()
+        analyticsDao.deleteAllAppSessions()
+        analyticsDao.deleteAllPerformanceMetrics()
     }
     
     private suspend fun updateStreakRetention(habitId: String, habitName: String, currentStreak: Int, difficultyLevel: DifficultyLevel) {
