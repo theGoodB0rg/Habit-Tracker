@@ -494,43 +494,66 @@ fun InsightsSection(
 private fun InsightCard(
     insight: AnalyticsInsight
 ) {
+    val containerColor = when (insight.type) {
+        InsightType.POSITIVE -> MaterialTheme.colorScheme.primaryContainer
+        InsightType.IMPROVEMENT -> MaterialTheme.colorScheme.tertiaryContainer
+        InsightType.WARNING -> MaterialTheme.colorScheme.errorContainer
+        InsightType.NEUTRAL -> MaterialTheme.colorScheme.surfaceVariant
+    }
+
+    val contentColor = when (insight.type) {
+        InsightType.POSITIVE -> MaterialTheme.colorScheme.onPrimaryContainer
+        InsightType.IMPROVEMENT -> MaterialTheme.colorScheme.onTertiaryContainer
+        InsightType.WARNING -> MaterialTheme.colorScheme.onErrorContainer
+        InsightType.NEUTRAL -> MaterialTheme.colorScheme.onSurfaceVariant
+    }
+
+    val icon = when (insight.type) {
+        InsightType.POSITIVE -> Icons.Default.TrendingUp
+        InsightType.IMPROVEMENT -> Icons.Default.AutoGraph
+        InsightType.WARNING -> Icons.Default.Warning
+        InsightType.NEUTRAL -> Icons.Default.Info
+    }
+
     Card(
         modifier = Modifier.fillMaxWidth(),
         colors = CardDefaults.cardColors(
-            containerColor = when (insight.type) {
-                InsightType.POSITIVE -> Color(0xFF4CAF50).copy(alpha = 0.1f)
-                InsightType.IMPROVEMENT -> Color(0xFFFF9800).copy(alpha = 0.1f)
-                InsightType.WARNING -> Color(0xFFF44336).copy(alpha = 0.1f)
-                InsightType.NEUTRAL -> MaterialTheme.colorScheme.surfaceVariant
-            }
+            containerColor = containerColor
         ),
-        shape = RoundedCornerShape(8.dp)
+        shape = RoundedCornerShape(12.dp)
     ) {
         Row(
-            modifier = Modifier.padding(16.dp),
-            verticalAlignment = Alignment.CenterVertically
+            modifier = Modifier
+                .padding(16.dp)
+                .fillMaxWidth(),
+            verticalAlignment = Alignment.Top
         ) {
-            Text(
-                text = insight.icon,
-                fontSize = 24.sp,
-                modifier = Modifier.size(32.dp)
+            Icon(
+                imageVector = icon,
+                contentDescription = null,
+                tint = contentColor,
+                modifier = Modifier.size(24.dp)
             )
             
-            Spacer(modifier = Modifier.width(12.dp))
+            Spacer(modifier = Modifier.width(16.dp))
             
             Column(
                 modifier = Modifier.weight(1f)
             ) {
                 Text(
                     text = insight.title,
-                    style = MaterialTheme.typography.titleSmall,
-                    fontWeight = FontWeight.SemiBold
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.Bold,
+                    color = contentColor
                 )
+                
+                Spacer(modifier = Modifier.height(4.dp))
                 
                 Text(
                     text = insight.message,
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.8f)
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = contentColor.copy(alpha = 0.9f),
+                    lineHeight = 20.sp
                 )
             }
         }

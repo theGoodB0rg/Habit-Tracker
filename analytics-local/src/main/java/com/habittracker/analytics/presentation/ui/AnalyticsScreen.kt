@@ -283,6 +283,11 @@ private fun AnalyticsContent(
             item {
                 InsightsSection(data = data)
             }
+
+            // Bottom spacing
+            item {
+                Spacer(modifier = Modifier.height(80.dp))
+            }
         }
     }
 }
