@@ -120,5 +120,5 @@ enum class EngagementTrend {
 }
 
 enum class ExportFormat(val extension: String) {
-    JSON("json"), CSV("csv"), PDF("pdf")
+    JSON("json"), CSV("csv"), PDF("pdf"), IMAGE("png")
 }

@@ -24,10 +24,13 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.core.content.FileProvider
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.habittracker.analytics.domain.models.*
 import com.habittracker.analytics.presentation.ui.components.*
 import com.habittracker.analytics.presentation.viewmodel.*
+import java.io.File
+import android.content.Intent
 
 /**
  * Modern Analytics Screen with comprehensive insights and beautiful visualizations
@@ -46,162 +49,194 @@ fun AnalyticsScreen(
     val screenChartData by viewModel.screenVisitChartData.collectAsState()
     val userEngagementMode by viewModel.userEngagementMode.collectAsState()
     
-    // val context = LocalContext.current // not currently used
+    val context = LocalContext.current
+    val snackbarHostState = remember { SnackbarHostState() }
 
     // Handle export success/error
     LaunchedEffect(exportState) {
-        when (exportState) {
+        when (val state = exportState) {
             is ExportState.Success -> {
-                // Show success message
+                if (state.isShare) {
+                    // Share the file
+                    val file = File(state.filePath)
+                    val uri = FileProvider.getUriForFile(
+                        context,
+                        "${context.packageName}.fileprovider",
+                        file
+                    )
+                    
+                    val intent = Intent(Intent.ACTION_SEND).apply {
+                        type = if (state.filePath.endsWith(".png")) "image/png" else "application/json"
+                        putExtra(Intent.EXTRA_STREAM, uri)
+                        addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+                    }
+                    context.startActivity(Intent.createChooser(intent, "Share Analytics"))
+                } else {
+                    // Show success message for download
+                    snackbarHostState.showSnackbar("Export saved to Downloads")
+                }
                 viewModel.clearExportState()
             }
             is ExportState.Error -> {
-                // Show error message
+                snackbarHostState.showSnackbar(state.message)
                 viewModel.clearExportState()
             }
             else -> { /* No action needed */ }
         }
     }
 
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(MaterialTheme.colorScheme.background)
-    ) {
-        // Top App Bar with modern design
-        TopAppBar(
-            title = {
-                Text(
-                    text = "Analytics Dashboard",
-                    style = MaterialTheme.typography.headlineSmall,
-                    fontWeight = FontWeight.Bold
-                )
-            },
-            navigationIcon = {
-                IconButton(onClick = onNavigateBack) {
-                    Icon(
-                        imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                        contentDescription = "Back",
-                        tint = MaterialTheme.colorScheme.onSurface
+    Scaffold(
+        snackbarHost = { SnackbarHost(snackbarHostState) },
+        topBar = {
+            TopAppBar(
+                title = {
+                    Text(
+                        text = "Analytics Dashboard",
+                        style = MaterialTheme.typography.headlineSmall,
+                        fontWeight = FontWeight.Bold
                     )
-                }
-            },
-            actions = {
-                // Refresh button
-                IconButton(onClick = { viewModel.refreshData() }) {
-                    Icon(
-                        imageVector = Icons.Default.Refresh,
-                        contentDescription = "Refresh",
-                        tint = MaterialTheme.colorScheme.onSurface
-                    )
-                }
-                
-                // Quick share latest insights (uses current timeframe and JSON export)
-                IconButton(onClick = { viewModel.exportAnalytics(ExportFormat.JSON) }) {
-                    Icon(
-                        imageVector = Icons.Default.Share,
-                        contentDescription = "Share insights",
-                        tint = MaterialTheme.colorScheme.onSurface
-                    )
-                }
-
-                // Export menu
-                var showExportMenu by remember { mutableStateOf(false) }
-                Box {
-                    IconButton(onClick = { showExportMenu = true }) {
+                },
+                navigationIcon = {
+                    IconButton(onClick = onNavigateBack) {
                         Icon(
-                            imageVector = Icons.Default.FileDownload,
-                            contentDescription = "Export",
+                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                            contentDescription = "Back",
+                            tint = MaterialTheme.colorScheme.onSurface
+                        )
+                    }
+                },
+                actions = {
+                    // Refresh button
+                    IconButton(onClick = { viewModel.refreshData() }) {
+                        Icon(
+                            imageVector = Icons.Default.Refresh,
+                            contentDescription = "Refresh",
                             tint = MaterialTheme.colorScheme.onSurface
                         )
                     }
                     
-                    DropdownMenu(
-                        expanded = showExportMenu,
-                        onDismissRequest = { showExportMenu = false }
-                    ) {
-                        DropdownMenuItem(
-                            text = { Text("Export as JSON") },
-                            onClick = {
-                                viewModel.exportAnalytics(ExportFormat.JSON)
-                                showExportMenu = false
-                            },
-                            leadingIcon = { Icon(Icons.Default.Code, contentDescription = null) }
-                        )
-                        DropdownMenuItem(
-                            text = { Text("Export as CSV") },
-                            onClick = {
-                                viewModel.exportAnalytics(ExportFormat.CSV)
-                                showExportMenu = false
-                            },
-                            leadingIcon = { Icon(Icons.Default.TableChart, contentDescription = null) }
+                    // Quick share latest insights (Image)
+                    IconButton(onClick = { viewModel.exportAnalytics(ExportFormat.IMAGE, isShare = true) }) {
+                        Icon(
+                            imageVector = Icons.Default.Share,
+                            contentDescription = "Share insights",
+                            tint = MaterialTheme.colorScheme.onSurface
                         )
                     }
-                }
-            },
-            colors = TopAppBarDefaults.topAppBarColors(
-                containerColor = MaterialTheme.colorScheme.surface,
-                titleContentColor = MaterialTheme.colorScheme.onSurface
-            )
-        )
 
-        // Main content
-        Box(modifier = Modifier.fillMaxSize()) {
-            when {
-                uiState.isLoading -> {
-                    // Loading state with animated indicator
-                    LoadingContent()
-                }
-                
-                uiState.error != null -> {
-                    // Error state with retry option
-                    uiState.error?.let { errorMessage ->
-                        ErrorContent(
-                            error = errorMessage,
-                            onRetry = { viewModel.refreshData() },
-                            onDismiss = { viewModel.clearError() }
+                    // Export menu
+                    var showExportMenu by remember { mutableStateOf(false) }
+                    Box {
+                        IconButton(onClick = { showExportMenu = true }) {
+                            Icon(
+                                imageVector = Icons.Default.FileDownload,
+                                contentDescription = "Export",
+                                tint = MaterialTheme.colorScheme.onSurface
+                            )
+                        }
+                        
+                        DropdownMenu(
+                            expanded = showExportMenu,
+                            onDismissRequest = { showExportMenu = false }
+                        ) {
+                            DropdownMenuItem(
+                                text = { Text("Share as Image") },
+                                onClick = {
+                                    viewModel.exportAnalytics(ExportFormat.IMAGE, isShare = false)
+                                    showExportMenu = false
+                                },
+                                leadingIcon = { Icon(Icons.Default.Image, contentDescription = null) }
+                            )
+                            DropdownMenuItem(
+                                text = { Text("Export as JSON") },
+                                onClick = {
+                                    viewModel.exportAnalytics(ExportFormat.JSON, isShare = false)
+                                    showExportMenu = false
+                                },
+                                leadingIcon = { Icon(Icons.Default.Code, contentDescription = null) }
+                            )
+                            DropdownMenuItem(
+                                text = { Text("Export as CSV") },
+                                onClick = {
+                                    viewModel.exportAnalytics(ExportFormat.CSV, isShare = false)
+                                    showExportMenu = false
+                                },
+                                leadingIcon = { Icon(Icons.Default.TableChart, contentDescription = null) }
+                            )
+                        }
+                    }
+                },
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = MaterialTheme.colorScheme.surface,
+                    titleContentColor = MaterialTheme.colorScheme.onSurface
+                )
+            )
+        }
+    ) { paddingValues ->
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(paddingValues)
+                .background(MaterialTheme.colorScheme.background)
+        ) {
+            // Main content
+            Box(modifier = Modifier.fillMaxSize()) {
+                when {
+                    uiState.isLoading -> {
+                        // Loading state with animated indicator
+                        LoadingContent()
+                    }
+                    
+                    uiState.error != null -> {
+                        // Error state with retry option
+                        uiState.error?.let { errorMessage ->
+                            ErrorContent(
+                                error = errorMessage,
+                                onRetry = { viewModel.refreshData() },
+                                onDismiss = { viewModel.clearError() }
+                            )
+                        }
+                    }
+                    
+                    !uiState.hasData -> {
+                        // Empty state
+                        EmptyAnalyticsContent()
+                    }
+                    
+                    else -> {
+                        // Main analytics content
+                        AnalyticsContent(
+                            analyticsData = analyticsData,
+                            selectedTimeFrame = selectedTimeFrame,
+                            completionChartData = completionChartData,
+                            screenChartData = screenChartData,
+                            userEngagementMode = userEngagementMode,
+                            onTimeFrameSelected = viewModel::selectTimeFrame,
+                            modifier = Modifier.fillMaxSize()
                         )
                     }
                 }
                 
-                !uiState.hasData -> {
-                    // Empty state
-                    EmptyAnalyticsContent()
-                }
-                
-                else -> {
-                    // Main analytics content
-                    AnalyticsContent(
-                        analyticsData = analyticsData,
-                        selectedTimeFrame = selectedTimeFrame,
-                        completionChartData = completionChartData,
-                        screenChartData = screenChartData,
-                        userEngagementMode = userEngagementMode,
-                        onTimeFrameSelected = viewModel::selectTimeFrame,
-                        modifier = Modifier.fillMaxSize()
-                    )
-                }
-            }
-            
-            // Export loading overlay
-            if (exportState is ExportState.Exporting) {
-                Box(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .background(Color.Black.copy(alpha = 0.5f)),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Card(
-                        modifier = Modifier.padding(32.dp),
-                        shape = RoundedCornerShape(16.dp)
+                // Export loading overlay
+                if (exportState is ExportState.Exporting) {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .background(Color.Black.copy(alpha = 0.5f)),
+                        contentAlignment = Alignment.Center
                     ) {
-                        Column(
+                        Card(
                             modifier = Modifier.padding(32.dp),
-                            horizontalAlignment = Alignment.CenterHorizontally
+                            shape = RoundedCornerShape(16.dp)
                         ) {
-                            CircularProgressIndicator()
-                            Spacer(modifier = Modifier.height(16.dp))
-                            Text("Exporting analytics...")
+                            Column(
+                                modifier = Modifier.padding(32.dp),
+                                horizontalAlignment = Alignment.CenterHorizontally
+                            ) {
+                                CircularProgressIndicator()
+                                Spacer(modifier = Modifier.height(16.dp))
+                                Text("Exporting analytics...")
+                            }
                         }
                     }
                 }

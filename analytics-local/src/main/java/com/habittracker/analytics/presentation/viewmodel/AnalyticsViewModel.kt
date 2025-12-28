@@ -163,13 +163,13 @@ class AnalyticsViewModel @Inject constructor(
     /**
      * Export analytics data in specified format
      */
-    fun exportAnalytics(format: ExportFormat) {
+    fun exportAnalytics(format: ExportFormat, isShare: Boolean = false) {
         viewModelScope.launch {
             _exportState.value = ExportState.Exporting
             
             try {
-                val exportResult = exportAnalyticsUseCase(format, _selectedTimeFrame.value)
-                _exportState.value = ExportState.Success(exportResult)
+                val exportResult = exportAnalyticsUseCase(format, _selectedTimeFrame.value, isShare)
+                _exportState.value = ExportState.Success(exportResult, isShare)
             } catch (e: Exception) {
                 _exportState.value = ExportState.Error("Export failed: ${e.message}")
             }
@@ -322,7 +322,7 @@ data class AnalyticsUiState(
 sealed class ExportState {
     object Idle : ExportState()
     object Exporting : ExportState()
-    data class Success(val filePath: String) : ExportState()
+    data class Success(val filePath: String, val isShare: Boolean) : ExportState()
     data class Error(val message: String) : ExportState()
 }
 

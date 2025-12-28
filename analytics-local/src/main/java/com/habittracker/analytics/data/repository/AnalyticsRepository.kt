@@ -367,6 +367,7 @@ class AnalyticsRepositoryImpl @Inject constructor(
             ExportFormat.JSON -> exportAsJson(analyticsData)
             ExportFormat.CSV -> exportAsCsv(analyticsData)
             ExportFormat.PDF -> exportAsPdf(analyticsData)
+            ExportFormat.IMAGE -> "Image export not supported in repository directly"
         }
     }
     

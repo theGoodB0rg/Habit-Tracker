@@ -22,7 +22,8 @@ class ExportAnalyticsUseCase @Inject constructor(
     
     suspend operator fun invoke(
         format: ExportFormat,
-        timeFrame: TimeFrame = TimeFrame.MONTHLY
+        timeFrame: TimeFrame = TimeFrame.MONTHLY,
+        isShare: Boolean = false
     ): String = withContext(Dispatchers.IO) {
         try {
             // Get comprehensive analytics data
@@ -32,7 +33,8 @@ class ExportAnalyticsUseCase @Inject constructor(
             analyticsExporter.exportAnalyticsData(
                 context = context,
                 analyticsData = analyticsData,
-                format = format
+                format = format,
+                isShare = isShare
             )
         } catch (e: Exception) {
             throw ExportException("Failed to export analytics: ${e.message}", e)
