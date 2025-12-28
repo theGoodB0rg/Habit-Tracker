@@ -26,7 +26,7 @@ import com.habittracker.analytics.data.database.entities.*
         AnalyticsEventEntity::class
     ],
     version = 3,
-    exportSchema = true
+    exportSchema = false
 )
 @TypeConverters(AnalyticsTypeConverters::class)
 abstract class AnalyticsDatabase : RoomDatabase() {

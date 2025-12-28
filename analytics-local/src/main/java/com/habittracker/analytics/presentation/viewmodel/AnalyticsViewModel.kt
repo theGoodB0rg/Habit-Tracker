@@ -5,6 +5,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.habittracker.analytics.data.repository.AnalyticsRepository
 import com.habittracker.analytics.domain.models.*
+import com.habittracker.analytics.domain.models.UserEngagementMode
 import com.habittracker.analytics.domain.usecases.*
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.*
@@ -47,6 +48,10 @@ class AnalyticsViewModel @Inject constructor(
     private val _exportState = MutableStateFlow<ExportState>(ExportState.Idle)
     val exportState: StateFlow<ExportState> = _exportState.asStateFlow()
 
+    // User Engagement Mode
+    private val _userEngagementMode = MutableStateFlow(UserEngagementMode.UNKNOWN)
+    val userEngagementMode: StateFlow<UserEngagementMode> = _userEngagementMode.asStateFlow()
+
     init {
         // Load analytics data on initialization
         loadAnalyticsData()
@@ -63,6 +68,16 @@ class AnalyticsViewModel @Inject constructor(
      * Load comprehensive analytics data
      */
     fun loadAnalyticsData(timeFrame: TimeFrame = _selectedTimeFrame.value) {
+        viewModelScope.launch {
+            try {
+                analyticsRepository.getUserEngagementMode(timeFrame).collect { mode ->
+                    _userEngagementMode.value = mode
+                }
+            } catch (e: Exception) {
+                // Ignore error for engagement mode
+            }
+        }
+
         viewModelScope.launch {
             _uiState.value = _uiState.value.copy(isLoading = true, error = null)
             
@@ -177,6 +192,19 @@ class AnalyticsViewModel @Inject constructor(
                 trackingUseCases.trackScreenVisitUseCase(screenName, fromScreen)
             } catch (e: Exception) {
                 android.util.Log.w("AnalyticsViewModel", "Failed to track screen visit", e)
+            }
+        }
+    }
+
+    /**
+     * End screen visit tracking
+     */
+    fun endScreenVisit(interactionCount: Int = 0, bounced: Boolean = false) {
+        viewModelScope.launch {
+            try {
+                trackingUseCases.endScreenVisitUseCase(interactionCount, bounced)
+            } catch (e: Exception) {
+                android.util.Log.w("AnalyticsViewModel", "Failed to end screen visit", e)
             }
         }
     }

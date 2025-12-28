@@ -61,8 +61,11 @@ fun AddHabitScreen(
     val analyticsViewModel: AnalyticsViewModel = hiltViewModel()
     
     // Track screen visit
-    LaunchedEffect(Unit) {
+    DisposableEffect(Unit) {
         analyticsViewModel.trackScreenVisit("AddHabitScreen", "MainScreen")
+        onDispose {
+            analyticsViewModel.endScreenVisit()
+        }
     }
     
     // Handle success navigation

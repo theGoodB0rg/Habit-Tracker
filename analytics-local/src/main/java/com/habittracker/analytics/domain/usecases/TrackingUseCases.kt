@@ -10,6 +10,7 @@ import javax.inject.Inject
 class TrackingUseCases @Inject constructor(
     val trackHabitCompletionUseCase: TrackHabitCompletionUseCase,
     val trackScreenVisitUseCase: TrackScreenVisitUseCase,
+    val endScreenVisitUseCase: EndScreenVisitUseCase,
     val trackStreakRetentionUseCase: TrackStreakRetentionUseCase,
     val trackTimerEventUseCase: TrackTimerEventUseCase
 )

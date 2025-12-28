@@ -122,8 +122,11 @@ fun MainScreen(
     }
 
     // Track screen visit
-    LaunchedEffect(Unit) {
+    DisposableEffect(Unit) {
         analyticsViewModel.trackScreenVisit("MainScreen")
+        onDispose {
+            analyticsViewModel.endScreenVisit()
+        }
     }
     
     // Tooltip integration

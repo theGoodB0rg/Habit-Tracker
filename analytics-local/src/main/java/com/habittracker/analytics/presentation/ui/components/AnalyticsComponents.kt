@@ -349,22 +349,6 @@ private fun ScreenEngagementBar(
                     )
             )
         }
-        
-        // Engagement score indicator
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.End
-        ) {
-            Text(
-                text = "Engagement: ${(screen.engagementScore * progress).toInt()}%",
-                style = MaterialTheme.typography.bodySmall,
-                color = when {
-                    screen.engagementScore >= 80 -> Color(0xFF4CAF50)
-                    screen.engagementScore >= 60 -> Color(0xFFFF9800)
-                    else -> Color(0xFFF44336)
-                }
-            )
-        }
     }
 }
 

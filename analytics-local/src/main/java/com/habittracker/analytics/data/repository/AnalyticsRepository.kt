@@ -35,6 +35,8 @@ interface AnalyticsRepository {
     suspend fun getStreakRetentionData(timeFrame: TimeFrame): Flow<List<StreakRetention>>
     suspend fun getComprehensiveAnalytics(timeFrame: TimeFrame): Flow<AnalyticsData>
     
+    suspend fun getUserEngagementMode(timeFrame: TimeFrame): Flow<UserEngagementMode>
+    
     suspend fun exportAnalyticsData(format: ExportFormat): String
     suspend fun cleanupOldData(retentionDays: Int = 365)
     suspend fun clearAllData()
@@ -66,6 +68,7 @@ class AnalyticsRepositoryImpl @Inject constructor(
     
     // Active session tracking
     private var currentSessionId: String? = null
+    private var currentScreenVisitId: String? = null
     private var lastScreenStartTime: Long? = null
     private var sessionStartTime: Long? = null
     private val timerEventMutex = Mutex()
@@ -134,12 +137,14 @@ class AnalyticsRepositoryImpl @Inject constructor(
     
     override suspend fun trackScreenVisit(screenName: String, fromScreen: String?) = screenVisitMutex.withLock {
         val currentTime = System.currentTimeMillis()
-        val sessionId = currentSessionId ?: UUID.randomUUID().toString()
+        // Generate unique ID for this specific visit to ensure accurate duration tracking
+        val visitId = UUID.randomUUID().toString()
+        currentScreenVisitId = visitId
         val today = dateUtils.getCurrentDateString()
         
         val screenVisit = ScreenVisitAnalyticsEntity(
             screenName = screenName,
-            sessionId = sessionId,
+            sessionId = visitId,
             entryTimestamp = currentTime,
             date = today,
             fromScreen = fromScreen,
@@ -147,10 +152,11 @@ class AnalyticsRepositoryImpl @Inject constructor(
         )
         
         analyticsDao.insertScreenVisitAnalytics(screenVisit)
+        lastScreenStartTime = currentTime
     }
     
     override suspend fun endScreenVisit(interactionCount: Int, bounced: Boolean) = screenVisitMutex.withLock {
-        val sessionId = currentSessionId ?: return@withLock
+        val sessionId = currentScreenVisitId ?: return@withLock
         val currentTime = System.currentTimeMillis()
         
         analyticsDao.closeScreenVisit(
@@ -158,6 +164,7 @@ class AnalyticsRepositoryImpl @Inject constructor(
             exitTime = currentTime,
             duration = currentTime - (lastScreenStartTime ?: currentTime)
         )
+        currentScreenVisitId = null
     }
     
     override suspend fun startAppSession() = sessionMutex.withLock {
@@ -307,6 +314,33 @@ class AnalyticsRepositoryImpl @Inject constructor(
             
             emit(analyticsData)
         }
+    }
+
+    override suspend fun getUserEngagementMode(timeFrame: TimeFrame): Flow<UserEngagementMode> = flow {
+        val (startDate, endDate) = dateUtils.getDateRange(timeFrame)
+        val screenAnalytics = analyticsDao.getScreenAnalyticsSummary(startDate, endDate)
+        
+        if (screenAnalytics.isEmpty()) {
+            emit(UserEngagementMode.UNKNOWN)
+            return@flow
+        }
+        
+        val totalVisits = screenAnalytics.sumOf { it.totalVisits }
+        val totalTime = screenAnalytics.sumOf { it.totalTimeSpent }
+        
+        if (totalVisits == 0) {
+            emit(UserEngagementMode.UNKNOWN)
+            return@flow
+        }
+        
+        val avgDuration = totalTime / totalVisits
+        
+        val mode = when {
+            avgDuration < 30_000 -> UserEngagementMode.SPEED_RUNNER
+            avgDuration in 30_000..120_000 -> UserEngagementMode.BALANCED
+            else -> UserEngagementMode.PLANNER
+        }
+        emit(mode)
     }
     
     override suspend fun exportAnalyticsData(format: ExportFormat): String {

@@ -44,6 +44,7 @@ fun AnalyticsScreen(
     val exportState by viewModel.exportState.collectAsState()
     val completionChartData by viewModel.completionRateChartData.collectAsState()
     val screenChartData by viewModel.screenVisitChartData.collectAsState()
+    val userEngagementMode by viewModel.userEngagementMode.collectAsState()
     
     // val context = LocalContext.current // not currently used
 
@@ -175,6 +176,7 @@ fun AnalyticsScreen(
                         selectedTimeFrame = selectedTimeFrame,
                         completionChartData = completionChartData,
                         screenChartData = screenChartData,
+                        userEngagementMode = userEngagementMode,
                         onTimeFrameSelected = viewModel::selectTimeFrame,
                         modifier = Modifier.fillMaxSize()
                     )
@@ -214,6 +216,7 @@ private fun AnalyticsContent(
     selectedTimeFrame: TimeFrame,
     completionChartData: List<CompletionRateChartPoint>,
     screenChartData: List<ScreenVisitChartPoint>,
+    userEngagementMode: UserEngagementMode,
     onTimeFrameSelected: (TimeFrame) -> Unit,
     modifier: Modifier = Modifier
 ) {
@@ -228,6 +231,11 @@ private fun AnalyticsContent(
                 selectedTimeFrame = selectedTimeFrame,
                 onTimeFrameSelected = onTimeFrameSelected
             )
+        }
+        
+        // Engagement Mode Card
+        item {
+            UserEngagementModeCard(mode = userEngagementMode)
         }
         
         // Quick stats cards
@@ -532,6 +540,38 @@ private fun EmptyAnalyticsContent() {
                 style = MaterialTheme.typography.bodyMedium,
                 textAlign = TextAlign.Center,
                 color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
+            )
+        }
+    }
+}
+
+@Composable
+fun UserEngagementModeCard(mode: UserEngagementMode) {
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.primaryContainer
+        )
+    ) {
+        Column(
+            modifier = Modifier.padding(16.dp)
+        ) {
+            Text(
+                text = "Your Engagement Style",
+                style = MaterialTheme.typography.labelMedium,
+                color = MaterialTheme.colorScheme.onPrimaryContainer
+            )
+            Spacer(modifier = Modifier.height(8.dp))
+            Text(
+                text = mode.title,
+                style = MaterialTheme.typography.headlineMedium,
+                fontWeight = FontWeight.Bold,
+                color = MaterialTheme.colorScheme.onPrimaryContainer
+            )
+            Text(
+                text = mode.description,
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.8f)
             )
         }
     }

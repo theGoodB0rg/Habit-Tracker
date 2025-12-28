@@ -91,6 +91,14 @@ object AnalyticsModule {
 
     @Provides
     @Singleton
+    fun provideEndScreenVisitUseCase(
+        analyticsRepository: AnalyticsRepository
+    ): EndScreenVisitUseCase {
+        return EndScreenVisitUseCase(analyticsRepository)
+    }
+
+    @Provides
+    @Singleton
     fun provideTrackStreakRetentionUseCase(
         analyticsRepository: AnalyticsRepository
     ): TrackStreakRetentionUseCase {
@@ -102,12 +110,14 @@ object AnalyticsModule {
     fun provideTrackingUseCases(
         trackHabitCompletionUseCase: TrackHabitCompletionUseCase,
         trackScreenVisitUseCase: TrackScreenVisitUseCase,
+        endScreenVisitUseCase: EndScreenVisitUseCase,
         trackStreakRetentionUseCase: TrackStreakRetentionUseCase,
         trackTimerEventUseCase: TrackTimerEventUseCase
     ): TrackingUseCases {
         return TrackingUseCases(
             trackHabitCompletionUseCase,
             trackScreenVisitUseCase,
+            endScreenVisitUseCase,
             trackStreakRetentionUseCase,
             trackTimerEventUseCase
         )
