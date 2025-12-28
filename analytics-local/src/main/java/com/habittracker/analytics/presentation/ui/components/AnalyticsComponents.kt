@@ -356,15 +356,18 @@ private fun ScreenEngagementBar(
 fun StreakAnalysisSection(
     data: AnalyticsData
 ) {
-    val activeStreaks = data.streakRetentions.filter { it.isActive }
-    val completedStreaks = data.streakRetentions.filter { !it.isActive }
+    // Sort by current streak (descending), then by longest streak
+    val sortedStreaks = data.streakRetentions.sortedWith(
+        compareByDescending<StreakRetention> { it.streakLength }
+            .thenByDescending { it.longestStreak }
+    )
     
     AnalyticsCard(
         title = "Streak Analysis",
         icon = Icons.Default.Timeline,
-        subtitle = "${activeStreaks.size} active streaks"
+        subtitle = "Current vs Best Performance"
     ) {
-        if (activeStreaks.isEmpty() && completedStreaks.isEmpty()) {
+        if (sortedStreaks.isEmpty()) {
             EmptyChartPlaceholder(message = "No streak data available")
             return@AnalyticsCard
         }
@@ -372,40 +375,8 @@ fun StreakAnalysisSection(
         Column(
             verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
-            // Active streaks
-            if (activeStreaks.isNotEmpty()) {
-                Text(
-                    text = "Active Streaks",
-                    style = MaterialTheme.typography.titleSmall,
-                    fontWeight = FontWeight.SemiBold,
-                    color = Color(0xFF4CAF50)
-                )
-                
-                activeStreaks.forEach { streak ->
-                    StreakItem(
-                        streak = streak,
-                        isActive = true
-                    )
-                }
-            }
-            
-            // Completed streaks (top 3)
-            if (completedStreaks.isNotEmpty()) {
-                Spacer(modifier = Modifier.height(8.dp))
-                
-                Text(
-                    text = "Recent Completed Streaks",
-                    style = MaterialTheme.typography.titleSmall,
-                    fontWeight = FontWeight.SemiBold,
-                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
-                )
-                
-                completedStreaks.take(3).forEach { streak ->
-                    StreakItem(
-                        streak = streak,
-                        isActive = false
-                    )
-                }
+            sortedStreaks.forEach { streak ->
+                StreakItem(streak = streak)
             }
         }
     }
@@ -413,13 +384,12 @@ fun StreakAnalysisSection(
 
 @Composable
 private fun StreakItem(
-    streak: StreakRetention,
-    isActive: Boolean
+    streak: StreakRetention
 ) {
     Card(
         modifier = Modifier.fillMaxWidth(),
         colors = CardDefaults.cardColors(
-            containerColor = if (isActive) 
+            containerColor = if (streak.isActive) 
                 Color(0xFF4CAF50).copy(alpha = 0.1f) 
             else 
                 MaterialTheme.colorScheme.surfaceVariant
@@ -432,43 +402,67 @@ private fun StreakItem(
             verticalAlignment = Alignment.CenterVertically
         ) {
             Row(
-                verticalAlignment = Alignment.CenterVertically
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier.weight(1f)
             ) {
                 Icon(
-                    imageVector = if (isActive) Icons.Default.TrendingUp else Icons.Default.CheckCircle,
+                    imageVector = if (streak.isActive) Icons.Default.TrendingUp else Icons.Default.DateRange,
                     contentDescription = null,
-                    tint = if (isActive) Color(0xFFFF6B35) else Color(0xFF4CAF50),
-                    modifier = Modifier.size(20.dp)
+                    tint = if (streak.isActive) Color(0xFFFF6B35) else MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.size(24.dp)
                 )
                 
-                Spacer(modifier = Modifier.width(8.dp))
+                Spacer(modifier = Modifier.width(12.dp))
                 
                 Column {
                     Text(
                         text = streak.habitName,
                         style = MaterialTheme.typography.bodyMedium,
-                        fontWeight = FontWeight.Medium
+                        fontWeight = FontWeight.Bold
                     )
-                    
-                    Text(
-                        text = "${streak.streakLength} days",
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
-                    )
+                    if (streak.isActive) {
+                        Text(
+                            text = "Active Streak",
+                            style = MaterialTheme.typography.labelSmall,
+                            color = Color(0xFF4CAF50)
+                        )
+                    }
                 }
             }
             
-            if (isActive) {
-                Text(
-                    text = "${(streak.retentionProbability * 100).toInt()}%",
-                    style = MaterialTheme.typography.bodySmall,
-                    fontWeight = FontWeight.Medium,
-                    color = when {
-                        streak.retentionProbability >= 0.8 -> Color(0xFF4CAF50)
-                        streak.retentionProbability >= 0.6 -> Color(0xFFFF9800)
-                        else -> Color(0xFFF44336)
-                    }
-                )
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(16.dp)
+            ) {
+                // Current Streak
+                Column(horizontalAlignment = Alignment.End) {
+                    Text(
+                        text = "${streak.streakLength}",
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.Bold,
+                        color = if (streak.isActive) Color(0xFFFF6B35) else MaterialTheme.colorScheme.onSurface
+                    )
+                    Text(
+                        text = "Current",
+                        style = MaterialTheme.typography.labelSmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
+
+                // Best Streak
+                Column(horizontalAlignment = Alignment.End) {
+                    Text(
+                        text = "${streak.longestStreak}",
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.primary
+                    )
+                    Text(
+                        text = "Best",
+                        style = MaterialTheme.typography.labelSmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
             }
         }
     }

@@ -218,11 +218,10 @@ interface AnalyticsDao {
             COUNT(h.id) as totalDays,
             SUM(CASE WHEN h.isCompleted = 1 THEN 1 ELSE 0 END) as completedDays,
             AVG(CASE WHEN h.isCompleted = 1 THEN 100.0 ELSE 0.0 END) as completionRate,
-            COALESCE(s.streakLength, 0) as currentStreak,
-            COALESCE(MAX(s.maxStreakLength), 0) as longestStreak,
+            (SELECT COALESCE(MAX(streakLength), 0) FROM streak_retention_analytics WHERE habitId = h.habitId AND isActive = 1) as currentStreak,
+            (SELECT COALESCE(MAX(maxStreakLength), 0) FROM streak_retention_analytics WHERE habitId = h.habitId) as longestStreak,
             AVG(h.timeSpentMinutes) as averageTimeSpent
         FROM habit_completion_analytics h
-        LEFT JOIN streak_retention_analytics s ON h.habitId = s.habitId AND s.isActive = 1
         WHERE h.date BETWEEN :startDate AND :endDate
         GROUP BY h.habitId
         ORDER BY completionRate DESC

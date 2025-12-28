@@ -257,6 +257,7 @@ class AnalyticsRepositoryImpl @Inject constructor(
                 habitId = habit.habitId,
                 habitName = habit.habitName,
                 streakLength = habit.currentStreak,
+                longestStreak = habit.longestStreak,
                 streakStartDate = dateUtils.parseDate(startDate), // Approximation
                 streakEndDate = if (habit.currentStreak > 0) null else dateUtils.parseDate(endDate),
                 isActive = habit.currentStreak > 0,
@@ -303,10 +304,25 @@ class AnalyticsRepositoryImpl @Inject constructor(
                 )
             }
             
+            val streakRetentions = habitSummaries.map { habit ->
+                StreakRetention(
+                    habitId = habit.habitId,
+                    habitName = habit.habitName,
+                    streakLength = habit.currentStreak,
+                    longestStreak = habit.longestStreak,
+                    streakStartDate = dateUtils.parseDate(startDate), // Approximation
+                    streakEndDate = if (habit.currentStreak > 0) null else dateUtils.parseDate(endDate),
+                    isActive = habit.currentStreak > 0,
+                    retentionProbability = 0.7, // Default probability
+                    difficultyLevel = DifficultyLevel.MODERATE,
+                    timeFrame = timeFrame
+                )
+            }
+
             val analyticsData = AnalyticsData(
                 habitCompletionRates = completionRates,
                 screenVisits = screenVisits,
-                streakRetentions = emptyList(),
+                streakRetentions = streakRetentions,
                 userEngagement = createUserEngagement(),
                 timeRangeStats = createTimeRangeStats(timeFrame, startDate, endDate),
                 exportMetadata = createExportMetadata()

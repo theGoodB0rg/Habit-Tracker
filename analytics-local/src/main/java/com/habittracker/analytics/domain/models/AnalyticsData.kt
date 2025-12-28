@@ -58,6 +58,7 @@ data class StreakRetention(
     val habitId: String,
     val habitName: String,
     val streakLength: Int,
+    val longestStreak: Int,
     val streakStartDate: LocalDate,
     val streakEndDate: LocalDate?,
     val isActive: Boolean,
