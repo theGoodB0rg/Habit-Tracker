@@ -3,6 +3,8 @@ package com.habittracker.ui.screens
 import androidx.compose.animation.*
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.FlowRow
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
@@ -446,6 +448,7 @@ private fun Sparkline(values: List<Float>, modifier: Modifier = Modifier.height(
     }
 }
 
+@OptIn(ExperimentalLayoutApi::class)
 @Composable
 private fun HabitHeaderCard(
     habit: com.habittracker.data.database.entity.HabitEntity,
@@ -507,9 +510,10 @@ private fun HabitHeaderCard(
             Spacer(modifier = Modifier.height(12.dp))
             
             // Frequency and creation date
-            Row(
+            FlowRow(
                 modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
                 if (completedThisPeriod) {
                     AssistChip(
