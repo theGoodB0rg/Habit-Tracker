@@ -1,0 +1,1437 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Habit Tracker Home Screen - UI/UX Redesign Plan</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet">
+    <style>
+        :root {
+            /* Material 3 Color Tokens */
+            --md-primary: #6750A4;
+            --md-on-primary: #FFFFFF;
+            --md-primary-container: #EADDFF;
+            --md-on-primary-container: #21005D;
+            --md-secondary: #625B71;
+            --md-secondary-container: #E8DEF8;
+            --md-surface: #FFFBFE;
+            --md-surface-variant: #E7E0EC;
+            --md-on-surface: #1C1B1F;
+            --md-on-surface-variant: #49454F;
+            --md-outline: #79747E;
+            --md-error: #B3261E;
+            --md-error-container: #F9DEDC;
+            --md-success: #4CAF50;
+            --md-success-container: #C8E6C9;
+            --md-warning: #FB8C00;
+            --md-warning-container: #FFE0B2;
+            
+            /* Elevation shadows */
+            --elevation-1: 0 1px 2px rgba(0,0,0,0.1), 0 1px 3px rgba(0,0,0,0.08);
+            --elevation-2: 0 2px 4px rgba(0,0,0,0.1), 0 3px 6px rgba(0,0,0,0.08);
+            --elevation-3: 0 4px 8px rgba(0,0,0,0.12), 0 6px 12px rgba(0,0,0,0.1);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: #f5f5f5;
+            color: var(--md-on-surface);
+            line-height: 1.5;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 24px;
+        }
+
+        h1, h2, h3 {
+            font-weight: 600;
+        }
+
+        /* Section Styles */
+        .section {
+            background: white;
+            border-radius: 16px;
+            padding: 24px;
+            margin-bottom: 24px;
+            box-shadow: var(--elevation-1);
+        }
+
+        .section-title {
+            font-size: 20px;
+            margin-bottom: 16px;
+            color: var(--md-primary);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        /* Phone Frame */
+        .phone-frame {
+            width: 375px;
+            height: 812px;
+            background: var(--md-surface);
+            border-radius: 40px;
+            overflow: hidden;
+            box-shadow: var(--elevation-3), 0 0 0 12px #1a1a1a;
+            position: relative;
+        }
+
+        .phone-notch {
+            width: 150px;
+            height: 30px;
+            background: #1a1a1a;
+            border-radius: 0 0 20px 20px;
+            position: absolute;
+            top: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 10;
+        }
+
+        .phone-content {
+            height: 100%;
+            padding-top: 44px;
+            overflow-y: auto;
+        }
+
+        /* App Bar */
+        .app-bar {
+            padding: 16px 16px 8px;
+            background: var(--md-surface);
+            position: sticky;
+            top: 0;
+            z-index: 5;
+        }
+
+        .app-bar h1 {
+            font-size: 24px;
+            font-weight: 700;
+        }
+
+        .app-bar .date {
+            font-size: 13px;
+            color: var(--md-on-surface-variant);
+        }
+
+        /* Habit Card - New Design */
+        .habit-card {
+            background: white;
+            border-radius: 16px;
+            margin: 8px 16px;
+            padding: 16px;
+            box-shadow: var(--elevation-1);
+            transition: all 0.2s ease;
+        }
+
+        .habit-card.completed {
+            background: var(--md-primary-container);
+            box-shadow: var(--elevation-2);
+        }
+
+        .habit-card.timer-active {
+            border: 2px solid var(--md-primary);
+        }
+
+        .habit-header {
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+        }
+
+        .habit-info {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .habit-name {
+            font-size: 16px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .habit-name .timer-indicator {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: var(--md-primary);
+            animation: pulse 1.5s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.6; transform: scale(1.1); }
+        }
+
+        .habit-meta {
+            font-size: 12px;
+            color: var(--md-on-surface-variant);
+            margin-top: 4px;
+        }
+
+        /* Action Button - Primary Circle */
+        .action-btn {
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            border: 2px solid var(--md-outline);
+            background: transparent;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.15s ease;
+            flex-shrink: 0;
+        }
+
+        .action-btn:hover {
+            background: var(--md-surface-variant);
+        }
+
+        .action-btn.completed {
+            background: var(--md-primary);
+            border-color: var(--md-primary);
+            color: white;
+        }
+
+        .action-btn.loading {
+            border-color: var(--md-primary);
+        }
+
+        .action-btn .material-icons-round {
+            font-size: 24px;
+        }
+
+        /* Timer Section - Collapsible */
+        .timer-section {
+            margin-top: 12px;
+            padding-top: 12px;
+            border-top: 1px solid var(--md-surface-variant);
+        }
+
+        .timer-collapsed {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .timer-chip {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 12px;
+            background: var(--md-surface-variant);
+            border-radius: 20px;
+            font-size: 13px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.15s ease;
+        }
+
+        .timer-chip:hover {
+            background: var(--md-secondary-container);
+        }
+
+        .timer-chip.active {
+            background: var(--md-primary);
+            color: white;
+        }
+
+        .timer-chip .material-icons-round {
+            font-size: 18px;
+        }
+
+        /* Timer Expanded State */
+        .timer-expanded {
+            margin-top: 12px;
+            padding: 12px;
+            background: var(--md-surface-variant);
+            border-radius: 12px;
+        }
+
+        .timer-display {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .timer-time {
+            font-size: 32px;
+            font-weight: 700;
+            font-variant-numeric: tabular-nums;
+        }
+
+        .timer-controls {
+            display: flex;
+            gap: 8px;
+        }
+
+        .timer-control-btn {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            border: none;
+            background: var(--md-primary);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+        }
+
+        .timer-control-btn.secondary {
+            background: var(--md-secondary-container);
+            color: var(--md-on-surface);
+        }
+
+        /* Progress Bar */
+        .progress-bar {
+            height: 4px;
+            background: var(--md-outline);
+            border-radius: 2px;
+            margin-top: 8px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: var(--md-primary);
+            border-radius: 2px;
+            transition: width 0.3s ease;
+        }
+
+        /* Mini Session Bar (Global) */
+        .mini-session-bar {
+            position: fixed;
+            bottom: 80px;
+            left: 16px;
+            right: 16px;
+            background: var(--md-primary);
+            color: white;
+            border-radius: 16px;
+            padding: 12px 16px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            box-shadow: var(--elevation-3);
+            z-index: 100;
+        }
+
+        .mini-session-info {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .mini-session-time {
+            font-size: 20px;
+            font-weight: 700;
+            font-variant-numeric: tabular-nums;
+        }
+
+        .mini-session-habit {
+            font-size: 13px;
+            opacity: 0.9;
+        }
+
+        /* Bottom Nav */
+        .bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 80px;
+            background: var(--md-surface);
+            border-top: 1px solid var(--md-surface-variant);
+            display: flex;
+            align-items: center;
+            justify-content: space-around;
+            padding-bottom: env(safe-area-inset-bottom, 0);
+        }
+
+        /* State Diagrams */
+        .state-diagram {
+            background: #f8f9fa;
+            border-radius: 12px;
+            padding: 20px;
+            margin: 16px 0;
+        }
+
+        .state-box {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 16px;
+            background: white;
+            border: 2px solid var(--md-outline);
+            border-radius: 8px;
+            font-weight: 500;
+            margin: 4px;
+        }
+
+        .state-box.active {
+            border-color: var(--md-primary);
+            background: var(--md-primary-container);
+        }
+
+        .state-arrow {
+            display: inline-block;
+            margin: 0 8px;
+            color: var(--md-on-surface-variant);
+        }
+
+        /* Decision Table */
+        .decision-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 16px 0;
+            font-size: 14px;
+        }
+
+        .decision-table th, .decision-table td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid var(--md-surface-variant);
+        }
+
+        .decision-table th {
+            background: var(--md-surface-variant);
+            font-weight: 600;
+        }
+
+        .decision-table tr:hover {
+            background: #f8f9fa;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: 600;
+        }
+
+        .badge.confirm { background: var(--md-warning-container); color: #5D4037; }
+        .badge.execute { background: var(--md-success-container); color: #1B5E20; }
+        .badge.disallow { background: var(--md-error-container); color: var(--md-error); }
+
+        /* Mockup Grid */
+        .mockup-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            gap: 24px;
+        }
+
+        /* Loading States */
+        .skeleton {
+            background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+            background-size: 200% 100%;
+            animation: shimmer 1.5s infinite;
+            border-radius: 8px;
+        }
+
+        @keyframes shimmer {
+            0% { background-position: 200% 0; }
+            100% { background-position: -200% 0; }
+        }
+
+        /* Error State */
+        .error-banner {
+            background: var(--md-error-container);
+            color: var(--md-error);
+            padding: 12px 16px;
+            border-radius: 12px;
+            margin: 8px 16px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        /* Dialog/Modal */
+        .modal-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.4);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+
+        .modal {
+            background: white;
+            border-radius: 24px;
+            padding: 24px;
+            max-width: 320px;
+            width: 90%;
+            box-shadow: var(--elevation-3);
+        }
+
+        .modal-title {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+
+        .modal-body {
+            color: var(--md-on-surface-variant);
+            margin-bottom: 20px;
+        }
+
+        .modal-actions {
+            display: flex;
+            gap: 8px;
+            justify-content: flex-end;
+        }
+
+        .btn {
+            padding: 10px 24px;
+            border-radius: 20px;
+            border: none;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.15s ease;
+        }
+
+        .btn-text {
+            background: transparent;
+            color: var(--md-primary);
+        }
+
+        .btn-filled {
+            background: var(--md-primary);
+            color: white;
+        }
+
+        /* Snackbar */
+        .snackbar {
+            position: fixed;
+            bottom: 100px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #323232;
+            color: white;
+            padding: 14px 16px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            box-shadow: var(--elevation-2);
+            z-index: 200;
+        }
+
+        .snackbar-action {
+            color: var(--md-primary-container);
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        /* Tabs for sections */
+        .tabs {
+            display: flex;
+            gap: 4px;
+            margin-bottom: 16px;
+            border-bottom: 1px solid var(--md-surface-variant);
+        }
+
+        .tab {
+            padding: 12px 16px;
+            cursor: pointer;
+            border-bottom: 2px solid transparent;
+            font-weight: 500;
+            color: var(--md-on-surface-variant);
+        }
+
+        .tab.active {
+            color: var(--md-primary);
+            border-bottom-color: var(--md-primary);
+        }
+
+        /* Responsive Grid Indicator */
+        .responsive-indicator {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 16px;
+        }
+
+        .device-size {
+            padding: 6px 12px;
+            border-radius: 16px;
+            background: var(--md-surface-variant);
+            font-size: 12px;
+            font-weight: 500;
+        }
+
+        .device-size.current {
+            background: var(--md-primary);
+            color: white;
+        }
+
+        /* Inline Styles for Spec */
+        .spec-highlight {
+            background: #FFF3E0;
+            border-left: 4px solid var(--md-warning);
+            padding: 12px 16px;
+            margin: 12px 0;
+            border-radius: 0 8px 8px 0;
+        }
+
+        code {
+            background: #f5f5f5;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-family: 'SF Mono', monospace;
+            font-size: 13px;
+        }
+
+        .flow-step {
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+            margin: 12px 0;
+        }
+
+        .flow-number {
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            background: var(--md-primary);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            font-size: 14px;
+            flex-shrink: 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1 style="font-size: 28px; margin-bottom: 8px;">🎯 Habit Tracker - State Management & UI Redesign</h1>
+        <p style="color: var(--md-on-surface-variant); margin-bottom: 24px;">Option A: Simplified state management with modern UI/UX</p>
+
+        <!-- SECTION 1: STATE ARCHITECTURE -->
+        <div class="section">
+            <h2 class="section-title">
+                <span class="material-icons-round">account_tree</span>
+                1. Unified State Architecture
+            </h2>
+            
+            <p style="margin-bottom: 16px;">Replace multiple ViewModels with a <strong>single source of truth</strong>:</p>
+            
+            <div class="state-diagram">
+                <h4 style="margin-bottom: 12px;">Current (Fragmented):</h4>
+                <div style="display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 16px;">
+                    <div class="state-box">TimerActionCoordinator</div>
+                    <div class="state-box">TimerTickerViewModel</div>
+                    <div class="state-box">ActiveTimerViewModel</div>
+                    <div class="state-box">PartialSessionViewModel</div>
+                    <div class="state-box">TimerBus Events</div>
+                </div>
+                
+                <h4 style="margin-bottom: 12px;">Proposed (Unified):</h4>
+                <div class="state-box active" style="font-size: 16px;">
+                    <span class="material-icons-round">hub</span>
+                    TimerActionCoordinator (Single Source of Truth)
+                </div>
+            </div>
+
+            <div class="spec-highlight">
+                <strong>Key Change:</strong> All UI components read from <code>TimerActionCoordinator.state</code>. 
+                Remove TimerTickerViewModel, ActiveTimerViewModel. The coordinator already tracks remainingMs, 
+                paused state, and trackedHabitId.
+            </div>
+
+            <h4 style="margin-top: 20px; margin-bottom: 12px;">Unified State Shape:</h4>
+            <pre style="background: #1e1e1e; color: #d4d4d4; padding: 16px; border-radius: 8px; overflow-x: auto; font-size: 13px;">
+<span style="color: #569cd6;">data class</span> <span style="color: #4ec9b0;">TimerUiState</span>(
+    <span style="color: #9cdcfe;">val</span> activeHabitId: <span style="color: #4ec9b0;">Long?</span> = <span style="color: #569cd6;">null</span>,
+    <span style="color: #9cdcfe;">val</span> timerState: <span style="color: #4ec9b0;">TimerState</span> = TimerState.IDLE,
+    <span style="color: #9cdcfe;">val</span> remainingMs: <span style="color: #4ec9b0;">Long</span> = 0L,
+    <span style="color: #9cdcfe;">val</span> targetMs: <span style="color: #4ec9b0;">Long</span> = 0L,
+    <span style="color: #9cdcfe;">val</span> paused: <span style="color: #4ec9b0;">Boolean</span> = <span style="color: #569cd6;">false</span>,
+    <span style="color: #9cdcfe;">val</span> isLoading: <span style="color: #4ec9b0;">Boolean</span> = <span style="color: #569cd6;">false</span>,        <span style="color: #6a9955;">// For debounce visual feedback</span>
+    <span style="color: #9cdcfe;">val</span> pausedHabitId: <span style="color: #4ec9b0;">Long?</span> = <span style="color: #569cd6;">null</span>,   <span style="color: #6a9955;">// When another timer auto-paused</span>
+    <span style="color: #9cdcfe;">val</span> pausedRemainingMs: <span style="color: #4ec9b0;">Long</span> = 0L
+)
+
+<span style="color: #569cd6;">enum class</span> <span style="color: #4ec9b0;">TimerState</span> { IDLE, RUNNING, PAUSED }
+            </pre>
+        </div>
+
+        <!-- SECTION 2: TIMER SWITCHING LOGIC -->
+        <div class="section">
+            <h2 class="section-title">
+                <span class="material-icons-round">swap_horiz</span>
+                2. Timer Switching Logic (Critical Decisions)
+            </h2>
+
+            <h3 style="margin: 16px 0 12px;">Scenario A: Mark Complete While Timer Running (Same Habit)</h3>
+            <table class="decision-table">
+                <tr>
+                    <th>Condition</th>
+                    <th>Action</th>
+                    <th>UI Feedback</th>
+                </tr>
+                <tr>
+                    <td>Timer reached target (≥100%)</td>
+                    <td><span class="badge execute">Execute</span> Complete habit + stop timer + log duration</td>
+                    <td>✅ "Completed! Duration logged" + Undo snackbar</td>
+                </tr>
+                <tr>
+                    <td>Timer above min duration</td>
+                    <td><span class="badge execute">Execute</span> Complete habit + stop timer + log duration</td>
+                    <td>✅ "Completed early. Duration logged" + Undo</td>
+                </tr>
+                <tr>
+                    <td>Timer below min duration</td>
+                    <td><span class="badge confirm">Confirm</span> Show dialog</td>
+                    <td>⚠️ Dialog: "Only X min completed. Complete anyway?"</td>
+                </tr>
+                <tr>
+                    <td>Pomodoro in focus segment</td>
+                    <td><span class="badge confirm">Confirm</span> Show dialog</td>
+                    <td>⚠️ Dialog: "End focus session early?"</td>
+                </tr>
+            </table>
+
+            <h3 style="margin: 24px 0 12px;">Scenario B: Start Timer for New Habit While Another Running</h3>
+            <table class="decision-table">
+                <tr>
+                    <th>Option</th>
+                    <th>Behavior</th>
+                    <th>UI Feedback</th>
+                </tr>
+                <tr>
+                    <td><strong>✅ Recommended: Auto-Pause + Switch Sheet</strong></td>
+                    <td>
+                        1. Auto-pause current timer<br>
+                        2. Start new timer<br>
+                        3. Show bottom sheet with both timers
+                    </td>
+                    <td>
+                        Bottom sheet: "Timer Switched"<br>
+                        Shows both timers with Resume option for paused one
+                    </td>
+                </tr>
+                <tr>
+                    <td>Alternative: Block + Prompt</td>
+                    <td>Block new timer start, show dialog to complete/discard current first</td>
+                    <td>Dialog: "Finish current timer first"</td>
+                </tr>
+            </table>
+
+            <div class="spec-highlight">
+                <strong>Chosen Behavior:</strong> Auto-pause + Switch Sheet (already implemented via <code>TimerSwitcherSheet</code>). 
+                The sheet provides clear UX showing both timers, eliminating confusion about what happened.
+            </div>
+
+            <h4 style="margin-top: 20px;">State Flow Diagram:</h4>
+            <div class="state-diagram" style="text-align: center;">
+                <div style="display: inline-block; text-align: left;">
+                    <div class="flow-step">
+                        <div class="flow-number">1</div>
+                        <div>User taps "Start Timer" on Habit B while Habit A timer is running</div>
+                    </div>
+                    <div class="flow-step">
+                        <div class="flow-number">2</div>
+                        <div>Coordinator auto-pauses Habit A → emits <code>TimerEvent.AutoPaused</code></div>
+                    </div>
+                    <div class="flow-step">
+                        <div class="flow-number">3</div>
+                        <div>Coordinator starts Habit B timer → updates <code>state.activeHabitId</code></div>
+                    </div>
+                    <div class="flow-step">
+                        <div class="flow-number">4</div>
+                        <div>UI shows TimerSwitcherSheet with both timers</div>
+                    </div>
+                    <div class="flow-step">
+                        <div class="flow-number">5</div>
+                        <div>User can: dismiss (keep B active), or tap "Resume A" (pauses B, resumes A)</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SECTION 3: UI MOCKUPS -->
+        <div class="section">
+            <h2 class="section-title">
+                <span class="material-icons-round">phone_android</span>
+                3. UI Mockups
+            </h2>
+
+            <div class="responsive-indicator">
+                <span class="device-size current">Compact (< 600dp)</span>
+                <span class="device-size">Medium (600-840dp)</span>
+                <span class="device-size">Expanded (> 840dp)</span>
+            </div>
+
+            <div class="mockup-grid">
+                <!-- Phone 1: Default State -->
+                <div>
+                    <h4 style="margin-bottom: 12px;">Default State (No Active Timer)</h4>
+                    <div class="phone-frame">
+                        <div class="phone-notch"></div>
+                        <div class="phone-content">
+                            <div class="app-bar">
+                                <h1>My Habits</h1>
+                                <div class="date">Today • Jan 3, 2026</div>
+                            </div>
+
+                            <!-- Habit Card 1: Not completed, no timer -->
+                            <div class="habit-card">
+                                <div class="habit-header">
+                                    <div class="habit-info">
+                                        <div class="habit-name">Morning Meditation</div>
+                                        <div class="habit-meta">🔥 12 day streak • Daily</div>
+                                    </div>
+                                    <button class="action-btn">
+                                        <span class="material-icons-round">radio_button_unchecked</span>
+                                    </button>
+                                </div>
+                                <div class="timer-section">
+                                    <div class="timer-collapsed">
+                                        <div class="timer-chip">
+                                            <span class="material-icons-round">timer</span>
+                                            Start 25m
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Habit Card 2: Completed -->
+                            <div class="habit-card completed">
+                                <div class="habit-header">
+                                    <div class="habit-info">
+                                        <div class="habit-name">Workout Session</div>
+                                        <div class="habit-meta">✓ Completed • 32m logged</div>
+                                    </div>
+                                    <button class="action-btn completed">
+                                        <span class="material-icons-round">check</span>
+                                    </button>
+                                </div>
+                            </div>
+
+                            <!-- Habit Card 3: Timer required badge -->
+                            <div class="habit-card">
+                                <div class="habit-header">
+                                    <div class="habit-info">
+                                        <div class="habit-name">
+                                            Deep Work
+                                            <span style="font-size: 10px; background: var(--md-secondary-container); padding: 2px 6px; border-radius: 8px;">Timer Required</span>
+                                        </div>
+                                        <div class="habit-meta">🔥 5 day streak • Weekly</div>
+                                    </div>
+                                    <button class="action-btn" style="opacity: 0.5;">
+                                        <span class="material-icons-round">timer</span>
+                                    </button>
+                                </div>
+                                <div class="timer-section">
+                                    <div class="timer-collapsed">
+                                        <div class="timer-chip">
+                                            <span class="material-icons-round">timer</span>
+                                            Start 45m
+                                        </div>
+                                        <span style="font-size: 11px; color: var(--md-on-surface-variant);">Required to complete</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Habit Card 4: Simple, no timer -->
+                            <div class="habit-card">
+                                <div class="habit-header">
+                                    <div class="habit-info">
+                                        <div class="habit-name">Take Vitamins</div>
+                                        <div class="habit-meta">🔥 30 day streak • Daily</div>
+                                    </div>
+                                    <button class="action-btn">
+                                        <span class="material-icons-round">radio_button_unchecked</span>
+                                    </button>
+                                </div>
+                            </div>
+
+                            <div style="height: 100px;"></div>
+                        </div>
+                        <div class="bottom-nav">
+                            <span class="material-icons-round" style="color: var(--md-primary);">home</span>
+                            <span class="material-icons-round" style="color: var(--md-on-surface-variant);">insights</span>
+                            <span class="material-icons-round" style="color: var(--md-on-surface-variant);">settings</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Phone 2: Timer Active -->
+                <div>
+                    <h4 style="margin-bottom: 12px;">Timer Active State</h4>
+                    <div class="phone-frame">
+                        <div class="phone-notch"></div>
+                        <div class="phone-content">
+                            <div class="app-bar">
+                                <h1>My Habits</h1>
+                                <div class="date">Today • Jan 3, 2026</div>
+                            </div>
+
+                            <!-- Active Timer Card -->
+                            <div class="habit-card timer-active">
+                                <div class="habit-header">
+                                    <div class="habit-info">
+                                        <div class="habit-name">
+                                            Morning Meditation
+                                            <div class="timer-indicator"></div>
+                                        </div>
+                                        <div class="habit-meta">🔥 12 day streak</div>
+                                    </div>
+                                    <button class="action-btn">
+                                        <span class="material-icons-round">check_circle_outline</span>
+                                    </button>
+                                </div>
+                                <div class="timer-expanded">
+                                    <div class="timer-display">
+                                        <div class="timer-time">18:42</div>
+                                        <div class="timer-controls">
+                                            <button class="timer-control-btn secondary">
+                                                <span class="material-icons-round">pause</span>
+                                            </button>
+                                            <button class="timer-control-btn">
+                                                <span class="material-icons-round">check</span>
+                                            </button>
+                                        </div>
+                                    </div>
+                                    <div class="progress-bar">
+                                        <div class="progress-fill" style="width: 25%;"></div>
+                                    </div>
+                                    <div style="display: flex; justify-content: space-between; margin-top: 4px; font-size: 11px; color: var(--md-on-surface-variant);">
+                                        <span>6:18 elapsed</span>
+                                        <span>Target: 25:00</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Other cards collapsed -->
+                            <div class="habit-card completed">
+                                <div class="habit-header">
+                                    <div class="habit-info">
+                                        <div class="habit-name">Workout Session</div>
+                                        <div class="habit-meta">✓ Completed</div>
+                                    </div>
+                                    <button class="action-btn completed">
+                                        <span class="material-icons-round">check</span>
+                                    </button>
+                                </div>
+                            </div>
+
+                            <div class="habit-card">
+                                <div class="habit-header">
+                                    <div class="habit-info">
+                                        <div class="habit-name">Deep Work</div>
+                                        <div class="habit-meta">🔥 5 day streak</div>
+                                    </div>
+                                    <button class="action-btn" style="opacity: 0.5;">
+                                        <span class="material-icons-round">timer</span>
+                                    </button>
+                                </div>
+                                <div class="timer-section">
+                                    <div class="timer-collapsed">
+                                        <div class="timer-chip">
+                                            <span class="material-icons-round">timer</span>
+                                            Start 45m
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div style="height: 160px;"></div>
+                        </div>
+
+                        <!-- Mini Session Bar -->
+                        <div class="mini-session-bar">
+                            <div class="mini-session-info">
+                                <span class="material-icons-round">self_improvement</span>
+                                <div>
+                                    <div class="mini-session-time">18:42</div>
+                                    <div class="mini-session-habit">Morning Meditation</div>
+                                </div>
+                            </div>
+                            <div style="display: flex; gap: 8px;">
+                                <button class="timer-control-btn secondary" style="width: 36px; height: 36px;">
+                                    <span class="material-icons-round" style="font-size: 20px;">pause</span>
+                                </button>
+                                <button class="timer-control-btn" style="width: 36px; height: 36px;">
+                                    <span class="material-icons-round" style="font-size: 20px;">check</span>
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="bottom-nav">
+                            <span class="material-icons-round" style="color: var(--md-primary);">home</span>
+                            <span class="material-icons-round" style="color: var(--md-on-surface-variant);">insights</span>
+                            <span class="material-icons-round" style="color: var(--md-on-surface-variant);">settings</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Phone 3: Timer Switch Sheet -->
+                <div>
+                    <h4 style="margin-bottom: 12px;">Timer Switch Modal</h4>
+                    <div class="phone-frame">
+                        <div class="phone-notch"></div>
+                        <div class="phone-content" style="filter: brightness(0.7);">
+                            <div class="app-bar">
+                                <h1>My Habits</h1>
+                                <div class="date">Today • Jan 3, 2026</div>
+                            </div>
+                            <div class="habit-card">
+                                <div class="habit-header">
+                                    <div class="habit-info">
+                                        <div class="habit-name">Morning Meditation</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Switch Sheet -->
+                        <div style="position: absolute; bottom: 80px; left: 0; right: 0; background: white; border-radius: 24px 24px 0 0; padding: 24px; box-shadow: 0 -4px 20px rgba(0,0,0,0.15);">
+                            <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 16px;">
+                                <span class="material-icons-round" style="color: var(--md-primary);">swap_horiz</span>
+                                <span style="font-weight: 600; font-size: 16px;">Timer Switched</span>
+                            </div>
+
+                            <p style="color: var(--md-on-surface-variant); font-size: 14px; margin-bottom: 16px;">
+                                Started new timer. Previous timer has been paused.
+                            </p>
+
+                            <!-- Now Active -->
+                            <div style="background: var(--md-primary-container); padding: 12px; border-radius: 12px; margin-bottom: 12px;">
+                                <div style="display: flex; justify-content: space-between; align-items: center;">
+                                    <div>
+                                        <div style="font-size: 12px; color: var(--md-primary); font-weight: 600;">NOW ACTIVE</div>
+                                        <div style="font-weight: 600;">Deep Work</div>
+                                        <div style="font-size: 13px; color: var(--md-on-surface-variant);">45:00 remaining</div>
+                                    </div>
+                                    <div class="timer-indicator" style="width: 12px; height: 12px;"></div>
+                                </div>
+                            </div>
+
+                            <!-- Paused -->
+                            <div style="background: var(--md-surface-variant); padding: 12px; border-radius: 12px; margin-bottom: 20px;">
+                                <div style="display: flex; justify-content: space-between; align-items: center;">
+                                    <div>
+                                        <div style="font-size: 12px; color: var(--md-on-surface-variant); font-weight: 600;">PAUSED</div>
+                                        <div style="font-weight: 600;">Morning Meditation</div>
+                                        <div style="font-size: 13px; color: var(--md-on-surface-variant);">18:42 remaining</div>
+                                    </div>
+                                    <button style="padding: 8px 16px; border-radius: 20px; border: 1px solid var(--md-outline); background: white; font-weight: 500; cursor: pointer;">
+                                        Resume This
+                                    </button>
+                                </div>
+                            </div>
+
+                            <button class="btn btn-filled" style="width: 100%;">Got it</button>
+                        </div>
+
+                        <div class="bottom-nav">
+                            <span class="material-icons-round" style="color: var(--md-primary);">home</span>
+                            <span class="material-icons-round" style="color: var(--md-on-surface-variant);">insights</span>
+                            <span class="material-icons-round" style="color: var(--md-on-surface-variant);">settings</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Phone 4: Confirmation Dialog -->
+                <div>
+                    <h4 style="margin-bottom: 12px;">Confirmation Dialog</h4>
+                    <div class="phone-frame">
+                        <div class="phone-notch"></div>
+                        <div class="phone-content" style="filter: brightness(0.6);">
+                            <div class="app-bar">
+                                <h1>My Habits</h1>
+                            </div>
+                        </div>
+
+                        <div class="modal-overlay">
+                            <div class="modal">
+                                <div class="modal-title">Complete Early?</div>
+                                <div class="modal-body">
+                                    You've only completed <strong>3 minutes</strong> of your 25 minute goal.
+                                    <br><br>
+                                    Would you like to mark this habit as complete anyway?
+                                </div>
+                                <div class="modal-actions">
+                                    <button class="btn btn-text">Keep Going</button>
+                                    <button class="btn btn-filled">Complete</button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="bottom-nav">
+                            <span class="material-icons-round" style="color: var(--md-primary);">home</span>
+                            <span class="material-icons-round" style="color: var(--md-on-surface-variant);">insights</span>
+                            <span class="material-icons-round" style="color: var(--md-on-surface-variant);">settings</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Phone 5: Loading State -->
+                <div>
+                    <h4 style="margin-bottom: 12px;">Loading State</h4>
+                    <div class="phone-frame">
+                        <div class="phone-notch"></div>
+                        <div class="phone-content">
+                            <div class="app-bar">
+                                <h1>My Habits</h1>
+                                <div class="date">Today • Jan 3, 2026</div>
+                            </div>
+
+                            <!-- Skeleton Cards -->
+                            <div class="habit-card">
+                                <div class="habit-header">
+                                    <div class="habit-info">
+                                        <div class="skeleton" style="width: 150px; height: 20px; margin-bottom: 8px;"></div>
+                                        <div class="skeleton" style="width: 100px; height: 14px;"></div>
+                                    </div>
+                                    <div class="skeleton" style="width: 48px; height: 48px; border-radius: 50%;"></div>
+                                </div>
+                            </div>
+
+                            <div class="habit-card">
+                                <div class="habit-header">
+                                    <div class="habit-info">
+                                        <div class="skeleton" style="width: 120px; height: 20px; margin-bottom: 8px;"></div>
+                                        <div class="skeleton" style="width: 80px; height: 14px;"></div>
+                                    </div>
+                                    <div class="skeleton" style="width: 48px; height: 48px; border-radius: 50%;"></div>
+                                </div>
+                            </div>
+
+                            <div class="habit-card">
+                                <div class="habit-header">
+                                    <div class="habit-info">
+                                        <div class="skeleton" style="width: 180px; height: 20px; margin-bottom: 8px;"></div>
+                                        <div class="skeleton" style="width: 110px; height: 14px;"></div>
+                                    </div>
+                                    <div class="skeleton" style="width: 48px; height: 48px; border-radius: 50%;"></div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="bottom-nav">
+                            <span class="material-icons-round" style="color: var(--md-primary);">home</span>
+                            <span class="material-icons-round" style="color: var(--md-on-surface-variant);">insights</span>
+                            <span class="material-icons-round" style="color: var(--md-on-surface-variant);">settings</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Phone 6: Error State -->
+                <div>
+                    <h4 style="margin-bottom: 12px;">Error State</h4>
+                    <div class="phone-frame">
+                        <div class="phone-notch"></div>
+                        <div class="phone-content">
+                            <div class="app-bar">
+                                <h1>My Habits</h1>
+                                <div class="date">Today • Jan 3, 2026</div>
+                            </div>
+
+                            <div class="error-banner">
+                                <span class="material-icons-round">error_outline</span>
+                                <div style="flex: 1;">
+                                    <div style="font-weight: 600;">Action failed</div>
+                                    <div style="font-size: 13px;">Timer couldn't start. Tap to retry.</div>
+                                </div>
+                                <span class="material-icons-round" style="cursor: pointer;">close</span>
+                            </div>
+
+                            <div class="habit-card">
+                                <div class="habit-header">
+                                    <div class="habit-info">
+                                        <div class="habit-name">Morning Meditation</div>
+                                        <div class="habit-meta">🔥 12 day streak</div>
+                                    </div>
+                                    <button class="action-btn">
+                                        <span class="material-icons-round">radio_button_unchecked</span>
+                                    </button>
+                                </div>
+                                <div class="timer-section">
+                                    <div class="timer-collapsed">
+                                        <div class="timer-chip" style="background: var(--md-error-container); color: var(--md-error);">
+                                            <span class="material-icons-round">refresh</span>
+                                            Retry
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="habit-card completed">
+                                <div class="habit-header">
+                                    <div class="habit-info">
+                                        <div class="habit-name">Workout Session</div>
+                                        <div class="habit-meta">✓ Completed</div>
+                                    </div>
+                                    <button class="action-btn completed">
+                                        <span class="material-icons-round">check</span>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Snackbar -->
+                        <div class="snackbar">
+                            <span>Action timed out</span>
+                            <span class="snackbar-action">RETRY</span>
+                        </div>
+
+                        <div class="bottom-nav">
+                            <span class="material-icons-round" style="color: var(--md-primary);">home</span>
+                            <span class="material-icons-round" style="color: var(--md-on-surface-variant);">insights</span>
+                            <span class="material-icons-round" style="color: var(--md-on-surface-variant);">settings</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SECTION 4: RESPONSIVE BEHAVIOR -->
+        <div class="section">
+            <h2 class="section-title">
+                <span class="material-icons-round">devices</span>
+                4. Responsive Behavior
+            </h2>
+
+            <table class="decision-table">
+                <tr>
+                    <th>Screen Size</th>
+                    <th>Layout</th>
+                    <th>Card Behavior</th>
+                </tr>
+                <tr>
+                    <td><strong>Compact</strong> (&lt; 600dp)</td>
+                    <td>Single column LazyColumn</td>
+                    <td>
+                        • Timer section collapsed by default<br>
+                        • Tap to expand timer controls<br>
+                        • Mini session bar at bottom
+                    </td>
+                </tr>
+                <tr>
+                    <td><strong>Medium</strong> (600-840dp)</td>
+                    <td>2-column LazyVerticalGrid</td>
+                    <td>
+                        • Timer always visible (not collapsed)<br>
+                        • Horizontal timer controls<br>
+                        • Mini bar spans width
+                    </td>
+                </tr>
+                <tr>
+                    <td><strong>Expanded</strong> (&gt; 840dp)</td>
+                    <td>3-column grid OR list with side panel</td>
+                    <td>
+                        • Full timer + analytics preview<br>
+                        • Inline controls, no bottom sheet needed<br>
+                        • Timer switch handled inline
+                    </td>
+                </tr>
+            </table>
+
+            <h4 style="margin-top: 20px;">Overflow Handling:</h4>
+            <ul style="margin-left: 24px; color: var(--md-on-surface-variant);">
+                <li>Habit name: <code>maxLines = 2</code>, <code>overflow = Ellipsis</code></li>
+                <li>Description: Hidden on compact, 2 lines on medium+</li>
+                <li>Timer chip text: Truncate duration if &gt; 3 digits (e.g., "99m+" instead of "100m")</li>
+                <li>Mini session bar: Habit name truncates with ellipsis, time always visible</li>
+            </ul>
+        </div>
+
+        <!-- SECTION 5: IMPLEMENTATION PLAN -->
+        <div class="section">
+            <h2 class="section-title">
+                <span class="material-icons-round">checklist</span>
+                5. Implementation Plan
+            </h2>
+
+            <h4>Phase 1: State Consolidation (Day 1-2)</h4>
+            <div class="flow-step">
+                <div class="flow-number">1</div>
+                <div>
+                    <strong>Enhance TimerActionCoordinator state</strong><br>
+                    Add <code>targetMs</code>, <code>pausedHabitId</code>, <code>pausedRemainingMs</code> to existing state
+                </div>
+            </div>
+            <div class="flow-step">
+                <div class="flow-number">2</div>
+                <div>
+                    <strong>Deprecate redundant ViewModels</strong><br>
+                    Mark <code>TimerTickerViewModel</code>, <code>ActiveTimerViewModel</code> as deprecated<br>
+                    Update all consumers to use <code>coordinator.state</code> instead
+                </div>
+            </div>
+            <div class="flow-step">
+                <div class="flow-number">3</div>
+                <div>
+                    <strong>Simplify MainScreen</strong><br>
+                    Remove 5+ <code>LaunchedEffect</code> blocks → single <code>LaunchedEffect</code> collecting coordinator state<br>
+                    Remove direct <code>TimerBus.events.collect</code> (coordinator handles it)
+                </div>
+            </div>
+
+            <h4 style="margin-top: 24px;">Phase 2: UI Simplification (Day 3-4)</h4>
+            <div class="flow-step">
+                <div class="flow-number">4</div>
+                <div>
+                    <strong>Refactor EnhancedHabitCard</strong><br>
+                    Extract timer UI into <code>HabitTimerSection</code> composable<br>
+                    Pass only necessary state, not entire ViewModels
+                </div>
+            </div>
+            <div class="flow-step">
+                <div class="flow-number">5</div>
+                <div>
+                    <strong>Implement collapsed/expanded timer</strong><br>
+                    Default collapsed → show chip "Start 25m"<br>
+                    When active → auto-expand with controls
+                </div>
+            </div>
+            <div class="flow-step">
+                <div class="flow-number">6</div>
+                <div>
+                    <strong>Clean up TimerSwitcherSheet</strong><br>
+                    Read from coordinator state (no separate ViewModel lookup)
+                </div>
+            </div>
+
+            <h4 style="margin-top: 24px;">Phase 3: Polish (Day 5)</h4>
+            <div class="flow-step">
+                <div class="flow-number">7</div>
+                <div>
+                    <strong>Add loading/error states</strong><br>
+                    Skeleton loading on initial load<br>
+                    Error banner with retry for failed actions<br>
+                    Timeout recovery already exists (5s)
+                </div>
+            </div>
+            <div class="flow-step">
+                <div class="flow-number">8</div>
+                <div>
+                    <strong>Test edge cases</strong><br>
+                    Rapid clicking, app backgrounding during timer, rotation, etc.
+                </div>
+            </div>
+
+            <div class="spec-highlight" style="margin-top: 20px;">
+                <strong>Success Criteria:</strong>
+                <ul style="margin-left: 20px; margin-top: 8px;">
+                    <li>Single state object drives all timer UI</li>
+                    <li>No race conditions on timer switch</li>
+                    <li>Consistent behavior across all entry points (card, mini bar, notification)</li>
+                    <li>Clear visual feedback for all loading/error states</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- SECTION 6: DECISION MATRIX -->
+        <div class="section">
+            <h2 class="section-title">
+                <span class="material-icons-round">rule</span>
+                6. Complete Decision Matrix
+            </h2>
+
+            <table class="decision-table">
+                <tr>
+                    <th>User Action</th>
+                    <th>Current Timer State</th>
+                    <th>Habit Config</th>
+                    <th>Result</th>
+                </tr>
+                <tr>
+                    <td>Tap ✓ (complete)</td>
+                    <td>No timer running</td>
+                    <td>Timer not required</td>
+                    <td><span class="badge execute">Complete immediately</span></td>
+                </tr>
+                <tr>
+                    <td>Tap ✓ (complete)</td>
+                    <td>No timer running</td>
+                    <td>Timer required</td>
+                    <td><span class="badge disallow">Show "Start timer first"</span></td>
+                </tr>
+                <tr>
+                    <td>Tap ✓ (complete)</td>
+                    <td>Timer running (same habit)</td>
+                    <td>Above min duration</td>
+                    <td><span class="badge execute">Complete + stop timer + log</span></td>
+                </tr>
+                <tr>
+                    <td>Tap ✓ (complete)</td>
+                    <td>Timer running (same habit)</td>
+                    <td>Below min duration</td>
+                    <td><span class="badge confirm">Confirm dialog</span></td>
+                </tr>
+                <tr>
+                    <td>Tap ✓ (complete)</td>
+                    <td>Timer running (different habit)</td>
+                    <td>Any</td>
+                    <td><span class="badge execute">Complete this habit (other timer unaffected)</span></td>
+                </tr>
+                <tr>
+                    <td>Start timer</td>
+                    <td>No timer running</td>
+                    <td>Any</td>
+                    <td><span class="badge execute">Start timer</span></td>
+                </tr>
+                <tr>
+                    <td>Start timer</td>
+                    <td>Timer running (different habit)</td>
+                    <td>Single-active mode ON</td>
+                    <td><span class="badge execute">Auto-pause old + start new + show sheet</span></td>
+                </tr>
+                <tr>
+                    <td>Start timer</td>
+                    <td>Timer running (same habit)</td>
+                    <td>Any</td>
+                    <td><span class="badge execute">Resume (if paused) or no-op (if running)</span></td>
+                </tr>
+                <tr>
+                    <td>Pause</td>
+                    <td>Timer running</td>
+                    <td>Any</td>
+                    <td><span class="badge execute">Pause timer</span></td>
+                </tr>
+                <tr>
+                    <td>Resume</td>
+                    <td>Timer paused</td>
+                    <td>Any</td>
+                    <td><span class="badge execute">Resume timer</span></td>
+                </tr>
+                <tr>
+                    <td>Discard</td>
+                    <td>Timer with 0 elapsed</td>
+                    <td>Any</td>
+                    <td><span class="badge execute">Discard silently</span></td>
+                </tr>
+                <tr>
+                    <td>Discard</td>
+                    <td>Timer with &gt;0 elapsed</td>
+                    <td>Any</td>
+                    <td><span class="badge confirm">Confirm "Discard X minutes?"</span></td>
+                </tr>
+            </table>
+        </div>
+
+        <!-- Footer -->
+        <div style="text-align: center; padding: 24px; color: var(--md-on-surface-variant); font-size: 14px;">
+            <p>Created for Habit Tracker App Redesign • January 2026</p>
+            <p style="margin-top: 8px;">Please review and approve before implementation begins.</p>
+        </div>
+    </div>
+</body>
+</html>
