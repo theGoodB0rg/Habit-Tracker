@@ -38,15 +38,32 @@ class TimerActionCoordinator @Inject constructor(
 ) {
 
     data class CoordinatorState(
+        // Active timer
         val trackedHabitId: Long? = null,
         val timerState: TimerState = TimerState.IDLE,
         val remainingMs: Long = 0L,
+        val targetMs: Long = 0L,  // Phase 1: Total duration for progress calculation
         val paused: Boolean = false,
-        val waitingForService: Boolean = false,
+        
+        // Loading/error state
+        val isLoading: Boolean = false,  // Phase 1: Renamed from waitingForService
+        val lastError: String? = null,   // Phase 1: Error state display
+        
+        // Auto-paused timer (for switch sheet)
+        val pausedHabitId: Long? = null,      // Phase 1: Habit that was auto-paused
+        val pausedRemainingMs: Long = 0L,     // Phase 1: Remaining time for paused habit
+        
+        // Decision outcome
         val lastOutcome: TimerOutcome? = null,
+        
+        // Confirmation tracking
         val pendingConfirmHabitId: Long? = null,  // Habit with open confirmation dialog
         val pendingConfirmType: ConfirmType? = null  // Type of confirmation being shown
-    )
+    ) {
+        // Backwards-compatible alias for existing code
+        @Deprecated("Use isLoading instead", ReplaceWith("isLoading"))
+        val waitingForService: Boolean get() = isLoading
+    }
 
     data class DecisionContext(
         val platform: TimerCompletionInteractor.Platform = TimerCompletionInteractor.Platform.APP,
@@ -128,7 +145,7 @@ class TimerActionCoordinator @Inject constructor(
     }
     
     /**
-     * Starts a timeout that will reset waitingForService state if no response
+     * Starts a timeout that will reset isLoading state if no response
      * is received from the timer service within the timeout window.
      */
     private fun startWaitingTimeout(habitId: Long) {
@@ -136,9 +153,10 @@ class TimerActionCoordinator @Inject constructor(
         waitingTimeoutJob = appScope.launch {
             kotlinx.coroutines.delay(waitingTimeoutMs)
             // If still waiting for this habit, reset state and show error
-            if (_state.value.waitingForService && _state.value.trackedHabitId == habitId) {
+            if (_state.value.isLoading && _state.value.trackedHabitId == habitId) {
                 _state.value = _state.value.copy(
-                    waitingForService = false,
+                    isLoading = false,
+                    lastError = "Action timed out. Please try again.",
                     lastOutcome = null
                 )
                 inFlightIntent = null
@@ -263,7 +281,8 @@ class TimerActionCoordinator @Inject constructor(
                     startWaitingTimeout(habitId)
                     _state.value.copy(
                         trackedHabitId = habitId,
-                        waitingForService = true,
+                        isLoading = true,
+                        lastError = null,  // Clear any previous error
                         lastOutcome = outcome,
                         timerState = timerState,
                         remainingMs = remaining,
@@ -307,7 +326,7 @@ class TimerActionCoordinator @Inject constructor(
     private fun shouldDebounce(intent: TimerIntent, habitId: Long, now: Long): Boolean {
         if (intent !in debouncedIntents) return false
         val stateSnapshot = _state.value
-        if (stateSnapshot.waitingForService && stateSnapshot.trackedHabitId == habitId) return true
+        if (stateSnapshot.isLoading && stateSnapshot.trackedHabitId == habitId) return true
         if (reservedIntent != null && reservedHabitId == habitId) return true
         if (inFlightIntent != null && inFlightHabitId == habitId) return true
         val delta = now - lastActionAt
@@ -363,7 +382,7 @@ class TimerActionCoordinator @Inject constructor(
                     if (action.persistDirectly) {
                         // No timer event expected; persist immediately and surface UI event
                         cancelWaitingTimeout()
-                        _state.value = _state.value.copy(waitingForService = false)
+                        _state.value = _state.value.copy(isLoading = false)
                         inFlightIntent = null
                         inFlightHabitId = null
                         
@@ -407,6 +426,7 @@ class TimerActionCoordinator @Inject constructor(
                     waiting = false,
                     timerState = TimerState.RUNNING,
                     remaining = event.targetMs,
+                    target = event.targetMs,  // Phase 1: Set targetMs
                     paused = false
                 )
             }
@@ -450,10 +470,12 @@ class TimerActionCoordinator @Inject constructor(
                     // Cancel timeout since we got a response (even if it's an error)
                     cancelWaitingTimeout()
                     _state.value = _state.value.copy(
-                        waitingForService = false,
+                        isLoading = false,
+                        lastError = event.message,  // Phase 1: Store error in state
                         trackedHabitId = null,
                         timerState = TimerState.IDLE,
                         remainingMs = 0L,
+                        targetMs = 0L,
                         paused = false
                     )
                     inFlightIntent = null
@@ -464,7 +486,10 @@ class TimerActionCoordinator @Inject constructor(
             is TimerEvent.Extended -> {
                 remainingByHabit[event.habitId] = event.newTargetMs
                 if (_state.value.trackedHabitId == event.habitId) {
-                    _state.value = _state.value.copy(remainingMs = event.newTargetMs)
+                    _state.value = _state.value.copy(
+                        remainingMs = event.newTargetMs,
+                        targetMs = event.newTargetMs  // Phase 1: Update targetMs on extend
+                    )
                 }
             }
             is TimerEvent.ReachedTarget -> {
@@ -483,6 +508,15 @@ class TimerActionCoordinator @Inject constructor(
                     message = "Timer finished! Tap to complete."
                 ))
             }
+            is TimerEvent.AutoPaused -> {
+                // Phase 1: Track the auto-paused habit for switch sheet display
+                pausedByHabit[event.pausedHabitId] = true
+                val pausedRemaining = remainingByHabit[event.pausedHabitId] ?: 0L
+                _state.value = _state.value.copy(
+                    pausedHabitId = event.pausedHabitId,
+                    pausedRemainingMs = pausedRemaining
+                )
+            }
             else -> Unit
         }
     }
@@ -492,13 +526,15 @@ class TimerActionCoordinator @Inject constructor(
         waiting: Boolean,
         timerState: TimerState,
         remaining: Long? = null,
+        target: Long? = null,
         paused: Boolean
     ) {
         if (_state.value.trackedHabitId == habitId) {
             _state.value = _state.value.copy(
-                waitingForService = waiting,
+                isLoading = waiting,
                 timerState = timerState,
                 remainingMs = remaining ?: _state.value.remainingMs,
+                targetMs = target ?: _state.value.targetMs,
                 paused = paused
             )
             if (!waiting) {
@@ -515,10 +551,11 @@ class TimerActionCoordinator @Inject constructor(
             // Cancel timeout since we got a response
             cancelWaitingTimeout()
             _state.value = _state.value.copy(
-                waitingForService = false,
+                isLoading = false,
                 trackedHabitId = null,
                 timerState = TimerState.IDLE,
                 remainingMs = 0L,
+                targetMs = 0L,
                 paused = false
             )
             inFlightIntent = null
@@ -553,6 +590,25 @@ class TimerActionCoordinator @Inject constructor(
             pendingConfirmHabitId = null,
             pendingConfirmType = null
         )
+    }
+
+    /**
+     * Phase 1: Clear the auto-paused habit state.
+     * Call this when user dismisses the switch sheet or resumes the paused timer.
+     */
+    fun clearPausedHabit() {
+        _state.value = _state.value.copy(
+            pausedHabitId = null,
+            pausedRemainingMs = 0L
+        )
+    }
+
+    /**
+     * Phase 1: Clear any error state.
+     * Call this when user dismisses the error banner or after auto-timeout.
+     */
+    fun clearError() {
+        _state.value = _state.value.copy(lastError = null)
     }
 
     companion object {

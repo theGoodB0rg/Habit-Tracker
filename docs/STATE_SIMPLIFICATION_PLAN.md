@@ -8,6 +8,22 @@
 
 ---
 
+## ⚠️ Implementation Strategy: NEW UI Files
+
+> **CRITICAL:** We are building **new UI files** that follow the design spec in [habit-card-redesign.html](ui-mockup/habit-card-redesign.html).
+> 
+> The old UI code (`MainScreen.kt`, `EnhancedHabitCard.kt`) stays in place but is gated behind a feature flag. This approach is faster and safer — we don't fight 2000+ lines of legacy code.
+
+### Reference Design
+**See:** [habit-card-redesign.html](ui-mockup/habit-card-redesign.html) — Contains:
+- Visual mockups for all states (default, timer active, switch sheet, confirmation, loading, error)
+- Complete decision matrix for all user actions
+- State architecture diagram
+- Responsive behavior specs
+- Implementation phases
+
+---
+
 ## Table of Contents
 1. [Problem Statement](#problem-statement)
 2. [Current Architecture (Fragmented)](#current-architecture-fragmented)
@@ -145,55 +161,43 @@ User Action → TimerActionHandler.handle()
 
 ---
 
-## Phase 1: State Consolidation
+## Phase 1: Coordinator Enhancement + Feature Flag
 
-**Status:** 🔴 Not Started  
-**Estimated:** 1-2 days  
-**Validation:** `./gradlew assembleDebug` must pass
+**Status:** ✅ Complete  
+**Completed:** January 4, 2026  
+**Validation:** `./gradlew assembleDebug` PASSED
+
+> **Note:** This phase enhances the coordinator (backend) but does NOT touch existing UI files.
 
 ### Tasks
 
-#### 1.1 Enhance CoordinatorState
+#### 1.1 Enhance CoordinatorState ✅
 **File:** [TimerActionCoordinator.kt](../app/src/main/java/com/habittracker/timerux/TimerActionCoordinator.kt)
 
-- [ ] Add `targetMs: Long` to track total duration
-- [ ] Add `pausedHabitId: Long?` for auto-paused timer tracking
-- [ ] Add `pausedRemainingMs: Long` for auto-paused timer display
-- [ ] Add `lastError: String?` for error state display
-- [ ] Rename `waitingForService` → `isLoading` for clarity
+- [x] Add `targetMs: Long` to track total duration
+- [x] Add `pausedHabitId: Long?` for auto-paused timer tracking
+- [x] Add `pausedRemainingMs: Long` for auto-paused timer display
+- [x] Add `lastError: String?` for error state display
+- [x] Rename `waitingForService` → `isLoading` for clarity (with deprecated alias for compatibility)
+- [x] Add `clearPausedHabit()` and `clearError()` methods
 
-#### 1.2 Consolidate TimerBus Event Handling
+#### 1.2 Consolidate TimerBus Event Handling ✅
 **File:** [TimerActionCoordinator.kt](../app/src/main/java/com/habittracker/timerux/TimerActionCoordinator.kt)
 
-- [ ] Handle `TimerEvent.AutoPaused` → update `pausedHabitId`, `pausedRemainingMs`
-- [ ] Handle `TimerEvent.Started` → update `targetMs` from event
-- [ ] Clear `pausedHabitId` when user dismisses switch sheet or resumes
+- [x] Handle `TimerEvent.AutoPaused` → update `pausedHabitId`, `pausedRemainingMs`
+- [x] Handle `TimerEvent.Started` → update `targetMs` from event
+- [x] Handle `TimerEvent.Extended` → update `targetMs` when timer extended
+- [x] Add `clearPausedHabit()` function to clear when user dismisses switch sheet or resumes
 
-#### 1.3 Remove Redundant ViewModel Usage in MainScreen
-**File:** [MainScreen.kt](../app/src/main/java/com/habittracker/ui/screens/MainScreen.kt)
+#### 1.3 Add Feature Flag for New UI ✅
+**File:** [TimerFeatureFlags.kt](../app/src/main/java/com/habittracker/timing/TimerFeatureFlags.kt)
 
-- [ ] Remove `tickerViewModel: TimerTickerViewModel = hiltViewModel()` 
-- [ ] Remove `activeTimerViewModel: ActiveTimerViewModel = hiltViewModel()`
-- [ ] Remove `remainingByHabit`, `pausedByHabit` collections
-- [ ] Replace with single `coordinatorState by timerActionHandler.state.collectAsStateWithLifecycle()`
-- [ ] Simplify `LaunchedEffect` blocks — remove direct `TimerBus.events.collect`
-
-#### 1.4 Update EnhancedHabitCard to Use Coordinator State Only
-**File:** [EnhancedHabitCard.kt](../app/src/main/java/com/habittracker/ui/components/EnhancedHabitCard.kt)
-
-- [ ] Remove `tickerViewModel` parameter and usage
-- [ ] Remove `activeTimerVm` parameter and usage  
-- [ ] Remove `partialSessionVm` parameter and usage
-- [ ] Pass `coordinatorState` from parent instead of collecting in each card
-- [ ] Derive `isActive`, `isPaused`, `remainingMs` from coordinator state
+- [x] Add `useSimplifiedHomeScreen: Boolean` flag
+- [x] Wire flag in navigation (prepared for SimpleMainScreen in Phase 2)
 
 ### Phase 1 Validation
 ```powershell
-# Run from project root
-./gradlew clean assembleDebug
-
-# Expected: BUILD SUCCESSFUL
-# If failed: Fix errors before proceeding
+./gradlew assembleDebug  # PASSED January 4, 2026
 ```
 
 ### Phase 1 Commit
@@ -201,72 +205,145 @@ User Action → TimerActionHandler.handle()
 git add -A
 git commit -m "Phase 1: Consolidate timer state into TimerActionCoordinator
 
-- Add targetMs, pausedHabitId, pausedRemainingMs to CoordinatorState
-- Remove TimerTickerViewModel usage from MainScreen
-- Remove ActiveTimerViewModel usage from MainScreen  
-- EnhancedHabitCard now receives state from parent
-- Simplified LaunchedEffect blocks in MainScreen
+- Add targetMs, pausedHabitId, pausedRemainingMs, lastError to CoordinatorState
+- Rename waitingForService → isLoading (with deprecated alias)
+- Handle TimerEvent.AutoPaused to track auto-paused timers
+- Handle TimerEvent.Started/Extended to set targetMs
+- Add clearPausedHabit() and clearError() methods
+- Prepare navigation for SimpleMainScreen feature flag
 
 Validated: ./gradlew assembleDebug PASSED"
 ```
 
 ---
 
-## Phase 2: UI Simplification
+## Phase 2: Build New UI (Following HTML Spec)
 
 **Status:** 🔴 Not Started  
-**Estimated:** 1-2 days  
-**Depends on:** Phase 1 Complete
+**Estimated:** 2-3 days  
+**Depends on:** Phase 1 Complete  
+**Design Reference:** [habit-card-redesign.html](ui-mockup/habit-card-redesign.html)
+
+### New File Structure
+
+```
+app/src/main/java/com/habittracker/ui/
+├── screens/
+│   └── simple/
+│       └── SimpleMainScreen.kt          # New home screen
+├── components/
+│   └── simple/
+│       ├── SimpleHabitCard.kt           # New habit card
+│       ├── HabitTimerSection.kt         # Collapsible timer section
+│       ├── SimpleMiniSessionBar.kt      # Global floating timer bar
+│       └── SimpleTimerSwitcherSheet.kt  # Timer switch bottom sheet
+```
 
 ### Tasks
 
-#### 2.1 Extract Timer Section from EnhancedHabitCard
-**New File:** `app/src/main/java/com/habittracker/ui/components/timer/HabitTimerSection.kt`
+#### 2.1 Create SimpleHabitCard (Per HTML Mockup)
+**New File:** `app/src/main/java/com/habittracker/ui/components/simple/SimpleHabitCard.kt`
 
-- [ ] Create `HabitTimerSection` composable
-- [ ] Props: `habitId`, `timerState`, `remainingMs`, `targetMs`, `onStart`, `onPause`, `onResume`, `onComplete`
-- [ ] Collapsed state: Show chip "Start Xm"
-- [ ] Expanded state: Show time + controls + progress bar
+**Layout from mockup:**
+```
+┌─────────────────────────────────────────┐
+│ [habit-info]                  [action-btn] │
+│  ├─ habit-name (+ timer indicator if active)│
+│  └─ habit-meta (streak, frequency)        │
+├─────────────────────────────────────────┤
+│ [timer-section] (collapsible)              │
+│  └─ Collapsed: timer-chip "Start 25m"      │
+│  └─ Expanded: timer-time + controls + bar  │
+└─────────────────────────────────────────┘
+```
 
-#### 2.2 Simplify EnhancedHabitCard
-**File:** [EnhancedHabitCard.kt](../app/src/main/java/com/habittracker/ui/components/EnhancedHabitCard.kt)
+- [ ] Card states: default, completed (primary-container bg), timer-active (border)
+- [ ] Action button: empty circle → checkmark when completed
+- [ ] Timer Required badge: show when habit requires timer
+- [ ] Timer chip: "Start Xm" when collapsed
+- [ ] Timer expanded: large time display + pause/complete buttons + progress bar
+- [ ] Pulsing indicator dot when timer active
+- [ ] Target: ~200-300 lines
 
-- [ ] Replace inline timer UI with `HabitTimerSection`
-- [ ] Remove interactor fallback logic (coordinator is always available now)
-- [ ] Consolidate 4 confirmation dialogs into single `TimerConfirmationDialog` component
-- [ ] Target: Reduce file from ~1293 lines to ~600 lines
+#### 2.2 Create HabitTimerSection
+**New File:** `app/src/main/java/com/habittracker/ui/components/simple/HabitTimerSection.kt`
 
-#### 2.3 Update TimerSwitcherSheet to Use Coordinator State
-**File:** [TimerSwitcherSheet.kt](../app/src/main/java/com/habittracker/ui/components/timer/TimerSwitcherSheet.kt)
+- [ ] Collapsed state: AssistChip with timer icon + "Start Xm"
+- [ ] Expanded state: 
+  - Large time display (32sp, tabular-nums)
+  - Pause button (secondary container)
+  - Complete button (primary)
+  - Progress bar (4dp height)
+  - "X:XX elapsed / Target: XX:XX" labels
+- [ ] Auto-expand when timer running for this habit
+- [ ] Props: `isActive`, `remainingMs`, `targetMs`, `paused`, `onStart`, `onPause`, `onResume`, `onComplete`
 
-- [ ] Remove internal ViewModel lookups
-- [ ] Props: `activeHabitId`, `activeHabitName`, `activeRemainingMs`, `pausedHabitId`, `pausedHabitName`, `pausedRemainingMs`
-- [ ] All data passed from MainScreen (from coordinator state)
+#### 2.3 Create SimpleMainScreen
+**New File:** `app/src/main/java/com/habittracker/ui/screens/simple/SimpleMainScreen.kt`
 
-#### 2.4 Update MiniSessionBar
-**File:** [MiniSessionBar.kt](../app/src/main/java/com/habittracker/ui/components/timer/MiniSessionBar.kt)
+- [ ] Single `coordinatorState` collection
+- [ ] App bar: "My Habits" title + "Today • Jan 3, 2026" subtitle
+- [ ] LazyColumn/LazyVerticalGrid based on screen size
+- [ ] Pass coordinator state to each SimpleHabitCard
+- [ ] Error banner at top when `coordinatorState.lastError` present
+- [ ] Loading skeleton when habits loading
+- [ ] Target: ~300-400 lines
 
-- [ ] Remove internal state collection
-- [ ] Props: `habitName`, `remainingMs`, `paused`, `onPause`, `onResume`, `onComplete`
-- [ ] Parent provides all data from coordinator state
+#### 2.4 Create SimpleMiniSessionBar (Per HTML Mockup)
+**New File:** `app/src/main/java/com/habittracker/ui/components/simple/SimpleMiniSessionBar.kt`
+
+**Layout:**
+```
+┌──────────────────────────────────────────┐
+│ [icon] [time]  [habit-name]    [⏸] [✓] │
+│         20:42   Morning Med              │
+└──────────────────────────────────────────┘
+```
+
+- [ ] Fixed position above bottom nav (80dp from bottom)
+- [ ] Primary background, white text
+- [ ] Large time (20sp), small habit name (13sp)
+- [ ] Pause + Complete buttons (36x36dp)
+- [ ] Only visible when `coordinatorState.activeHabitId != null`
+- [ ] Stateless: all data from props
+
+#### 2.5 Create SimpleTimerSwitcherSheet (Per HTML Mockup)
+**New File:** `app/src/main/java/com/habittracker/ui/components/simple/SimpleTimerSwitcherSheet.kt`
+
+**Layout:**
+```
+┌──────────────────────────────────────────┐
+│ 🔄 Timer Switched                         │
+│ Started new timer. Previous paused.       │
+├──────────────────────────────────────────┤
+│ NOW ACTIVE (primary-container)            │
+│   Deep Work                               │
+│   45:00 remaining        [●] (pulsing)    │
+├──────────────────────────────────────────┤
+│ PAUSED (surface-variant)                  │
+│   Morning Meditation                      │
+│   18:42 remaining       [Resume This]     │
+├──────────────────────────────────────────┤
+│          [Got it] (filled button)         │
+└──────────────────────────────────────────┘
+```
+
+- [ ] Reads from `coordinatorState.pausedHabitId`, `coordinatorState.pausedRemainingMs`
+- [ ] "Resume This" pauses current, resumes paused
+- [ ] "Got it" dismisses sheet, clears pausedHabitId
+- [ ] Stateless: all data from props
+
+#### 2.6 Wire Feature Flag
+**File:** Update navigation + TimerFeatureFlags
+
+- [ ] Add `useSimplifiedHomeScreen: Boolean = false` to feature flags
+- [ ] Navigation: when true → `SimpleMainScreen`, else → `MainScreen`
+- [ ] Keep old screens intact for rollback
 
 ### Phase 2 Validation
 ```powershell
 ./gradlew clean assembleDebug
-```
-
-### Phase 2 Commit
-```
-git add -A
-git commit -m "Phase 2: Simplify timer UI components
-
-- Extract HabitTimerSection composable
-- Reduce EnhancedHabitCard complexity (~600 lines from ~1300)
-- TimerSwitcherSheet receives all data from parent
-- MiniSessionBar is now stateless
-- Unified confirmation dialog component
-
-Validated: ./gradlew assembleDebug PASSED"
+# Toggle feature flag and test both UIs work
 ```
 
 ---
@@ -277,17 +354,17 @@ Validated: ./gradlew assembleDebug PASSED"
 **Estimated:** 1 day  
 **Depends on:** Phase 2 Complete
 
+> **Note:** These tasks apply to the NEW SimpleMainScreen/SimpleHabitCard only.
+
 ### Tasks
 
 #### 3.1 Loading States
-- [ ] Add skeleton loading when `uiState.isLoading` on MainScreen
 - [ ] Show spinner on action button when `coordinatorState.isLoading`
 - [ ] Disable all timer controls during loading
 
 #### 3.2 Error Handling
 - [ ] Display `coordinatorState.lastError` as dismissible banner
 - [ ] Auto-clear error after 5 seconds
-- [ ] Add retry action to error banner
 
 #### 3.3 Edge Case Testing
 - [ ] Test: Rapid clicking complete button

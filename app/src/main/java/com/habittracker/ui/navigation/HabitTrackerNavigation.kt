@@ -35,6 +35,7 @@ import com.habittracker.ui.screens.AddHabitScreen
 import com.habittracker.ui.screens.EditHabitScreen
 import com.habittracker.ui.screens.HabitDetailScreen
 import com.habittracker.ui.screens.MainScreen
+import com.habittracker.timing.TimerFeatureFlags
 import javax.inject.Inject
 
 @Composable
@@ -73,6 +74,13 @@ fun HabitTrackerNavigation(
             )
         }
         composable(Screen.Main.route) {
+            // Phase 1: Feature flag ready for SimpleMainScreen (Phase 2)
+            // When useSimplifiedHomeScreen is true AND SimpleMainScreen exists,
+            // we'll switch to the new UI. For now, always use MainScreen.
+            // TODO: Replace with conditional once SimpleMainScreen is created
+            // if (TimerFeatureFlags.useSimplifiedHomeScreen) {
+            //     SimpleMainScreen(...)
+            // } else {
             MainScreen(
                 viewModel = habitViewModel,
                 onNavigateToAddHabit = {
@@ -122,6 +130,7 @@ fun HabitTrackerNavigation(
                     }
                 }
             )
+            // } // End of feature flag conditional (uncomment when SimpleMainScreen ready)
         }
         
         composable(Screen.AddHabit.route) {
