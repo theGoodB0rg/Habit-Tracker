@@ -35,6 +35,7 @@ import com.habittracker.ui.screens.AddHabitScreen
 import com.habittracker.ui.screens.EditHabitScreen
 import com.habittracker.ui.screens.HabitDetailScreen
 import com.habittracker.ui.screens.MainScreen
+import com.habittracker.ui.screens.simple.SimpleMainScreen
 import com.habittracker.timing.TimerFeatureFlags
 import javax.inject.Inject
 
@@ -74,63 +75,108 @@ fun HabitTrackerNavigation(
             )
         }
         composable(Screen.Main.route) {
-            // Phase 1: Feature flag ready for SimpleMainScreen (Phase 2)
-            // When useSimplifiedHomeScreen is true AND SimpleMainScreen exists,
-            // we'll switch to the new UI. For now, always use MainScreen.
-            // TODO: Replace with conditional once SimpleMainScreen is created
-            // if (TimerFeatureFlags.useSimplifiedHomeScreen) {
-            //     SimpleMainScreen(...)
-            // } else {
-            MainScreen(
-                viewModel = habitViewModel,
-                onNavigateToAddHabit = {
-                    navController.navigate(Screen.AddHabit.route) {
-                        launchSingleTop = true
+            // Phase 2: Feature flag switches between legacy MainScreen and new SimpleMainScreen
+            if (TimerFeatureFlags.useSimplifiedHomeScreen) {
+                SimpleMainScreen(
+                    viewModel = habitViewModel,
+                    onNavigateToAddHabit = {
+                        navController.navigate(Screen.AddHabit.route) {
+                            launchSingleTop = true
+                        }
+                    },
+                    onNavigateToEditHabit = { habitId ->
+                        navController.navigate(Screen.EditHabit.createRoute(habitId)) {
+                            launchSingleTop = true
+                        }
+                    },
+                    onNavigateToHabitDetail = { habitId ->
+                        navController.navigate(Screen.HabitDetail.createRoute(habitId)) {
+                            launchSingleTop = true
+                        }
+                    },
+                    onNavigateToSettings = {
+                        navController.navigate(Screen.ThemeSettings.route) {
+                            launchSingleTop = true
+                        }
+                    },
+                    onNavigateToSmartTimingSettings = {
+                        navController.navigate(Screen.SmartTimingSettings.route) {
+                            launchSingleTop = true
+                        }
+                    },
+                    onNavigateToReminderSettings = {
+                        navController.navigate(Screen.ReminderSettings.route) {
+                            launchSingleTop = true
+                        }
+                    },
+                    onNavigateToAbout = {
+                        navController.navigate(Screen.About.route) {
+                            launchSingleTop = true
+                        }
+                    },
+                    onNavigateToAnalytics = {
+                        navController.navigate(Screen.Analytics.route) {
+                            launchSingleTop = true
+                        }
+                    },
+                    onNavigateToExport = {
+                        navController.navigate(Screen.Export.route) {
+                            launchSingleTop = true
+                        }
                     }
-                },
-                onNavigateToEditHabit = { habitId ->
-                    navController.navigate(Screen.EditHabit.createRoute(habitId)) {
-                        launchSingleTop = true
+                )
+            } else {
+                // Legacy MainScreen
+                MainScreen(
+                    viewModel = habitViewModel,
+                    onNavigateToAddHabit = {
+                        navController.navigate(Screen.AddHabit.route) {
+                            launchSingleTop = true
+                        }
+                    },
+                    onNavigateToEditHabit = { habitId ->
+                        navController.navigate(Screen.EditHabit.createRoute(habitId)) {
+                            launchSingleTop = true
+                        }
+                    },
+                    onNavigateToHabitDetail = { habitId ->
+                        // Use launchSingleTop to prevent duplicate navigation crashes
+                        navController.navigate(Screen.HabitDetail.createRoute(habitId)) {
+                            launchSingleTop = true
+                        }
+                    },
+                    onNavigateToSettings = {
+                        navController.navigate(Screen.ThemeSettings.route) {
+                            launchSingleTop = true
+                        }
+                    },
+                    onNavigateToSmartTimingSettings = {
+                        navController.navigate(Screen.SmartTimingSettings.route) {
+                            launchSingleTop = true
+                        }
+                    },
+                    onNavigateToReminderSettings = {
+                        navController.navigate(Screen.ReminderSettings.route) {
+                            launchSingleTop = true
+                        }
+                    },
+                    onNavigateToAbout = {
+                        navController.navigate(Screen.About.route) {
+                            launchSingleTop = true
+                        }
+                    },
+                    onNavigateToAnalytics = {
+                        navController.navigate(Screen.Analytics.route) {
+                            launchSingleTop = true
+                        }
+                    },
+                    onNavigateToExport = {
+                        navController.navigate(Screen.Export.route) {
+                            launchSingleTop = true
+                        }
                     }
-                },
-                onNavigateToHabitDetail = { habitId ->
-                    // Use launchSingleTop to prevent duplicate navigation crashes
-                    navController.navigate(Screen.HabitDetail.createRoute(habitId)) {
-                        launchSingleTop = true
-                    }
-                },
-                onNavigateToSettings = {
-                    navController.navigate(Screen.ThemeSettings.route) {
-                        launchSingleTop = true
-                    }
-                },
-                onNavigateToSmartTimingSettings = {
-                    navController.navigate(Screen.SmartTimingSettings.route) {
-                        launchSingleTop = true
-                    }
-                },
-                onNavigateToReminderSettings = {
-                    navController.navigate(Screen.ReminderSettings.route) {
-                        launchSingleTop = true
-                    }
-                },
-                onNavigateToAbout = {
-                    navController.navigate(Screen.About.route) {
-                        launchSingleTop = true
-                    }
-                },
-                onNavigateToAnalytics = {
-                    navController.navigate(Screen.Analytics.route) {
-                        launchSingleTop = true
-                    }
-                },
-                onNavigateToExport = {
-                    navController.navigate(Screen.Export.route) {
-                        launchSingleTop = true
-                    }
-                }
-            )
-            // } // End of feature flag conditional (uncomment when SimpleMainScreen ready)
+                )
+            }
         }
         
         composable(Screen.AddHabit.route) {

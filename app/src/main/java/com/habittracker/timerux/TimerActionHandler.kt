@@ -43,5 +43,19 @@ class TimerActionHandler @Inject constructor(
     fun clearPendingConfirmation() {
         coordinator.clearPendingConfirmation()
     }
+    
+    /**
+     * Clear the error state in the coordinator.
+     */
+    fun clearError() {
+        coordinator.clearError()
+    }
+    
+    /**
+     * Clear the paused habit state (used when user dismisses timer switcher).
+     */
+    fun clearPausedHabit() {
+        coordinator.clearPausedHabit()
+    }
 }
 
