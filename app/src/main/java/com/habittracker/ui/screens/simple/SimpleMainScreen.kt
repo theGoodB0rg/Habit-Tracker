@@ -16,8 +16,8 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
@@ -131,6 +131,14 @@ fun SimpleMainScreen(
     // Show timer switcher when there's a paused habit
     LaunchedEffect(coordinatorState.pausedHabitId) {
         showTimerSwitcher = coordinatorState.pausedHabitId != null
+    }
+    
+    // Phase 3: Auto-clear error after 5 seconds
+    LaunchedEffect(coordinatorState.lastError) {
+        if (coordinatorState.lastError != null) {
+            kotlinx.coroutines.delay(5000L)
+            timerActionHandler?.clearError()
+        }
     }
     
     // Handle coordinator UI events
@@ -260,33 +268,44 @@ fun SimpleMainScreen(
                         modifier = Modifier.fillMaxSize()
                     )
                 } else {
-                    LazyColumn(
-                        contentPadding = PaddingValues(
-                            start = 16.dp,
-                            end = 16.dp,
-                            top = 8.dp,
-                            // Extra bottom padding for mini bar + FAB
-                            bottom = if (coordinatorState.trackedHabitId != null) 160.dp else 100.dp
-                        ),
+                    Column(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .verticalScroll(rememberScrollState())
+                            .padding(horizontal = 16.dp),
                         verticalArrangement = Arrangement.spacedBy(12.dp)
                     ) {
-                        items(
-                            items = hydrated,
-                            key = { it.id }
-                        ) { habit ->
+                        Spacer(modifier = Modifier.height(8.dp))
+
+                        // Pre-compute coordinator state values outside items to reduce recomposition scope
+                        // This prevents SlotTable corruption from rapid state changes (every 1s timer tick)
+                        val activeHabitId = coordinatorState.trackedHabitId
+                        val timerRemainingMs = coordinatorState.remainingMs
+                        val timerTargetMs = coordinatorState.targetMs
+                        val timerPaused = coordinatorState.paused
+                        val timerLoading = coordinatorState.isLoading
+                        
+                        hydrated.forEach { habit ->
                             val isCompleted = isCompletedThisPeriod(habit.frequency, habit.lastCompletedDate)
-                            val isTimerActive = coordinatorState.trackedHabitId == habit.id
-                            val isPaused = isTimerActive && coordinatorState.paused
+                            val isTimerActive = activeHabitId == habit.id
+                            val isPaused = isTimerActive && timerPaused
                             
                             SimpleHabitCard(
                                 habit = habit,
                                 isCompleted = isCompleted,
                                 isTimerActive = isTimerActive,
                                 isTimerPaused = isPaused,
-                                remainingMs = if (isTimerActive) coordinatorState.remainingMs else 0L,
-                                targetMs = if (isTimerActive) coordinatorState.targetMs else 0L,
-                                isLoading = isTimerActive && coordinatorState.isLoading,
-                                onCardClick = { onNavigateToHabitDetail(habit.id) },
+                                remainingMs = if (isTimerActive) timerRemainingMs else 0L,
+                                targetMs = if (isTimerActive) timerTargetMs else 0L,
+                                isLoading = isTimerActive && timerLoading,
+                                onCardClick = {
+                                    // Delay navigation to next frame to avoid SlotTable corruption
+                                    // during LazyList measurement (known Compose bug)
+                                    scope.launch {
+                                        kotlinx.coroutines.delay(16) // One full frame at 60fps
+                                        onNavigateToHabitDetail(habit.id)
+                                    }
+                                },
                                 onCompleteClick = {
                                     scope.launch {
                                         if (isTimerActive) {
@@ -319,6 +338,9 @@ fun SimpleMainScreen(
                                 }
                             )
                         }
+                        
+                        // Bottom padding spacer
+                        Spacer(modifier = Modifier.height(if (coordinatorState.trackedHabitId != null) 160.dp else 100.dp))
                     }
                 }
             }

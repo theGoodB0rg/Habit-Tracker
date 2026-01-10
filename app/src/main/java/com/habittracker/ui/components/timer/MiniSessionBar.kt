@@ -30,12 +30,9 @@ import com.habittracker.timerux.resolveTimerUxEntryPoint
 import com.habittracker.timing.TimerController
 import com.habittracker.timing.TimerFeatureFlags
 import com.habittracker.ui.modifiers.disableDuringTimerAction
-import com.habittracker.ui.viewmodels.timing.ActiveTimerViewModel
 
 @Composable
 fun MiniSessionBar(modifier: Modifier = Modifier) {
-    val vm: ActiveTimerViewModel = hiltViewModel()
-    val state by vm.state.collectAsState()
     val ctx = LocalContext.current
     val controller = remember(ctx) { TimerController(ctx) }
     val useCoordinator = TimerFeatureFlags.enableActionCoordinator
@@ -47,12 +44,14 @@ fun MiniSessionBar(modifier: Modifier = Modifier) {
     } else {
         remember(handler) { mutableStateOf(TimerActionCoordinator.CoordinatorState()) }
     }
-    val controlsEnabled = handler == null || !coordinatorState.waitingForService
-    val pausedForUi = if (handler != null) coordinatorState.paused else state.paused
+    val controlsEnabled = handler == null || !coordinatorState.isLoading
+    val habitId = coordinatorState.trackedHabitId ?: 0L
+    val active = coordinatorState.timerState != com.habittracker.timerux.TimerCompletionInteractor.TimerState.IDLE
+    val pausedForUi = coordinatorState.paused
     val controlModifier = if (handler != null) Modifier.disableDuringTimerAction(coordinatorState) else Modifier
     var showSheet by remember { mutableStateOf(false) }
     AnimatedVisibility(
-        visible = state.active,
+        visible = active,
         enter = fadeIn(),
         exit = fadeOut(),
         modifier = modifier
@@ -76,7 +75,7 @@ fun MiniSessionBar(modifier: Modifier = Modifier) {
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
-                val totalSeconds = (state.remainingMs / 1000)
+                val totalSeconds = (coordinatorState.remainingMs / 1000)
                 val hours = totalSeconds / 3600
                 val minutes = (totalSeconds % 3600) / 60
                 val seconds = totalSeconds % 60
@@ -90,7 +89,7 @@ fun MiniSessionBar(modifier: Modifier = Modifier) {
                 Column(Modifier.weight(1f)) {
                     Text(timeText, style = MaterialTheme.typography.titleMedium)
                     LinearProgressIndicator(
-                        progress = { if (state.totalMs == 0L) 0f else 1f - (state.remainingMs / state.totalMs.toFloat()) },
+                        progress = { if (coordinatorState.targetMs == 0L) 0f else 1f - (coordinatorState.remainingMs / coordinatorState.targetMs.toFloat()) },
                         modifier = Modifier
                             .fillMaxWidth()
                             .height(4.dp)
@@ -101,9 +100,9 @@ fun MiniSessionBar(modifier: Modifier = Modifier) {
                     onClick = {
                         if (handler != null) {
                             val intent = if (pausedForUi) TimerIntent.Resume else TimerIntent.Pause
-                            handler.handle(intent, state.habitId)
+                            handler.handle(intent, habitId)
                         } else {
-                            if (state.paused) controller.resume() else controller.pause()
+                            if (coordinatorState.paused) controller.resume() else controller.pause()
                         }
                     },
                     enabled = controlsEnabled,
@@ -124,7 +123,7 @@ fun MiniSessionBar(modifier: Modifier = Modifier) {
                 IconButton(
                     onClick = {
                         if (handler != null) {
-                            handler.handle(TimerIntent.Done, state.habitId)
+                            handler.handle(TimerIntent.Done, habitId)
                         } else {
                             controller.complete()
                         }

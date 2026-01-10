@@ -131,11 +131,11 @@ fun SimpleHabitCard(
                             overflow = TextOverflow.Ellipsis
                         )
                         
-                        // Pulsing timer indicator
-                        if (isTimerActive && !isTimerPaused) {
-                            Spacer(modifier = Modifier.width(8.dp))
-                            PulsingTimerIndicator()
-                        }
+                        // Pulsing timer indicator - always composed to avoid SlotTable corruption
+                        // but only visible when timer is active and not paused
+                        PulsingTimerIndicator(
+                            isVisible = isTimerActive && !isTimerPaused
+                        )
                         
                         // Timer Required badge
                         if (timerRequired && !isCompleted) {
@@ -179,6 +179,7 @@ fun SimpleHabitCard(
                     remainingMs = remainingMs,
                     targetMs = targetMs,
                     targetDuration = targetDuration,
+                    isLoading = isLoading,
                     onStart = onStartTimer,
                     onPause = onPauseTimer,
                     onResume = onResumeTimer,
@@ -285,12 +286,17 @@ private fun ActionButton(
     }
 }
 
+/**
+ * Pulsing timer indicator that is always composed but only visible when active.
+ * This avoids SlotTable corruption by not conditionally composing infinite transitions.
+ */
 @Composable
-private fun PulsingTimerIndicator() {
+private fun PulsingTimerIndicator(isVisible: Boolean) {
+    // Always create the transition to avoid SlotTable corruption during measurement
     val infiniteTransition = rememberInfiniteTransition(label = "pulse")
     val scale by infiniteTransition.animateFloat(
         initialValue = 1f,
-        targetValue = 1.2f,
+        targetValue = if (isVisible) 1.2f else 1f,
         animationSpec = infiniteRepeatable(
             animation = tween(750),
             repeatMode = RepeatMode.Reverse
@@ -299,7 +305,7 @@ private fun PulsingTimerIndicator() {
     )
     val alpha by infiniteTransition.animateFloat(
         initialValue = 1f,
-        targetValue = 0.6f,
+        targetValue = if (isVisible) 0.6f else 1f,
         animationSpec = infiniteRepeatable(
             animation = tween(750),
             repeatMode = RepeatMode.Reverse
@@ -307,16 +313,20 @@ private fun PulsingTimerIndicator() {
         label = "pulseAlpha"
     )
     
-    Box(
-        modifier = Modifier
-            .size(8.dp)
-            .scale(scale)
-            .alpha(alpha)
-            .background(
-                color = MaterialTheme.colorScheme.primary,
-                shape = CircleShape
-            )
-    )
+    // Only show when visible - use width to control spacing
+    if (isVisible) {
+        Spacer(modifier = Modifier.width(8.dp))
+        Box(
+            modifier = Modifier
+                .size(8.dp)
+                .scale(scale)
+                .alpha(alpha)
+                .background(
+                    color = MaterialTheme.colorScheme.primary,
+                    shape = CircleShape
+                )
+        )
+    }
 }
 
 @Composable

@@ -68,7 +68,7 @@ object TimerFeatureFlags {
     data class Defaults(
         val enableAlertScheduling: Boolean = true,
         val enableActionCoordinator: Boolean = true,
-        /** Start with false (legacy UI) until new UI is validated */
-        val useSimplifiedHomeScreen: Boolean = false
+        /** Enable the new simplified home screen by default (Phase 2 complete) */
+        val useSimplifiedHomeScreen: Boolean = true
     )
 }

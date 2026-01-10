@@ -11,7 +11,31 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
-/** UI-facing state for an active timer session. */
+/**
+ * UI-facing state for an active timer session.
+ * 
+ * @deprecated This ViewModel is deprecated as part of the timer state simplification (Phase 3).
+ * Use [com.habittracker.timerux.TimerActionCoordinator.state] instead, which provides
+ * a single source of truth for all timer state. This ViewModel duplicates coordinator
+ * state and will be removed in the next major version.
+ * 
+ * Migration guide:
+ * - Replace `activeTimerViewModel.state.active` with `coordinator.state.trackedHabitId != null`
+ * - Replace `activeTimerViewModel.state.remainingMs` with `coordinator.state.remainingMs`
+ * - Replace `activeTimerViewModel.state.totalMs` with `coordinator.state.targetMs`
+ * - Replace `activeTimerViewModel.state.paused` with `coordinator.state.paused`
+ * - Replace `activeTimerViewModel.state.habitId` with `coordinator.state.trackedHabitId`
+ * 
+ * TODO: Remove in next major version
+ */
+@Deprecated(
+    message = "Use TimerActionCoordinator.state instead. This ViewModel duplicates coordinator state.",
+    replaceWith = ReplaceWith(
+        "timerActionHandler.state",
+        "com.habittracker.timerux.TimerActionCoordinator"
+    ),
+    level = DeprecationLevel.WARNING
+)
 @HiltViewModel
 class ActiveTimerViewModel @Inject constructor(): ViewModel() {
     data class TimerUiState(

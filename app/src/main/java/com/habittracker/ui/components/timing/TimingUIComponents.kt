@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
+import androidx.compose.material.icons.automirrored.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -48,7 +49,7 @@ import com.habittracker.timerux.resolveTimerUxEntryPoint
 import com.habittracker.timing.TimerController
 import com.habittracker.timing.TimerFeatureFlags
 import com.habittracker.ui.modifiers.disableDuringTimerAction
-import com.habittracker.ui.viewmodels.timing.TimerTickerViewModel
+import com.habittracker.ui.modifiers.disableDuringTimerAction
 
 /**
  * Phase 2: Progressive UI Complexity System
@@ -78,12 +79,6 @@ fun SimpleTimerButton(
     val timersEnabled = globalTimersEnabled && habitTimerEnabled
     val defaultDuration = habit.estimatedDuration ?: Duration.ofMinutes(25)
 
-    val timerTickerViewModel: TimerTickerViewModel = hiltViewModel()
-    val remainingByHabit by timerTickerViewModel.remainingByHabit.collectAsState()
-    val pausedByHabit by timerTickerViewModel.pausedByHabit.collectAsState()
-    val isActiveWithoutCoordinator = (remainingByHabit[habit.id] ?: 0L) > 0
-    val isPausedWithoutCoordinator = pausedByHabit[habit.id] == true
-
     val timerController = remember(context) { TimerController(context) }
     val useCoordinator = TimerFeatureFlags.enableActionCoordinator
     val handler: TimerActionHandler? = remember(context, useCoordinator) {
@@ -95,7 +90,9 @@ fun SimpleTimerButton(
         remember { mutableStateOf(TimerActionCoordinator.CoordinatorState()) }
     }
     val isTrackedHabit = handler != null && coordinatorState.trackedHabitId == habit.id
-    val waitingForService = isTrackedHabit && coordinatorState.waitingForService
+    val isLoading = isTrackedHabit && coordinatorState.isLoading
+    val isActive = isTrackedHabit && coordinatorState.remainingMs > 0
+    val isPaused = isTrackedHabit && coordinatorState.paused
     val coordinatorTimerState = if (isTrackedHabit) {
         coordinatorState.timerState
     } else {
@@ -105,30 +102,30 @@ fun SimpleTimerButton(
     val displayLabel = when {
         !globalTimersEnabled -> "Start (Enable)"
         !habitTimerEnabled -> "Timer Off"
-        waitingForService -> "Starting..."
+        isLoading -> "Starting..."
         coordinatorTimerState == TimerCompletionInteractor.TimerState.RUNNING && isTrackedHabit -> "Active"
         coordinatorTimerState == TimerCompletionInteractor.TimerState.PAUSED && isTrackedHabit -> "Resume"
-        isPausedWithoutCoordinator -> "Resume"
-        isActiveWithoutCoordinator -> "Active"
+        isPaused -> "Resume"
+        isActive -> "Active"
         else -> "Start"
     }
 
     val enabled = when {
         !globalTimersEnabled -> true  // Allow enabling global feature
         !habitTimerEnabled -> false   // Disabled at habit level - must edit habit settings
-        waitingForService -> false
+        isLoading -> false
         coordinatorTimerState == TimerCompletionInteractor.TimerState.RUNNING && isTrackedHabit -> false
-        isActiveWithoutCoordinator && handler == null -> false
+        isActive && handler == null -> false
         else -> true
     }
 
     val leadingIcon = when {
         !habitTimerEnabled -> Icons.Default.TimerOff
-        waitingForService -> Icons.Default.HourglassTop
+        isLoading -> Icons.Default.HourglassTop
         coordinatorTimerState == TimerCompletionInteractor.TimerState.PAUSED && isTrackedHabit -> Icons.Default.PlayArrow
         coordinatorTimerState == TimerCompletionInteractor.TimerState.RUNNING && isTrackedHabit -> Icons.Default.CheckCircle
-        isPausedWithoutCoordinator -> Icons.Default.PlayArrow
-        isActiveWithoutCoordinator -> Icons.Default.CheckCircle
+        isPaused -> Icons.Default.PlayArrow
+        isActive -> Icons.Default.CheckCircle
         else -> Icons.Default.Timer
     }
 
@@ -168,7 +165,7 @@ fun SimpleTimerButton(
                 contentDescription = when {
                     !globalTimersEnabled -> "Timer feature disabled, tap to enable"
                     !habitTimerEnabled -> "Timer disabled for this habit, edit habit to enable"
-                    waitingForService -> "Starting timer"
+                    isLoading -> "Starting timer"
                     displayLabel == "Resume" -> "Resume timer"
                     displayLabel == "Active" -> "Timer running"
                     else -> "Start timer"
@@ -183,12 +180,14 @@ fun SimpleTimerButton(
 @Composable
 fun LiveRemainingTime(
     habitId: Long,
-    modifier: Modifier = Modifier,
-    timerViewModel: com.habittracker.ui.viewmodels.timing.TimerTickerViewModel = androidx.hilt.navigation.compose.hiltViewModel()
+    modifier: Modifier = Modifier
 ) {
-    val remainingByHabit by timerViewModel.remainingByHabit.collectAsState()
-    val remaining = remainingByHabit[habitId]
-    if (remaining != null) {
+    val context = LocalContext.current
+    val handler = remember(context) { resolveTimerUxEntryPoint(context).timerActionHandler() }
+    val coordinatorState by handler.state.collectAsState()
+    
+    if (coordinatorState.trackedHabitId == habitId && coordinatorState.remainingMs > 0) {
+        val remaining = coordinatorState.remainingMs
         val timeText = TimerDisplayUtils.formatTime(remaining)
         
         AssistChip(
@@ -624,12 +623,12 @@ private fun getContextIcon(type: SuggestionType): ImageVector {
         SuggestionType.DURATION_ADJUSTMENT -> Icons.Default.Timer
         SuggestionType.BREAK_OPTIMIZATION -> Icons.Default.PauseCircle
         SuggestionType.CONTEXT_OPPORTUNITY -> Icons.Default.LocationOn
-        SuggestionType.EFFICIENCY_BOOST -> Icons.Default.TrendingUp
+        SuggestionType.EFFICIENCY_BOOST -> Icons.AutoMirrored.Filled.TrendingUp
         SuggestionType.HABIT_PAIRING -> Icons.Default.Link
         SuggestionType.RECOVERY_TIME -> Icons.Default.Refresh
         SuggestionType.HABIT_STACKING -> Icons.Default.Link
         SuggestionType.CONTEXT_OPTIMIZATION -> Icons.Default.LocationOn
-        SuggestionType.ENERGY_ALIGNMENT -> Icons.Default.TrendingUp
+        SuggestionType.ENERGY_ALIGNMENT -> Icons.AutoMirrored.Filled.TrendingUp
         SuggestionType.SCHEDULE_OPTIMIZATION -> Icons.Default.AccessTime
         SuggestionType.WEATHER_ALTERNATIVE -> Icons.Default.Cloud
     }
@@ -652,7 +651,7 @@ private fun TimerType.icon(): ImageVector {
         TimerType.SIMPLE -> Icons.Default.Timer
         TimerType.POMODORO -> Icons.Default.Schedule
         TimerType.INTERVAL -> Icons.Default.Repeat
-        TimerType.PROGRESSIVE -> Icons.Default.TrendingUp
+        TimerType.PROGRESSIVE -> Icons.AutoMirrored.Filled.TrendingUp
         TimerType.CUSTOM -> Icons.Default.Settings
         TimerType.FLEXIBLE -> Icons.Default.Speed
         TimerType.FOCUS_SESSION -> Icons.Default.Psychology

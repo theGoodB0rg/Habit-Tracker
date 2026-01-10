@@ -6,6 +6,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
+import androidx.compose.material.icons.automirrored.filled.TrendingDown
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -87,7 +88,7 @@ fun HabitDNAAnalysis(
             HabitDNAInsight(
                 title = "Failure Patterns",
                 value = dnaData.failurePattern,
-                icon = Icons.Default.TrendingDown,
+                icon = Icons.AutoMirrored.Filled.TrendingDown,
                 color = MaterialTheme.colorScheme.error
             )
             

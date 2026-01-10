@@ -120,20 +120,8 @@ fun NudgeBannerSection(
         it.priority == NudgePriority.MEDIUM || it.priority == NudgePriority.LOW
     }.take(3) // Limit to 3 banners for optimal user experience
     
-    AnimatedContent(
+    Crossfade(
         targetState = bannerNudges,
-        transitionSpec = {
-            (fadeIn(animationSpec = tween(400, easing = EaseInOut)) + 
-             slideInVertically(
-                 animationSpec = tween(400, easing = EaseInOut),
-                 initialOffsetY = { it / 3 }
-             )) togetherWith
-            (fadeOut(animationSpec = tween(300, easing = EaseInOut)) + 
-             slideOutVertically(
-                 animationSpec = tween(300, easing = EaseInOut),
-                 targetOffsetY = { -it / 3 }
-             ))
-        },
         label = "nudge_banners"
     ) { nudges ->
         if (nudges.isNotEmpty()) {

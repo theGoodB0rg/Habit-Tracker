@@ -9,6 +9,8 @@ import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.*
+import androidx.compose.material.icons.automirrored.outlined.Assignment
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material.icons.outlined.Timer
 import androidx.compose.material3.*
@@ -81,14 +83,10 @@ fun EnhancedHabitCard(
     isCompact: Boolean = false,
     // Hoisted ViewModels to prevent SlotTable corruption when used in LazyList
     timingViewModel: TimingFeatureViewModel? = null,
-    tickerViewModel: TimerTickerViewModel? = null,
-    activeTimerVm: ActiveTimerViewModel? = null,
     partialSessionVm: com.habittracker.ui.viewmodels.timing.PartialSessionViewModel? = null
 ) {
     // Use provided ViewModels or fallback to hiltViewModel() for standalone usage
     val timingVm = timingViewModel ?: hiltViewModel<TimingFeatureViewModel>()
-    val tickerVm = tickerViewModel ?: hiltViewModel<TimerTickerViewModel>()
-    val activeVm = activeTimerVm ?: hiltViewModel<ActiveTimerViewModel>()
     val partialVm = partialSessionVm ?: hiltViewModel<com.habittracker.ui.viewmodels.timing.PartialSessionViewModel>()
     val completedFromModel = isCompletedThisPeriod(habit.frequency, habit.lastCompletedDate)
     var completedThisPeriod by remember(habit.id) { mutableStateOf(completedFromModel) }
@@ -145,16 +143,17 @@ fun EnhancedHabitCard(
         }
     }
     
-    val pausedByHabit by tickerVm.pausedByHabit.collectAsState()
-    val errorsByHabit by tickerVm.errorsByHabit.collectAsState()
-    val isPaused = pausedByHabit[habit.id] == true
-    val remainingByHabit by tickerVm.remainingByHabit.collectAsState()
-    val isActive = remainingByHabit[habit.id]?.let { it > 0 } == true
-    val pausedForUi = if (handler != null && coordinatorState.trackedHabitId == habit.id) {
+    val isPaused = if (handler != null && coordinatorState.trackedHabitId == habit.id) {
         coordinatorState.paused
     } else {
-        isPaused
+        false // Default to not paused if not tracked
     }
+    val isActive = if (handler != null && coordinatorState.trackedHabitId == habit.id) {
+        coordinatorState.timerState != com.habittracker.timerux.TimerCompletionInteractor.TimerState.IDLE
+    } else {
+        false
+    }
+    val pausedForUi = isPaused
 
     val isAtTarget = handler != null && coordinatorState.trackedHabitId == habit.id &&
             coordinatorState.timerState == com.habittracker.timerux.TimerCompletionInteractor.TimerState.AT_TARGET
@@ -421,7 +420,7 @@ fun EnhancedHabitCard(
                                     )
                                 } else {
                                     Icon(
-                                        imageVector = if (completedThisPeriod) Icons.Filled.Check else Icons.Filled.RadioButtonUnchecked,
+                                        imageVector = if (completedThisPeriod) Icons.Default.Check else Icons.Default.RadioButtonUnchecked,
                                         contentDescription = if (completedThisPeriod) "Completed" else "Mark complete",
                                         tint = if (completedThisPeriod) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurfaceVariant,
                                         modifier = Modifier.size(if (completedThisPeriod) 20.dp else 28.dp)
@@ -436,7 +435,7 @@ fun EnhancedHabitCard(
             if (!isCompact) {
                 Spacer(modifier = Modifier.height(12.dp))
                 // Error banner (ephemeral)
-                val runtimeError = errorsByHabit[habit.id]
+                val runtimeError = if (handler != null && coordinatorState.trackedHabitId == habit.id) coordinatorState.lastError else null
                 AnimatedVisibility(visible = runtimeError != null) {
                     Surface(
                         color = MaterialTheme.colorScheme.errorContainer,
@@ -1073,14 +1072,13 @@ fun EnhancedHabitCard(
                         )
                     }
                     if (isActive) {
-                        val uiState by activeVm.state.collectAsState()
-                        if (uiState.active && uiState.habitId == habit.id) {
+                        if (coordinatorState.trackedHabitId == habit.id) {
                             val prefsVm: com.habittracker.ui.viewmodels.timing.TimingAudioSettingsViewModel = androidx.hilt.navigation.compose.hiltViewModel()
                             val prefs by prefsVm.prefs.collectAsState()
                             RadialTimer(
-                                totalMillis = uiState.totalMs,
-                                remainingMillis = uiState.remainingMs,
-                                isPaused = uiState.paused,
+                                totalMillis = coordinatorState.targetMs,
+                                remainingMillis = coordinatorState.remainingMs,
+                                isPaused = coordinatorState.paused,
                                 modifier = Modifier.size(timerSize),
                                 reducedMotion = prefs.reducedMotion
                             )
@@ -1097,8 +1095,7 @@ fun EnhancedHabitCard(
                 }
 
                 // Phase UIX-11: Gentle overtime nudge (appears once overtime >= 1m)
-                val overtimeByHabit by tickerVm.overtimeByHabit.collectAsState()
-                val overtimeMs = overtimeByHabit[habit.id] ?: 0L
+                val overtimeMs = if (handler != null && coordinatorState.trackedHabitId == habit.id) coordinatorState.overtimeMs else 0L // TODO: Move overtime tracking into Coordinator if needed
                 AnimatedVisibility(visible = overtimeMs >= 60_000L) {
                     Surface(
                         shape = RoundedCornerShape(10.dp),
@@ -1243,16 +1240,15 @@ fun EnhancedHabitCard(
             onDismiss = { showControlSheet = false },
             onLogPartial = { _ ->
                 // real persistence using PartialSessionViewModel
-                val uiState = activeVm.state.value
-                val total = uiState.totalMs
-                val rem = uiState.remainingMs
+                val total = coordinatorState.targetMs
+                val rem = coordinatorState.remainingMs
                 val elapsedMs = (total - rem).coerceAtLeast(0)
                 val duration = java.time.Duration.ofMillis(elapsedMs)
                 // Stop service session, but don't mark complete
                 timerController.stop()
                 // Launch save in composition-aware scope
                 scope.launch {
-                    val id = runCatching { partialVm.logPartial(habit.id, duration, if (pendingPartialNote.isBlank()) null else pendingPartialNote) }.getOrNull()
+                    runCatching { partialVm.logPartial(habit.id, duration, if (pendingPartialNote.isBlank()) null else pendingPartialNote) }.getOrNull()
                     showUndo("Logged partial ${(elapsedMs/60000).coerceAtLeast(0)}m. Undo") {
                         // No direct delete API yet; future: implement undo using DAO deleteById(id)
                         onUndoComplete()

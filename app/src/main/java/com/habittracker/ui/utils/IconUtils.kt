@@ -2,6 +2,7 @@ package com.habittracker.ui.utils
 
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
+import androidx.compose.material.icons.automirrored.filled.*
 import androidx.compose.ui.graphics.vector.ImageVector
 
 object IconUtils {
@@ -10,8 +11,8 @@ object IconUtils {
         return listOf(
             1 to Icons.Filled.FitnessCenter,   // Exercise
             2 to Icons.Filled.LocalDrink,      // Water
-            3 to Icons.Filled.MenuBook,        // Reading
-            4 to Icons.Filled.DirectionsRun,   // Running
+            3 to Icons.AutoMirrored.Filled.MenuBook,        // Reading
+            4 to Icons.AutoMirrored.Filled.DirectionsRun,   // Running
             5 to Icons.Filled.Bedtime,         // Sleep
             6 to Icons.Filled.Restaurant,      // Eating
             7 to Icons.Filled.School,          // Learning

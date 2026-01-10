@@ -12,6 +12,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
+import androidx.compose.material.icons.automirrored.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -464,7 +465,7 @@ private fun TutorialActionButtons(
                 )
                 Spacer(modifier = Modifier.width(8.dp))
                 Icon(
-                    imageVector = Icons.Default.ArrowForward,
+                    imageVector = Icons.AutoMirrored.Filled.ArrowForward,
                     contentDescription = null,
                     modifier = Modifier.size(if (isCompactScreen) 16.dp else 18.dp)
                 )
@@ -529,7 +530,7 @@ private fun TutorialActionButtons(
                     )
                 ) {
                     Icon(
-                        imageVector = Icons.Default.ArrowBack,
+                        imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                         contentDescription = "Previous",
                         modifier = Modifier.size(if (isCompactScreen) 16.dp else 18.dp)
                     )
@@ -593,7 +594,7 @@ private fun TutorialProgressIndicator(
             Spacer(modifier = Modifier.height(if (isCompactScreen) 6.dp else 8.dp))
             
             LinearProgressIndicator(
-                progress = progress,
+                progress = { progress },
                 modifier = Modifier
                     .width(progressWidth)
                     .height(if (isCompactScreen) 6.dp else 8.dp)
@@ -646,7 +647,7 @@ private fun getStepIcon(stepIndex: Int): ImageVector {
         0 -> Icons.Default.Star
         1 -> Icons.Default.Add
         2 -> Icons.Default.CheckCircle
-        3 -> Icons.Default.TrendingUp
+        3 -> Icons.AutoMirrored.Filled.TrendingUp
         4 -> Icons.Default.EmojiEvents
         else -> Icons.Default.Info
     }

@@ -25,6 +25,8 @@ import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
+import androidx.compose.material.icons.automirrored.filled.*
+import androidx.compose.material.icons.automirrored.outlined.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -287,12 +289,9 @@ fun MainScreen(
     
     // Timer switcher for improved single-active-timer UX
     val timerSwitcherState = rememberTimerSwitcherState()
-    val tickerViewModel: TimerTickerViewModel = hiltViewModel()
-    val activeTimerViewModel: ActiveTimerViewModel = hiltViewModel()
+    val coordinatorState by timerActionHandler?.state?.collectAsState() ?: remember { mutableStateOf(null) }
     val partialSessionViewModel: PartialSessionViewModel = hiltViewModel()
     val timerController = remember(context) { TimerController(context) }
-    val remainingByHabit by tickerViewModel.remainingByHabit.collectAsState()
-    val pausedByHabit by tickerViewModel.pausedByHabit.collectAsState()
     
     // Listen for AutoPaused events and show timer switcher sheet instead of snackbar
     LaunchedEffect(Unit) {
@@ -300,11 +299,7 @@ fun MainScreen(
             if (evt is TimerEvent.AutoPaused) {
                 // Find the habit names from hydrated list
                 val pausedHabit = hydrated.find { it.id == evt.pausedHabitId }
-                val activeHabitId = hydrated.find { habit ->
-                    remainingByHabit[habit.id]?.let { it > 0 } == true && 
-                    pausedByHabit[habit.id] != true &&
-                    habit.id != evt.pausedHabitId
-                }?.id
+                val activeHabitId = coordinatorState?.trackedHabitId
                 
                 val activeHabit = activeHabitId?.let { id -> hydrated.find { it.id == id } }
                 
@@ -314,15 +309,15 @@ fun MainScreen(
                             sessionId = 0, // Session ID not needed for display
                             habitId = activeHabit.id,
                             habitName = activeHabit.name,
-                            remainingMs = remainingByHabit[activeHabit.id] ?: 0L,
-                            isPaused = false,
+                            remainingMs = coordinatorState?.remainingMs ?: 0L,
+                            isPaused = coordinatorState?.paused ?: false,
                             isActive = true
                         ),
                         paused = TimerSwitcherSession(
                             sessionId = evt.pausedSessionId,
                             habitId = evt.pausedHabitId,
                             habitName = pausedHabit.name,
-                            remainingMs = remainingByHabit[evt.pausedHabitId] ?: 0L,
+                            remainingMs = 0L, // Will refresh from DB or Tick when resumed
                             isPaused = true,
                             isActive = false
                         )
@@ -404,7 +399,7 @@ fun MainScreen(
                         modifier = rememberTooltipTarget("view_toggle")
                     ) {
                         Icon(
-                            imageVector = if (isGridView) Icons.Filled.ViewList else Icons.Filled.GridView,
+                            imageVector = if (isGridView) Icons.AutoMirrored.Filled.ViewList else Icons.Filled.GridView,
                             contentDescription = if (isGridView) "List view" else "Grid view"
                         )
                     }
@@ -650,8 +645,6 @@ fun MainScreen(
                                 isCompact = widthClass == WindowWidthClass.Compact,
                                 modifier = Modifier.fillMaxWidth(),
                                 timingViewModel = timingFeatureViewModel,
-                                tickerViewModel = tickerViewModel,
-                                activeTimerVm = activeTimerViewModel,
                                 partialSessionVm = partialSessionViewModel
                             )
                         }
@@ -756,8 +749,6 @@ fun MainScreen(
                                     .fillMaxWidth()
                                     .animateItemPlacement(),
                                 timingViewModel = timingFeatureViewModel,
-                                tickerViewModel = tickerViewModel,
-                                activeTimerVm = activeTimerViewModel,
                                 partialSessionVm = partialSessionViewModel
                             )
                         }
@@ -808,12 +799,12 @@ private fun StatisticsCard(
             StatItem(
                 value = habits.size.toString(),
                 label = "Total",
-                icon = Icons.Filled.List
+                icon = Icons.AutoMirrored.Filled.List
             )
             StatItem(
                 value = avgStreak.toString(),
                 label = "Avg Streak",
-                icon = Icons.Filled.TrendingUp
+                icon = Icons.AutoMirrored.Filled.TrendingUp
             )
         }
     }

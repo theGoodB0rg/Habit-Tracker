@@ -13,6 +13,7 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
+import androidx.compose.material.icons.automirrored.filled.*
 import androidx.compose.material.icons.outlined.Info
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -81,7 +82,7 @@ fun AddHabitScreen(
                 title = { Text("Add New Habit") },
                 navigationIcon = {
                     IconButton(onClick = onNavigateBack) {
-                        Icon(Icons.Filled.ArrowBack, contentDescription = "Back")
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
                     }
                 }
             )
@@ -514,14 +515,19 @@ private fun IconPicker(
 ) {
     val icons = getAvailableIcons()
     
+    // Use fixed height instead of heightIn to avoid crash when nested in scrollable Column
     LazyVerticalGrid(
         columns = GridCells.Adaptive(minSize = 56.dp),
-        modifier = modifier.heightIn(max = 240.dp),
+        modifier = modifier.height(240.dp),
         horizontalArrangement = Arrangement.spacedBy(8.dp),
         verticalArrangement = Arrangement.spacedBy(8.dp),
-        contentPadding = PaddingValues(4.dp)
+        contentPadding = PaddingValues(4.dp),
+        userScrollEnabled = true
     ) {
-        items(icons) { (id, icon) ->
+        items(
+            items = icons,
+            key = { it.first }
+        ) { (id, icon) ->
             IconButton(
                 onClick = { onIconSelected(id) },
                 modifier = Modifier
@@ -553,8 +559,8 @@ private fun getAvailableIcons(): List<Pair<Int, ImageVector>> {
     return listOf(
         1 to Icons.Filled.FitnessCenter,   // Exercise
         2 to Icons.Filled.LocalDrink,      // Water
-        3 to Icons.Filled.MenuBook,        // Reading
-        4 to Icons.Filled.DirectionsRun,   // Running
+        3 to Icons.AutoMirrored.Filled.MenuBook,        // Reading
+        4 to Icons.AutoMirrored.Filled.DirectionsRun,   // Running
         5 to Icons.Filled.Bedtime,         // Sleep
         6 to Icons.Filled.Restaurant,      // Eating
         7 to Icons.Filled.School,          // Learning

@@ -14,7 +14,27 @@ import kotlinx.coroutines.launch
 /**
  * Minimal ViewModel that tracks remaining time per habit from TimerBus events.
  * Used by UI to show a live countdown without heavy wiring.
+ * 
+ * @deprecated This ViewModel is deprecated as part of the timer state simplification (Phase 3).
+ * Use [com.habittracker.timerux.TimerActionCoordinator.state] instead, which provides
+ * a single source of truth for all timer state. This ViewModel duplicates coordinator
+ * state and will be removed in the next major version.
+ * 
+ * Migration guide:
+ * - Replace `timerTickerViewModel.remainingByHabit` with `coordinator.state.remainingMs`
+ * - Replace `timerTickerViewModel.pausedByHabit` with `coordinator.state.paused`
+ * - Replace `timerTickerViewModel.errorsByHabit` with `coordinator.state.lastError`
+ * 
+ * TODO: Remove in next major version
  */
+@Deprecated(
+    message = "Use TimerActionCoordinator.state instead. This ViewModel duplicates coordinator state.",
+    replaceWith = ReplaceWith(
+        "timerActionHandler.state",
+        "com.habittracker.timerux.TimerActionCoordinator"
+    ),
+    level = DeprecationLevel.WARNING
+)
 @HiltViewModel
 class TimerTickerViewModel @Inject constructor() : ViewModel() {
     private val _remainingByHabit = MutableStateFlow<Map<Long, Long>>(emptyMap())

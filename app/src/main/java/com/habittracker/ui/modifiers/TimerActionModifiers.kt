@@ -36,7 +36,7 @@ import com.habittracker.timerux.TimerActionCoordinator
  * Reduces opacity and can optionally pulse to indicate activity.
  */
 fun Modifier.disableDuringTimerAction(state: TimerActionCoordinator.CoordinatorState): Modifier {
-    return if (state.waitingForService) {
+    return if (state.isLoading) {
         this.alpha(0.5f)
     } else {
         this

@@ -5,6 +5,7 @@ import androidx.compose.animation.core.*
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
+import androidx.compose.material.icons.automirrored.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -20,7 +21,7 @@ fun EmptyStateComponent(
     description: String,
     actionText: String? = null,
     onAction: (() -> Unit)? = null,
-    icon: ImageVector = Icons.Filled.Assignment,
+    icon: ImageVector = Icons.AutoMirrored.Filled.Assignment,
     modifier: Modifier = Modifier
 ) {
     Column(

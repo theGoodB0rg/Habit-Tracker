@@ -1,5 +1,7 @@
 package com.habittracker.ui.navigation
 
+import androidx.compose.animation.EnterTransition
+import androidx.compose.animation.ExitTransition
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -33,6 +35,7 @@ import com.habittracker.ui.screens.timing.AlertProfilesScreen
 import com.habittracker.reminders.ui.ReminderSettingsScreen
 import com.habittracker.ui.screens.AddHabitScreen
 import com.habittracker.ui.screens.EditHabitScreen
+import com.habittracker.ui.screens.ErrorScreen
 import com.habittracker.ui.screens.HabitDetailScreen
 import com.habittracker.ui.screens.MainScreen
 import com.habittracker.ui.screens.simple.SimpleMainScreen
@@ -60,7 +63,14 @@ fun HabitTrackerNavigation(
     
     NavHost(
         navController = navController,
-        startDestination = startDestination
+        startDestination = startDestination,
+        // Disable all navigation transitions to prevent SlotTable corruption crash
+        // This is a workaround for a known Compose runtime issue where AnimatedContent
+        // during navigation can cause ArrayIndexOutOfBoundsException in SlotTable
+        enterTransition = { EnterTransition.None },
+        exitTransition = { ExitTransition.None },
+        popEnterTransition = { EnterTransition.None },
+        popExitTransition = { ExitTransition.None }
     ) {
         // Onboarding flow
         composable(Screen.Onboarding.route) {
@@ -192,7 +202,18 @@ fun HabitTrackerNavigation(
             route = Screen.EditHabit.route,
             arguments = Screen.EditHabit.arguments
         ) { backStackEntry ->
-            val habitId = backStackEntry.arguments?.getLong("habitId") ?: return@composable
+            // Safe argument extraction with default value to prevent crashes
+            val habitId = backStackEntry.arguments?.getLong("habitId", -1L) ?: -1L
+            
+            if (habitId <= 0L) {
+                // Show error UI instead of crashing or showing blank screen
+                ErrorScreen(
+                    message = "Invalid habit ID. The habit could not be found.",
+                    onNavigateBack = { navController.popBackStack() }
+                )
+                return@composable
+            }
+            
             EditHabitScreen(
                 habitId = habitId,
                 viewModel = habitViewModel,
@@ -206,7 +227,18 @@ fun HabitTrackerNavigation(
             route = Screen.HabitDetail.route,
             arguments = Screen.HabitDetail.arguments
         ) { backStackEntry ->
-            val habitId = backStackEntry.arguments?.getLong("habitId") ?: return@composable
+            // Safe argument extraction with default value to prevent crashes
+            val habitId = backStackEntry.arguments?.getLong("habitId", -1L) ?: -1L
+            
+            if (habitId <= 0L) {
+                // Show error UI instead of crashing or showing blank screen
+                ErrorScreen(
+                    message = "Invalid habit ID. The habit could not be found.",
+                    onNavigateBack = { navController.popBackStack() }
+                )
+                return@composable
+            }
+            
             // Removed state collection from navigation lambda to prevent SlotTable race condition
             // HabitDetailScreen handles its own loading state internally
             HabitDetailScreen(

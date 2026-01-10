@@ -2,10 +2,7 @@ package com.habittracker.ui.screens
 
 import androidx.compose.animation.*
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.LazyRow
-import androidx.compose.foundation.lazy.grid.GridCells
-import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
-import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.selection.toggleable
@@ -15,6 +12,7 @@ import androidx.compose.material3.SwitchDefaults
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
+import androidx.compose.material.icons.automirrored.filled.*
 import androidx.compose.material.icons.outlined.Info
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -88,61 +86,44 @@ fun EditHabitScreen(
         }
     }
     
-    if (habit == null) {
-        // Show loading or error if habit not found
-        Scaffold(
-            topBar = {
-                TopAppBar(
-                    title = { Text("Edit Habit") },
-                    navigationIcon = {
-                        IconButton(onClick = onNavigateBack) {
-                            Icon(Icons.Filled.ArrowBack, contentDescription = "Back")
-                        }
-                    }
-                )
-            }
-        ) { paddingValues ->
-            Box(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(paddingValues),
-                contentAlignment = Alignment.Center
-            ) {
-                Column(
-                    horizontalAlignment = Alignment.CenterHorizontally
-                ) {
-                    CircularProgressIndicator()
-                    Spacer(modifier = Modifier.height(16.dp))
-                    Text("Loading habit...")
-                }
-            }
-        }
-        return
-    }
-    
     Scaffold(
         topBar = {
             TopAppBar(
                 title = { Text("Edit Habit") },
                 navigationIcon = {
                     IconButton(onClick = onNavigateBack) {
-                        Icon(Icons.Filled.ArrowBack, contentDescription = "Back")
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
                     }
                 },
                 actions = {
-                    IconButton(
-                        onClick = { showDeleteDialog = true }
-                    ) {
-                        Icon(
-                            Icons.Filled.Delete,
-                            contentDescription = "Delete habit",
-                            tint = MaterialTheme.colorScheme.error
-                        )
+                    if (habit != null) {
+                        IconButton(onClick = { showDeleteDialog = true }) {
+                            Icon(
+                                Icons.Default.Delete,
+                                contentDescription = "Delete habit",
+                                tint = MaterialTheme.colorScheme.error
+                            )
+                        }
                     }
                 }
             )
         }
     ) { paddingValues ->
+        Box(modifier = Modifier.fillMaxSize().padding(paddingValues)) {
+            when (habit) {
+                null -> {
+                    Column(
+                        modifier = Modifier.fillMaxSize(),
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.Center
+                    ) {
+                        CircularProgressIndicator()
+                        Spacer(modifier = Modifier.height(16.dp))
+                        Text("Loading habit...")
+                    }
+                }
+                else -> {
+
         val widthClass = rememberWindowWidthClass()
         val horizontalPadding = rememberResponsiveHorizontalPadding()
         val maxContentWidth = if (widthClass == WindowWidthClass.Expanded) 840.dp else 720.dp
@@ -196,7 +177,6 @@ fun EditHabitScreen(
                             )
                         }
                         Column {
-                    }
                             Text(
                                 "Created",
                                 style = MaterialTheme.typography.bodySmall,
@@ -344,57 +324,54 @@ fun EditHabitScreen(
                         )
                         Spacer(modifier = Modifier.height(12.dp))
                         
-                        LazyRow(
-                            horizontalArrangement = Arrangement.spacedBy(8.dp)
+                        Row(
+                            horizontalArrangement = Arrangement.spacedBy(8.dp),
+                            modifier = Modifier.horizontalScroll(rememberScrollState())
                         ) {
-                            item {
-                                FilterChip(
-                                    onClick = {
-                                        timerEnabled = true
-                                        requireTimerToComplete = true
-                                        customDurationText = "25"
-                                    },
-                                    label = { Text("Focus Session (25 min)") },
-                                    selected = timerEnabled && requireTimerToComplete && customDurationText == "25",
-                                    leadingIcon = if (timerEnabled && requireTimerToComplete && customDurationText == "25") {
-                                        { Icon(Icons.Filled.CheckCircle, contentDescription = null, modifier = Modifier.size(18.dp)) }
-                                    } else {
-                                        { Icon(Icons.Filled.Timer, contentDescription = null, modifier = Modifier.size(18.dp)) }
-                                    }
-                                )
-                            }
-                            item {
-                                FilterChip(
-                                    onClick = {
-                                        timerEnabled = true
-                                        requireTimerToComplete = true
-                                        customDurationText = "15"
-                                    },
-                                    label = { Text("Short Focus (15 min)") },
-                                    selected = timerEnabled && requireTimerToComplete && customDurationText == "15",
-                                    leadingIcon = if (timerEnabled && requireTimerToComplete && customDurationText == "15") {
-                                        { Icon(Icons.Filled.CheckCircle, contentDescription = null, modifier = Modifier.size(18.dp)) }
-                                    } else {
-                                        { Icon(Icons.Filled.Timelapse, contentDescription = null, modifier = Modifier.size(18.dp)) }
-                                    }
-                                )
-                            }
-                            item {
-                                FilterChip(
-                                    onClick = {
-                                        timerEnabled = false
-                                        requireTimerToComplete = false
-                                        customDurationText = ""
-                                    },
-                                    label = { Text("Quick Check-off") },
-                                    selected = !timerEnabled && !requireTimerToComplete,
-                                    leadingIcon = if (!timerEnabled && !requireTimerToComplete) {
-                                        { Icon(Icons.Filled.CheckCircle, contentDescription = null, modifier = Modifier.size(18.dp)) }
-                                    } else {
-                                        { Icon(Icons.Filled.Speed, contentDescription = null, modifier = Modifier.size(18.dp)) }
-                                    }
-                                )
-                            }
+                            FilterChip(
+                                onClick = {
+                                    timerEnabled = true
+                                    requireTimerToComplete = true
+                                    customDurationText = "25"
+                                },
+                                label = { Text("Focus Session (25 min)") },
+                                selected = timerEnabled && requireTimerToComplete && customDurationText == "25",
+                                leadingIcon = if (timerEnabled && requireTimerToComplete && customDurationText == "25") {
+                                    { Icon(Icons.Filled.CheckCircle, contentDescription = null, modifier = Modifier.size(18.dp)) }
+                                } else {
+                                    { Icon(Icons.Filled.Timer, contentDescription = null, modifier = Modifier.size(18.dp)) }
+                                }
+                            )
+                            
+                            FilterChip(
+                                onClick = {
+                                    timerEnabled = true
+                                    requireTimerToComplete = true
+                                    customDurationText = "15"
+                                },
+                                label = { Text("Short Focus (15 min)") },
+                                selected = timerEnabled && requireTimerToComplete && customDurationText == "15",
+                                leadingIcon = if (timerEnabled && requireTimerToComplete && customDurationText == "15") {
+                                    { Icon(Icons.Filled.CheckCircle, contentDescription = null, modifier = Modifier.size(18.dp)) }
+                                } else {
+                                    { Icon(Icons.Filled.Timelapse, contentDescription = null, modifier = Modifier.size(18.dp)) }
+                                }
+                            )
+                            
+                            FilterChip(
+                                onClick = {
+                                    timerEnabled = false
+                                    requireTimerToComplete = false
+                                    customDurationText = ""
+                                },
+                                label = { Text("Quick Check-off") },
+                                selected = !timerEnabled && !requireTimerToComplete,
+                                leadingIcon = if (!timerEnabled && !requireTimerToComplete) {
+                                    { Icon(Icons.Filled.CheckCircle, contentDescription = null, modifier = Modifier.size(18.dp)) }
+                                } else {
+                                    { Icon(Icons.Filled.Speed, contentDescription = null, modifier = Modifier.size(18.dp)) }
+                                }
+                            )
                         }
                     }
                 }
@@ -700,39 +677,50 @@ fun EditHabitScreen(
                 Text("Update Habit")
             }
         }
-    }
-    
-    // Delete Confirmation Dialog
-    if (showDeleteDialog) {
-        AlertDialog(
-            onDismissRequest = { showDeleteDialog = false },
-            title = { Text("Delete Habit") },
-            text = { 
-                Text("Are you sure you want to delete \"${habit.name}\"? This action cannot be undone and you'll lose all streak progress.")
-            },
-            confirmButton = {
-                TextButton(
-                    onClick = {
-                        viewModel.deleteHabit(habitId)
-                        showDeleteDialog = false
+        
+        // Delete Confirmation Dialog - Moved inside the habit non-null check
+            if (showDeleteDialog) {
+                AlertDialog(
+                    onDismissRequest = { showDeleteDialog = false },
+                    title = { Text("Delete Habit") },
+                    text = { 
+                        Text("Are you sure you want to delete \"${habit?.name ?: ""}\"? This action cannot be undone and you'll lose all streak progress.")
+                    },
+                    confirmButton = {
+                        TextButton(
+                            onClick = {
+                                viewModel.deleteHabit(habitId)
+                                showDeleteDialog = false
+                            }
+                        ) {
+                            Text(
+                                "Delete",
+                                color = MaterialTheme.colorScheme.error
+                            )
+                        }
+                    },
+                    dismissButton = {
+                        TextButton(
+                            onClick = { showDeleteDialog = false }
+                        ) {
+                            Text("Cancel")
+                        }
                     }
-                ) {
-                    Text(
-                        "Delete",
-                        color = MaterialTheme.colorScheme.error
-                    )
-                }
-            },
-            dismissButton = {
-                TextButton(
-                    onClick = { showDeleteDialog = false }
-                ) {
-                    Text("Cancel")
-                }
+                )
             }
-        )
+        }
     }
 }
+}
+}
+}
+
+
+
+
+
+
+
 
 @Composable
 private fun EditIconPicker(
@@ -741,29 +729,43 @@ private fun EditIconPicker(
     modifier: Modifier = Modifier
 ) {
     val icons = getAvailableIcons()
-    
-    LazyVerticalGrid(
-        columns = GridCells.Adaptive(minSize = 56.dp),
-        modifier = modifier.heightIn(max = 240.dp),
-        horizontalArrangement = Arrangement.spacedBy(8.dp),
-        verticalArrangement = Arrangement.spacedBy(8.dp),
-        contentPadding = PaddingValues(4.dp)
+    // Manual grid implementation to avoid LazyGrid crash
+    val columns = 5
+    val rows = icons.chunked(columns)
+
+    Column(
+        modifier = modifier
+            .fillMaxWidth()
+            .height(240.dp)
+            .verticalScroll(rememberScrollState()),
+        verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
-        items(icons) { (id, icon) ->
-            IconButton(
-                onClick = { onIconSelected(id) },
-                modifier = Modifier.size(40.dp)
+        rows.forEach { rowIcons ->
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceEvenly
             ) {
-                Icon(
-                    imageVector = icon,
-                    contentDescription = null,
-                    tint = if (selectedIconId == id) {
-                        MaterialTheme.colorScheme.primary
-                    } else {
-                        MaterialTheme.colorScheme.onSurfaceVariant
-                    },
-                    modifier = Modifier.size(24.dp)
-                )
+                rowIcons.forEach { (id, icon) ->
+                    IconButton(
+                        onClick = { onIconSelected(id) },
+                        modifier = Modifier.size(40.dp)
+                    ) {
+                        Icon(
+                            imageVector = icon,
+                            contentDescription = null,
+                            tint = if (selectedIconId == id) {
+                                MaterialTheme.colorScheme.primary
+                            } else {
+                                MaterialTheme.colorScheme.onSurfaceVariant
+                            },
+                            modifier = Modifier.size(24.dp)
+                        )
+                    }
+                }
+                // Fill empty space in last row
+                repeat(columns - rowIcons.size) {
+                    Spacer(modifier = Modifier.size(40.dp))
+                }
             }
         }
     }
@@ -774,8 +776,8 @@ private fun getAvailableIcons(): List<Pair<Int, ImageVector>> {
     return listOf(
         1 to Icons.Filled.FitnessCenter,   // Exercise
         2 to Icons.Filled.LocalDrink,      // Water
-        3 to Icons.Filled.MenuBook,        // Reading
-        4 to Icons.Filled.DirectionsRun,   // Running
+        3 to Icons.AutoMirrored.Filled.MenuBook,        // Reading
+        4 to Icons.AutoMirrored.Filled.DirectionsRun,   // Running
         5 to Icons.Filled.Bedtime,         // Sleep
         6 to Icons.Filled.Restaurant,      // Eating
         7 to Icons.Filled.School,          // Learning

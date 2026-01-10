@@ -1,8 +1,6 @@
 package com.habittracker.ui.components.simple
 
-import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.expandVertically
-import androidx.compose.animation.shrinkVertically
+import androidx.compose.animation.Crossfade
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -42,10 +40,15 @@ import java.time.Duration
 /**
  * HabitTimerSection - Collapsible timer section for SimpleHabitCard.
  * 
+ * NOTE: Uses Crossfade instead of AnimatedContent/AnimatedVisibility to prevent
+ * SlotTable corruption crash (ArrayIndexOutOfBoundsException: length=0; index=-5)
+ * when used inside LazyColumn items.
+ * 
  * Features:
  * - Collapsed: AssistChip with "Start Xm"
  * - Expanded: Large time display + pause/complete buttons + progress bar
  * - Auto-expands when timer is active
+ * - Disables controls when isLoading is true (Phase 3)
  */
 @Composable
 fun HabitTimerSection(
@@ -54,6 +57,7 @@ fun HabitTimerSection(
     remainingMs: Long,
     targetMs: Long,
     targetDuration: Duration?,
+    isLoading: Boolean = false,
     onStart: () -> Unit,
     onPause: () -> Unit,
     onResume: () -> Unit,
@@ -71,31 +75,29 @@ fun HabitTimerSection(
         
         Spacer(modifier = Modifier.height(12.dp))
         
-        // Show expanded state when timer is active, collapsed when idle
-        AnimatedVisibility(
-            visible = isActive,
-            enter = expandVertically(),
-            exit = shrinkVertically()
-        ) {
-            TimerExpandedState(
-                remainingMs = remainingMs,
-                targetMs = targetMs,
-                isPaused = isPaused,
-                onPause = onPause,
-                onResume = onResume,
-                onComplete = onComplete
-            )
-        }
-        
-        AnimatedVisibility(
-            visible = !isActive,
-            enter = expandVertically(),
-            exit = shrinkVertically()
-        ) {
-            TimerCollapsedState(
-                targetDuration = targetDuration,
-                onStart = onStart
-            )
+        // Use Crossfade instead of AnimatedContent/AnimatedVisibility to prevent
+        // SlotTable corruption crash (ArrayIndexOutOfBoundsException: length=0; index=-5)
+        // when used inside LazyColumn items. Crossfade is more stable for content switching.
+        Crossfade(
+            targetState = isActive,
+            label = "timerSectionTransition"
+        ) { timerIsActive ->
+            if (timerIsActive) {
+                TimerExpandedState(
+                    remainingMs = remainingMs,
+                    targetMs = targetMs,
+                    isPaused = isPaused,
+                    isLoading = isLoading,
+                    onPause = onPause,
+                    onResume = onResume,
+                    onComplete = onComplete
+                )
+            } else {
+                TimerCollapsedState(
+                    targetDuration = targetDuration,
+                    onStart = onStart
+                )
+            }
         }
     }
 }
@@ -133,6 +135,7 @@ private fun TimerExpandedState(
     remainingMs: Long,
     targetMs: Long,
     isPaused: Boolean,
+    isLoading: Boolean,
     onPause: () -> Unit,
     onResume: () -> Unit,
     onComplete: () -> Unit
@@ -160,11 +163,12 @@ private fun TimerExpandedState(
                     fontSize = 32.sp
                 )
                 
-                // Controls
+                // Controls - disabled when loading (Phase 3)
                 Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                     // Pause/Resume button
                     FilledIconButton(
                         onClick = if (isPaused) onResume else onPause,
+                        enabled = !isLoading,
                         modifier = Modifier.size(40.dp),
                         colors = IconButtonDefaults.filledIconButtonColors(
                             containerColor = MaterialTheme.colorScheme.secondaryContainer,
@@ -180,6 +184,7 @@ private fun TimerExpandedState(
                     // Complete button
                     FilledIconButton(
                         onClick = onComplete,
+                        enabled = !isLoading,
                         modifier = Modifier.size(40.dp),
                         colors = IconButtonDefaults.filledIconButtonColors(
                             containerColor = MaterialTheme.colorScheme.primary,

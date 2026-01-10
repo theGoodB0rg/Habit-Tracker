@@ -1,0 +1,771 @@
+--------- beginning of system
+01-10 14:30:26.246  1352  1352 E vold    : Failed to open default fstab: No such file or directory
+01-10 14:30:26.246  1352  1352 E vold    : Error reading configuration... continuing anyways: No such file or directory
+01-10 14:30:34.733  1591  1651 E storaged: getService package_native failed
+01-10 14:30:34.736  1591  1651 E storaged: getDiskStats failed with result NOT_SUPPORTED and size 0
+01-10 14:30:35.479  1759  1797 E BatteryExternalStatsWorker: no controller energy info supplied for telephony
+01-10 14:30:35.479  1759  1797 E KernelUidCpuFreqTimeReader: Failed to read /proc/uid_time_in_state: java.io.FileNotFoundException: /proc/uid_time_in_state (No such file or directory)
+01-10 14:30:35.485  1759  1797 E KernelCpuSpeedReader: Failed to read cpu-freq: /sys/devices/system/cpu/cpu0/cpufreq/stats/time_in_state (No such file or directory)
+01-10 14:30:35.485  1759  1797 E KernelWakelockReader: neither /proc/wakelocks nor /d/wakeup_sources exists
+01-10 14:30:35.494  1759  1797 E AndroidRuntime: Error reporting WTF
+01-10 14:30:35.494  1759  1797 E AndroidRuntime: java.lang.NullPointerException: Attempt to invoke interface method 'boolean android.app.IActivityManager.handleApplicationWtf(android.os.IBinder, java.lang.String, boolean, android.app.ApplicationErrorReport$ParcelableCrashInfo)' on a null object reference
+01-10 14:30:35.494  1759  1797 E AndroidRuntime: 	at com.android.internal.os.RuntimeInit.wtf(RuntimeInit.java:387)
+01-10 14:30:35.494  1759  1797 E AndroidRuntime: 	at android.util.Log$1.onTerribleFailure(Log.java:110)
+01-10 14:30:35.494  1759  1797 E AndroidRuntime: 	at android.util.Log.wtf(Log.java:304)
+01-10 14:30:35.494  1759  1797 E AndroidRuntime: 	at android.util.Slog.wtf(Slog.java:82)
+01-10 14:30:35.494  1759  1797 E AndroidRuntime: 	at com.android.internal.os.KernelWakelockReader.readKernelWakelockStats(KernelWakelockReader.java:84)
+01-10 14:30:35.494  1759  1797 E AndroidRuntime: 	at com.android.internal.os.BatteryStatsImpl.updateKernelWakelocksLocked(BatteryStatsImpl.java:11813)
+01-10 14:30:35.494  1759  1797 E AndroidRuntime: 	at com.android.server.am.BatteryExternalStatsWorker.updateExternalStatsLocked(BatteryExternalStatsWorker.java:459)
+01-10 14:30:35.494  1759  1797 E AndroidRuntime: 	at com.android.server.am.BatteryExternalStatsWorker.access$900(BatteryExternalStatsWorker.java:59)
+01-10 14:30:35.494  1759  1797 E AndroidRuntime: 	at com.android.server.am.BatteryExternalStatsWorker$1.run(BatteryExternalStatsWorker.java:354)
+01-10 14:30:35.494  1759  1797 E AndroidRuntime: 	at java.util.concurrent.Executors$RunnableAdapter.call(Executors.java:458)
+01-10 14:30:35.494  1759  1797 E AndroidRuntime: 	at java.util.concurrent.FutureTask.run(FutureTask.java:266)
+01-10 14:30:35.494  1759  1797 E AndroidRuntime: 	at java.util.concurrent.ScheduledThreadPoolExecutor$ScheduledFutureTask.run(ScheduledThreadPoolExecutor.java:301)
+01-10 14:30:35.494  1759  1797 E AndroidRuntime: 	at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1167)
+01-10 14:30:35.494  1759  1797 E AndroidRuntime: 	at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:641)
+01-10 14:30:35.494  1759  1797 E AndroidRuntime: 	at java.lang.Thread.run(Thread.java:764)
+01-10 14:30:35.495  1759  1797 E AndroidRuntime: Original WTF:
+01-10 14:30:35.495  1759  1797 E AndroidRuntime: android.util.Log$TerribleFailure: neither /proc/wakelocks nor /d/wakeup_sources exists
+01-10 14:30:35.495  1759  1797 E AndroidRuntime: 	at android.util.Log.wtf(Log.java:299)
+01-10 14:30:35.495  1759  1797 E AndroidRuntime: 	at android.util.Slog.wtf(Slog.java:82)
+01-10 14:30:35.495  1759  1797 E AndroidRuntime: 	at com.android.internal.os.KernelWakelockReader.readKernelWakelockStats(KernelWakelockReader.java:84)
+01-10 14:30:35.495  1759  1797 E AndroidRuntime: 	at com.android.internal.os.BatteryStatsImpl.updateKernelWakelocksLocked(BatteryStatsImpl.java:11813)
+01-10 14:30:35.495  1759  1797 E AndroidRuntime: 	at com.android.server.am.BatteryExternalStatsWorker.updateExternalStatsLocked(BatteryExternalStatsWorker.java:459)
+01-10 14:30:35.495  1759  1797 E AndroidRuntime: 	at com.android.server.am.BatteryExternalStatsWorker.access$900(BatteryExternalStatsWorker.java:59)
+01-10 14:30:35.495  1759  1797 E AndroidRuntime: 	at com.android.server.am.BatteryExternalStatsWorker$1.run(BatteryExternalStatsWorker.java:354)
+01-10 14:30:35.495  1759  1797 E AndroidRuntime: 	at java.util.concurrent.Executors$RunnableAdapter.call(Executors.java:458)
+01-10 14:30:35.495  1759  1797 E AndroidRuntime: 	at java.util.concurrent.FutureTask.run(FutureTask.java:266)
+01-10 14:30:35.495  1759  1797 E AndroidRuntime: 	at java.util.concurrent.ScheduledThreadPoolExecutor$ScheduledFutureTask.run(ScheduledThreadPoolExecutor.java:301)
+01-10 14:30:35.495  1759  1797 E AndroidRuntime: 	at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1167)
+01-10 14:30:35.495  1759  1797 E AndroidRuntime: 	at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:641)
+01-10 14:30:35.495  1759  1797 E AndroidRuntime: 	at java.lang.Thread.run(Thread.java:764)
+01-10 14:30:35.499  1759  1797 E KernelUidCpuFreqTimeReader: Failed to read /proc/uid_time_in_state: java.io.FileNotFoundException: /proc/uid_time_in_state (No such file or directory)
+01-10 14:30:37.235  1352  1363 E vold    : Failed to read field SystemLocale: Success
+01-10 14:30:37.237  1759  1873 E StorageManagerService: Failed to read field SystemLocale
+01-10 14:30:37.237  1759  1873 E StorageManagerService: android.os.ServiceSpecificException: Failed to read field SystemLocale (code 0)
+01-10 14:30:37.237  1759  1873 E StorageManagerService: 	at android.os.Parcel.createException(Parcel.java:1964)
+01-10 14:30:37.237  1759  1873 E StorageManagerService: 	at android.os.Parcel.readException(Parcel.java:1918)
+01-10 14:30:37.237  1759  1873 E StorageManagerService: 	at android.os.Parcel.readException(Parcel.java:1868)
+01-10 14:30:37.237  1759  1873 E StorageManagerService: 	at android.os.IVold$Stub$Proxy.fdeGetField(IVold.java:1094)
+01-10 14:30:37.237  1759  1873 E StorageManagerService: 	at com.android.server.StorageManagerService.getField(StorageManagerService.java:2408)
+01-10 14:30:37.237  1759  1873 E StorageManagerService: 	at com.android.server.StorageManagerService.copyLocaleFromMountService(StorageManagerService.java:982)
+01-10 14:30:37.237  1759  1873 E StorageManagerService: 	at com.android.server.StorageManagerService.handleDaemonConnected(StorageManagerService.java:975)
+01-10 14:30:37.237  1759  1873 E StorageManagerService: 	at com.android.server.StorageManagerService.access$900(StorageManagerService.java:171)
+01-10 14:30:37.237  1759  1873 E StorageManagerService: 	at com.android.server.StorageManagerService$StorageManagerServiceHandler.handleMessage(StorageManagerService.java:572)
+01-10 14:30:37.237  1759  1873 E StorageManagerService: 	at android.os.Handler.dispatchMessage(Handler.java:106)
+01-10 14:30:37.237  1759  1873 E StorageManagerService: 	at android.os.Looper.loop(Looper.java:193)
+01-10 14:30:37.237  1759  1873 E StorageManagerService: 	at android.os.HandlerThread.run(HandlerThread.java:65)
+01-10 14:30:37.647  1759  1759 E UsbDeviceManager: failed to write to /sys/class/android_usb/android0/f_rndis/ethaddr
+01-10 14:30:37.650  1759  1759 E UsbDeviceManager: Failed to open control for mtp
+01-10 14:30:37.650  1759  1759 E UsbDeviceManager: Failed to open control for mtp
+01-10 14:30:37.664  1759  1759 E UsbDeviceManager: Error initializing UsbHandler
+01-10 14:30:37.664  1759  1759 E UsbDeviceManager: java.io.FileNotFoundException: /sys/class/android_usb/android0/state (No such file or directory)
+01-10 14:30:37.664  1759  1759 E UsbDeviceManager: 	at java.io.FileInputStream.open0(Native Method)
+01-10 14:30:37.664  1759  1759 E UsbDeviceManager: 	at java.io.FileInputStream.open(FileInputStream.java:231)
+01-10 14:30:37.664  1759  1759 E UsbDeviceManager: 	at java.io.FileInputStream.<init>(FileInputStream.java:165)
+01-10 14:30:37.664  1759  1759 E UsbDeviceManager: 	at android.os.FileUtils.readTextFile(FileUtils.java:514)
+01-10 14:30:37.664  1759  1759 E UsbDeviceManager: 	at com.android.server.usb.UsbDeviceManager$UsbHandlerLegacy.<init>(UsbDeviceManager.java:1376)
+01-10 14:30:37.664  1759  1759 E UsbDeviceManager: 	at com.android.server.usb.UsbDeviceManager.<init>(UsbDeviceManager.java:298)
+01-10 14:30:37.664  1759  1759 E UsbDeviceManager: 	at com.android.server.usb.UsbService.<init>(UsbService.java:139)
+01-10 14:30:37.664  1759  1759 E UsbDeviceManager: 	at com.android.server.usb.UsbService$Lifecycle.onStart(UsbService.java:73)
+01-10 14:30:37.664  1759  1759 E UsbDeviceManager: 	at com.android.server.SystemServiceManager.startService(SystemServiceManager.java:126)
+01-10 14:30:37.664  1759  1759 E UsbDeviceManager: 	at com.android.server.SystemServiceManager.startService(SystemServiceManager.java:113)
+01-10 14:30:37.664  1759  1759 E UsbDeviceManager: 	at com.android.server.SystemServiceManager.startService(SystemServiceManager.java:72)
+01-10 14:30:37.664  1759  1759 E UsbDeviceManager: 	at com.android.server.SystemServer.startOtherServices(SystemServer.java:1332)
+01-10 14:30:37.664  1759  1759 E UsbDeviceManager: 	at com.android.server.SystemServer.run(SystemServer.java:445)
+01-10 14:30:37.664  1759  1759 E UsbDeviceManager: 	at com.android.server.SystemServer.main(SystemServer.java:299)
+01-10 14:30:37.664  1759  1759 E UsbDeviceManager: 	at java.lang.reflect.Method.invoke(Native Method)
+01-10 14:30:37.664  1759  1759 E UsbDeviceManager: 	at com.android.internal.os.RuntimeInit$MethodAndArgsCaller.run(RuntimeInit.java:493)
+01-10 14:30:37.664  1759  1759 E UsbDeviceManager: 	at com.android.internal.os.ZygoteInit.main(ZygoteInit.java:840)
+01-10 14:30:37.773  1759  1759 E KernelUidCpuFreqTimeReader: Failed to read /proc/uid_time_in_state: java.io.FileNotFoundException: /proc/uid_time_in_state (No such file or directory)
+01-10 14:30:37.800  1759  1759 E LockSettingsStorage: Cannot read file java.io.FileNotFoundException: /data/system/password.key: open failed: ENOENT (No such file or directory)
+01-10 14:30:37.800  1759  1759 E LockSettingsStorage: Cannot read file java.io.FileNotFoundException: /data/system/gatekeeper.gesture.key: open failed: ENOENT (No such file or directory)
+01-10 14:30:37.800  1759  1759 E LockSettingsStorage: Cannot read file java.io.FileNotFoundException: /data/system/gesture.key: open failed: ENOENT (No such file or directory)
+01-10 14:30:37.956  1759  1797 E KernelUidCpuFreqTimeReader: Failed to read /proc/uid_time_in_state: java.io.FileNotFoundException: /proc/uid_time_in_state (No such file or directory)
+01-10 14:30:37.957  1759  1797 E KernelCpuSpeedReader: Failed to read cpu-freq: /sys/devices/system/cpu/cpu0/cpufreq/stats/time_in_state (No such file or directory)
+01-10 14:30:37.957  1759  1797 E KernelWakelockReader: neither /proc/wakelocks nor /d/wakeup_sources exists
+01-10 14:30:38.263  1759  1840 E UsbPortManager: port status enquiry failed
+01-10 14:30:38.312  1759  1797 E BatteryExternalStatsWorker: no controller energy info supplied for wifi
+01-10 14:30:38.312  1759  1797 E BatteryExternalStatsWorker: no controller energy info supplied for telephony
+01-10 14:30:38.312  1759  1797 E KernelWakelockReader: neither /proc/wakelocks nor /d/wakeup_sources exists
+01-10 14:30:38.565  1563  1563 E android.hardware.wifi@1.0-service: Unknown iface name: wlan0
+01-10 14:30:38.568  1563  1563 E android.hardware.wifi@1.0-service: Failed to register radio mode change callback
+01-10 14:30:38.569  1563  1563 E android.hardware.wifi@1.0-service: Failed to set DFS flag; DFS channels may be unavailable.
+01-10 14:30:38.596  1592  1592 E wificond: No Offload Service available
+01-10 14:30:39.879  1759  1797 E BatteryExternalStatsWorker: no controller energy info supplied for wifi
+01-10 14:30:39.879  1759  1797 E KernelWakelockReader: neither /proc/wakelocks nor /d/wakeup_sources exists
+01-10 14:30:39.888  1759  1797 E BatteryExternalStatsWorker: no controller energy info supplied for wifi
+01-10 14:30:39.889  1759  1797 E KernelUidCpuFreqTimeReader: Failed to read /proc/uid_time_in_state: java.io.FileNotFoundException: /proc/uid_time_in_state (No such file or directory)
+01-10 14:30:39.889  1759  1797 E KernelCpuSpeedReader: Failed to read cpu-freq: /sys/devices/system/cpu/cpu0/cpufreq/stats/time_in_state (No such file or directory)
+01-10 14:30:39.889  1759  1797 E KernelWakelockReader: neither /proc/wakelocks nor /d/wakeup_sources exists
+01-10 14:30:40.941  1759  1885 E WifiP2pService: Unexpected disable request when WifiChannel is null
+01-10 14:30:41.811  1759  1892 E ActivityThread: Failed to find provider info for com.android.calendar
+01-10 14:30:41.826  1759  1892 E ActivityThread: Failed to find provider info for com.android.calendar
+01-10 14:30:42.881  2121  2278 E ActivityThread: Failed to find provider info for com.android.contacts
+01-10 14:30:43.731  1922  2300 E ActivityThread: Failed to find provider info for com.android.contacts
+01-10 14:30:46.343  1930  2258 E ActivityThread: Failed to find provider info for com.android.contacts
+01-10 14:30:47.000  1930  2277 E ActivityThread: Failed to find provider info for com.android.contacts
+01-10 14:30:47.002  1759  1759 E NotificationService: Muting recently noisy 0|com.android.server.telecom|1337|null|1000
+01-10 14:30:47.053  1759  1759 E NotificationService: Muting recently noisy 0|com.android.server.telecom|1337|null|1000
+01-10 14:30:47.117  1930  2258 E ActivityThread: Failed to find provider info for com.android.contacts
+01-10 14:30:47.255  1759  1759 E NotificationService: Muting recently noisy 0|com.android.server.telecom|1337|null|1000
+01-10 14:30:47.745  1922  2395 E ActivityThread: Failed to find provider info for com.android.contacts
+01-10 14:30:49.287  1759  1885 E WifiP2pService: Unhandled message { when=0 what=131203 target=com.android.internal.util.StateMachine$SmHandler }
+01-10 14:30:50.332  1592  1592 E wificond: Received error messsage: Operation not supported on transport endpoint
+01-10 14:30:50.332  1592  1592 E wificond: NL80211_CMD_ABORT_SCAN failed
+01-10 14:30:50.351  1759  1759 E NotificationService: Muting recently noisy 0|com.android.server.telecom|1337|null|1000
+01-10 14:30:50.447  1759  1759 E NotificationService: Muting recently noisy 0|com.android.server.telecom|1337|null|1000
+01-10 14:30:50.613  1759  1759 E NotificationService: Muting recently noisy 0|com.android.server.telecom|1337|null|1000
+01-10 14:30:51.135  1759  1797 E BatteryExternalStatsWorker: no controller energy info supplied for wifi
+01-10 14:30:51.136  1759  1797 E KernelWakelockReader: neither /proc/wakelocks nor /d/wakeup_sources exists
+01-10 14:30:51.323  1759  2500 E BackupPasswordManager: Unable to read backup pw version
+01-10 14:30:51.323  1759  2500 E BackupPasswordManager: Unable to read saved backup pw hash
+01-10 14:30:53.997  1930  1930 E LoadedApk: Unable to instantiate appComponentFactory
+01-10 14:30:53.997  1930  1930 E LoadedApk: java.lang.ClassNotFoundException: Didn't find class "android.support.v4.app.CoreComponentFactory" on path: DexPathList[[],nativeLibraryDirectories=[/system/priv-app/Telecom/lib/x86_64, /system/lib64, /system/vendor/lib64, /system/lib64, /system/vendor/lib64]]
+01-10 14:30:53.997  1930  1930 E LoadedApk: 	at dalvik.system.BaseDexClassLoader.findClass(BaseDexClassLoader.java:134)
+01-10 14:30:53.997  1930  1930 E LoadedApk: 	at java.lang.ClassLoader.loadClass(ClassLoader.java:379)
+01-10 14:30:53.997  1930  1930 E LoadedApk: 	at java.lang.ClassLoader.loadClass(ClassLoader.java:312)
+01-10 14:30:53.997  1930  1930 E LoadedApk: 	at android.app.LoadedApk.createAppFactory(LoadedApk.java:226)
+01-10 14:30:53.997  1930  1930 E LoadedApk: 	at android.app.LoadedApk.updateApplicationInfo(LoadedApk.java:338)
+01-10 14:30:53.997  1930  1930 E LoadedApk: 	at android.app.ActivityThread.handleApplicationInfoChanged(ActivityThread.java:5232)
+01-10 14:30:53.997  1930  1930 E LoadedApk: 	at android.app.ActivityThread$H.handleMessage(ActivityThread.java:1812)
+01-10 14:30:53.997  1930  1930 E LoadedApk: 	at android.os.Handler.dispatchMessage(Handler.java:106)
+01-10 14:30:53.997  1930  1930 E LoadedApk: 	at android.os.Looper.loop(Looper.java:193)
+01-10 14:30:53.997  1930  1930 E LoadedApk: 	at android.app.ActivityThread.main(ActivityThread.java:6840)
+01-10 14:30:53.997  1930  1930 E LoadedApk: 	at java.lang.reflect.Method.invoke(Native Method)
+01-10 14:30:53.997  1930  1930 E LoadedApk: 	at com.android.internal.os.RuntimeInit$MethodAndArgsCaller.run(RuntimeInit.java:493)
+01-10 14:30:53.997  1930  1930 E LoadedApk: 	at com.android.internal.os.ZygoteInit.main(ZygoteInit.java:860)
+01-10 14:30:54.186  1759  1759 E NotificationService: Muting recently noisy 0|com.android.server.telecom|1337|null|1000
+01-10 14:30:55.138  1759  1797 E KernelUidCpuFreqTimeReader: Failed to read /proc/uid_time_in_state: java.io.FileNotFoundException: /proc/uid_time_in_state (No such file or directory)
+01-10 14:30:55.158  1759  1797 E KernelCpuSpeedReader: Failed to read cpu-freq: /sys/devices/system/cpu/cpu0/cpufreq/stats/time_in_state (No such file or directory)
+01-10 14:30:55.160  1759  1797 E KernelWakelockReader: neither /proc/wakelocks nor /d/wakeup_sources exists
+01-10 14:30:55.896  1930  1930 E LoadedApk: Unable to instantiate appComponentFactory
+01-10 14:30:55.896  1930  1930 E LoadedApk: java.lang.ClassNotFoundException: Didn't find class "android.support.v4.app.CoreComponentFactory" on path: DexPathList[[],nativeLibraryDirectories=[/system/priv-app/Telecom/lib/x86_64, /system/lib64, /system/vendor/lib64, /system/lib64, /system/vendor/lib64]]
+01-10 14:30:55.896  1930  1930 E LoadedApk: 	at dalvik.system.BaseDexClassLoader.findClass(BaseDexClassLoader.java:134)
+01-10 14:30:55.896  1930  1930 E LoadedApk: 	at java.lang.ClassLoader.loadClass(ClassLoader.java:379)
+01-10 14:30:55.896  1930  1930 E LoadedApk: 	at java.lang.ClassLoader.loadClass(ClassLoader.java:312)
+01-10 14:30:55.896  1930  1930 E LoadedApk: 	at android.app.LoadedApk.createAppFactory(LoadedApk.java:226)
+01-10 14:30:55.896  1930  1930 E LoadedApk: 	at android.app.LoadedApk.updateApplicationInfo(LoadedApk.java:338)
+01-10 14:30:55.896  1930  1930 E LoadedApk: 	at android.app.ActivityThread.handleApplicationInfoChanged(ActivityThread.java:5232)
+01-10 14:30:55.896  1930  1930 E LoadedApk: 	at android.app.ActivityThread$H.handleMessage(ActivityThread.java:1812)
+01-10 14:30:55.896  1930  1930 E LoadedApk: 	at android.os.Handler.dispatchMessage(Handler.java:106)
+01-10 14:30:55.896  1930  1930 E LoadedApk: 	at android.os.Looper.loop(Looper.java:193)
+01-10 14:30:55.896  1930  1930 E LoadedApk: 	at android.app.ActivityThread.main(ActivityThread.java:6840)
+01-10 14:30:55.896  1930  1930 E LoadedApk: 	at java.lang.reflect.Method.invoke(Native Method)
+01-10 14:30:55.896  1930  1930 E LoadedApk: 	at com.android.internal.os.RuntimeInit$MethodAndArgsCaller.run(RuntimeInit.java:493)
+01-10 14:30:55.896  1930  1930 E LoadedApk: 	at com.android.internal.os.ZygoteInit.main(ZygoteInit.java:860)
+01-10 14:30:57.442  1759  1759 E NotificationService: Muting recently noisy 0|com.android.server.telecom|1337|null|1000
+01-10 14:30:58.146  1759  1759 E ActivityThread: Failed to find provider info for com.android.blockednumber
+01-10 14:31:05.412  1759  1759 E NotificationService: Muting recently noisy 0|com.android.server.telecom|1337|null|1000
+01-10 14:31:05.576  1759  1797 E KernelCpuSpeedReader: Failed to read cpu-freq: /sys/devices/system/cpu/cpu0/cpufreq/stats/time_in_state (No such file or directory)
+01-10 14:31:05.576  1759  1797 E KernelWakelockReader: neither /proc/wakelocks nor /d/wakeup_sources exists
+01-10 14:31:05.758  1759  1759 E ActivityThread: Failed to find provider info for com.android.blockednumber
+01-10 14:31:11.232  1759  2970 E LockSettingsStorage: Cannot read file java.io.FileNotFoundException: /data/system_de/0/spblob/850d1bb3d0fc61b2.weaver: open failed: ENOENT (No such file or directory)
+01-10 14:31:29.103  1591  1651 E storaged: getDiskStats failed with result NOT_SUPPORTED and size 0
+01-10 14:31:29.339  3272  3474 E SchedPolicy: set_timerslack_ns write failed: Operation not permitted
+01-10 14:31:29.443  3272  3609 E SchedPolicy: set_timerslack_ns write failed: Operation not permitted
+01-10 14:31:30.879  3272  3413 E ActivityThread: Failed to find provider info for com.android.launcher3.cornermark.unreadbadge
+--------- beginning of main
+01-10 14:31:38.800  4029  4029 E droid.apps.doc: Not starting debugger since process cannot load the jdwp agent.
+01-10 14:31:41.156  1348  1348 E SELinux : avc:  denied  { find } for service=tab pid=4029 uid=10065 scontext=u:r:untrusted_app:s0:c65,c256,c512,c768 tcontext=u:object_r:default_android_service:s0 tclass=service_manager permissive=1
+01-10 14:31:41.757  2417  2763 E FA-SVC  : Failed to get app instance id. appId: com.android.ld.appstore, java.util.concurrent.TimeoutException: ctmd.C(:com.google.android.gms@254730017@25.47.30 (100800-833691957):18)
+01-10 14:31:42.615  1759  1888 E NsdService: Failed to execute mdnssd [start-service]
+01-10 14:31:42.615  1759  1888 E NsdService: com.android.server.NativeDaemonConnector$NativeDaemonFailureException: command '1 mdnssd start-service' failed with '402 1 Service already running'
+01-10 14:31:42.615  1759  1888 E NsdService: 	at com.android.server.NativeDaemonConnector.executeForList(NativeDaemonConnector.java:515)
+01-10 14:31:42.615  1759  1888 E NsdService: 	at com.android.server.NativeDaemonConnector.execute(NativeDaemonConnector.java:411)
+01-10 14:31:42.615  1759  1888 E NsdService: 	at com.android.server.NativeDaemonConnector.execute(NativeDaemonConnector.java:406)
+01-10 14:31:42.615  1759  1888 E NsdService: 	at com.android.server.NsdService$DaemonConnection.execute(NsdService.java:698)
+01-10 14:31:42.615  1759  1888 E NsdService: 	at com.android.server.NsdService$DaemonConnection.start(NsdService.java:707)
+01-10 14:31:42.615  1759  1888 E NsdService: 	at com.android.server.NsdService$NsdStateMachine$EnabledState.processMessage(NsdService.java:259)
+01-10 14:31:42.615  1759  1888 E NsdService: 	at com.android.internal.util.StateMachine$SmHandler.processMsg(StateMachine.java:992)
+01-10 14:31:42.615  1759  1888 E NsdService: 	at com.android.internal.util.StateMachine$SmHandler.handleMessage(StateMachine.java:809)
+01-10 14:31:42.615  1759  1888 E NsdService: 	at android.os.Handler.dispatchMessage(Handler.java:106)
+01-10 14:31:42.615  1759  1888 E NsdService: 	at android.os.Looper.loop(Looper.java:193)
+01-10 14:31:42.615  1759  1888 E NsdService: 	at android.os.HandlerThread.run(HandlerThread.java:65)
+01-10 14:31:44.126  4029  4029 E DocsApplication: from onCreate Completable for sending summary about blocked SyncRequests
+01-10 14:31:44.126  4029  4029 E DocsApplication: java.lang.IllegalStateException
+01-10 14:31:44.126  4029  4029 E DocsApplication: 	at hao.i(PG:64)
+01-10 14:31:44.126  4029  4029 E DocsApplication: 	at gnl.lambda$onCreate$2(PG:281)
+01-10 14:31:44.126  4029  4029 E DocsApplication: 	at gnl.$r8$lambda$M-tqsz8QJK2QrqieVTlg-c3Lhbo(PG:1)
+01-10 14:31:44.126  4029  4029 E DocsApplication: 	at gni.run(PG:290)
+01-10 14:31:44.126  4029  4029 E DocsApplication: 	at zto.d(PG:13)
+01-10 14:31:44.126  4029  4029 E DocsApplication: 	at zrc.e(PG:3)
+01-10 14:31:44.126  4029  4029 E DocsApplication: 	at ztw$a.run(PG:3)
+01-10 14:31:44.126  4029  4029 E DocsApplication: 	at zrm$a.run(PG:10)
+01-10 14:31:44.126  4029  4029 E DocsApplication: 	at zxl.run(PG:14)
+01-10 14:31:44.126  4029  4029 E DocsApplication: 	at zxl.call(PG:1)
+01-10 14:31:44.126  4029  4029 E DocsApplication: 	at java.util.concurrent.FutureTask.run(FutureTask.java:266)
+01-10 14:31:44.126  4029  4029 E DocsApplication: 	at java.util.concurrent.ScheduledThreadPoolExecutor$ScheduledFutureTask.run(ScheduledThreadPoolExecutor.java:301)
+01-10 14:31:44.126  4029  4029 E DocsApplication: 	at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1167)
+01-10 14:31:44.126  4029  4029 E DocsApplication: 	at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:641)
+01-10 14:31:44.126  4029  4029 E DocsApplication: 	at java.lang.Thread.run(Thread.java:764)
+01-10 14:31:44.977  3779  3902 E GoogleApiManager: Failed to get service from broker. 
+01-10 14:31:44.977  3779  3902 E GoogleApiManager: java.lang.SecurityException: Unknown calling package name 'com.google.android.gms'.
+01-10 14:31:44.977  3779  3902 E GoogleApiManager: 	at android.os.Parcel.createException(Parcel.java:1950)
+01-10 14:31:44.977  3779  3902 E GoogleApiManager: 	at android.os.Parcel.readException(Parcel.java:1918)
+01-10 14:31:44.977  3779  3902 E GoogleApiManager: 	at android.os.Parcel.readException(Parcel.java:1868)
+01-10 14:31:44.977  3779  3902 E GoogleApiManager: 	at bbnk.a(:com.google.android.gms@254730017@25.47.30 (100800-833691957):36)
+01-10 14:31:44.977  3779  3902 E GoogleApiManager: 	at bbll.z(:com.google.android.gms@254730017@25.47.30 (100800-833691957):150)
+01-10 14:31:44.977  3779  3902 E GoogleApiManager: 	at baro.run(:com.google.android.gms@254730017@25.47.30 (100800-833691957):42)
+01-10 14:31:44.977  3779  3902 E GoogleApiManager: 	at android.os.Handler.handleCallback(Handler.java:873)
+01-10 14:31:44.977  3779  3902 E GoogleApiManager: 	at android.os.Handler.dispatchMessage(Handler.java:99)
+01-10 14:31:44.977  3779  3902 E GoogleApiManager: 	at cnat.lW(:com.google.android.gms@254730017@25.47.30 (100800-833691957):1)
+01-10 14:31:44.977  3779  3902 E GoogleApiManager: 	at cnat.dispatchMessage(:com.google.android.gms@254730017@25.47.30 (100800-833691957):5)
+01-10 14:31:44.977  3779  3902 E GoogleApiManager: 	at android.os.Looper.loop(Looper.java:193)
+01-10 14:31:44.977  3779  3902 E GoogleApiManager: 	at android.os.HandlerThread.run(HandlerThread.java:65)
+01-10 14:31:48.906  4029  4094 E FilePhenotypeFlags: Config package com.google.android.gms.gmscompliance cannot use FILE backing without declarative registration. See go/phenotype-android-integration#phenotype for more information. This will lead to stale flags.
+01-10 14:31:52.958  4029  4196 E GoogleApiManager: Failed to get service from broker. 
+01-10 14:31:52.958  4029  4196 E GoogleApiManager: java.lang.SecurityException: Unknown calling package name 'com.google.android.gms'.
+01-10 14:31:52.958  4029  4196 E GoogleApiManager: 	at android.os.Parcel.createException(Parcel.java:1950)
+01-10 14:31:52.958  4029  4196 E GoogleApiManager: 	at android.os.Parcel.readException(Parcel.java:1918)
+01-10 14:31:52.958  4029  4196 E GoogleApiManager: 	at android.os.Parcel.readException(Parcel.java:1868)
+01-10 14:31:52.958  4029  4196 E GoogleApiManager: 	at bbnk.a(:com.google.android.gms@254730017@25.47.30 (100800-833691957):36)
+01-10 14:31:52.958  4029  4196 E GoogleApiManager: 	at bbll.z(:com.google.android.gms@254730017@25.47.30 (100800-833691957):150)
+01-10 14:31:52.958  4029  4196 E GoogleApiManager: 	at baro.run(:com.google.android.gms@254730017@25.47.30 (100800-833691957):42)
+01-10 14:31:52.958  4029  4196 E GoogleApiManager: 	at android.os.Handler.handleCallback(Handler.java:873)
+01-10 14:31:52.958  4029  4196 E GoogleApiManager: 	at android.os.Handler.dispatchMessage(Handler.java:99)
+01-10 14:31:52.958  4029  4196 E GoogleApiManager: 	at cnat.lW(:com.google.android.gms@254730017@25.47.30 (100800-833691957):1)
+01-10 14:31:52.958  4029  4196 E GoogleApiManager: 	at cnat.dispatchMessage(:com.google.android.gms@254730017@25.47.30 (100800-833691957):5)
+01-10 14:31:52.958  4029  4196 E GoogleApiManager: 	at android.os.Looper.loop(Looper.java:193)
+01-10 14:31:52.958  4029  4196 E GoogleApiManager: 	at android.os.HandlerThread.run(HandlerThread.java:65)
+01-10 14:31:54.895  1349  1349 E SELinux : avc:  denied  { find } for interface=android.hardware.memtrack::IMemtrack sid=u:r:priv_app:s0:c512,c768 pid=2259 scontext=u:r:priv_app:s0:c512,c768 tcontext=u:object_r:hal_memtrack_hwservice:s0 tclass=hwservice_manager permissive=1
+01-10 14:31:55.374  4228  4228 E .android.chrom: Not starting debugger since process cannot load the jdwp agent.
+01-10 14:31:55.682  1348  1348 E SELinux : avc:  denied  { find } for service=tab pid=4228 uid=10048 scontext=u:r:untrusted_app:s0:c48,c256,c512,c768 tcontext=u:object_r:default_android_service:s0 tclass=service_manager permissive=1
+01-10 14:32:00.548  4276  4320 E com.facebook.GraphResponse: {HttpStatus: 400, errorCode: 190, subErrorCode: -1, errorType: OAuthException, errorMessage: Invalid OAuth access token signature.}
+01-10 14:32:00.701  4276  4276 E LD_LOG  : LDSdk loadDefaultsFromMetaData: appId: 100031 , appKey: 9cd4ba7e79502d098be050f4f350a3c4 , channelId: 100000 , sunChannelId:100001 , isTestHost: false
+01-10 14:32:00.883  4276  4276 E LD_LOG  : initSdk -> local sid = 00EMLGEWKGZD2A0E0PV3F0OFSGZW5WG8
+01-10 14:32:01.011  4276  4348 E LD_LOG  : LogFileUtils -> isDirCreated = true ,isFileCreated = true ,logFile = /storage/emulated/0/Android/data/com.android.ld.appstore/files/ldsdk/ld-open-sdk.txt
+01-10 14:32:01.805  4276  4312 E com.facebook.GraphResponse: {HttpStatus: 400, errorCode: 190, subErrorCode: -1, errorType: OAuthException, errorMessage: Invalid OAuth access token signature.}
+01-10 14:32:03.003  4276  4319 E LD_LOG  : cacheAndReturnIdentifiers: {"advertiserIdField":"0019cedb-b9f7-4f9b-b7ee-9b497f20302e","isTrackingLimited":false}
+01-10 14:32:03.017  4276  4312 E com.facebook.GraphResponse: {HttpStatus: 400, errorCode: 190, subErrorCode: -1, errorType: OAuthException, errorMessage: Invalid OAuth access token signature.}
+01-10 14:32:03.267  4276  4319 E com.facebook.GraphResponse: {HttpStatus: 400, errorCode: 190, subErrorCode: -1, errorType: OAuthException, errorMessage: Invalid OAuth access token signature.}
+01-10 14:32:03.407  4029  4196 E GoogleApiManager: Failed to get service from broker. 
+01-10 14:32:03.407  4029  4196 E GoogleApiManager: java.lang.SecurityException: Unknown calling package name 'com.google.android.gms'.
+01-10 14:32:03.407  4029  4196 E GoogleApiManager: 	at android.os.Parcel.createException(Parcel.java:1950)
+01-10 14:32:03.407  4029  4196 E GoogleApiManager: 	at android.os.Parcel.readException(Parcel.java:1918)
+01-10 14:32:03.407  4029  4196 E GoogleApiManager: 	at android.os.Parcel.readException(Parcel.java:1868)
+01-10 14:32:03.407  4029  4196 E GoogleApiManager: 	at bbnk.a(:com.google.android.gms@254730017@25.47.30 (100800-833691957):36)
+01-10 14:32:03.407  4029  4196 E GoogleApiManager: 	at bbll.z(:com.google.android.gms@254730017@25.47.30 (100800-833691957):150)
+01-10 14:32:03.407  4029  4196 E GoogleApiManager: 	at baro.run(:com.google.android.gms@254730017@25.47.30 (100800-833691957):42)
+01-10 14:32:03.407  4029  4196 E GoogleApiManager: 	at android.os.Handler.handleCallback(Handler.java:873)
+01-10 14:32:03.407  4029  4196 E GoogleApiManager: 	at android.os.Handler.dispatchMessage(Handler.java:99)
+01-10 14:32:03.407  4029  4196 E GoogleApiManager: 	at cnat.lW(:com.google.android.gms@254730017@25.47.30 (100800-833691957):1)
+01-10 14:32:03.407  4029  4196 E GoogleApiManager: 	at cnat.dispatchMessage(:com.google.android.gms@254730017@25.47.30 (100800-833691957):5)
+01-10 14:32:03.407  4029  4196 E GoogleApiManager: 	at android.os.Looper.loop(Looper.java:193)
+01-10 14:32:03.407  4029  4196 E GoogleApiManager: 	at android.os.HandlerThread.run(HandlerThread.java:65)
+01-10 14:32:03.519  4276  4312 E com.facebook.GraphResponse: {HttpStatus: 400, errorCode: 190, subErrorCode: -1, errorType: OAuthException, errorMessage: Invalid OAuth access token signature.}
+01-10 14:32:04.084  4276  4319 E com.facebook.GraphResponse: {HttpStatus: 400, errorCode: 190, subErrorCode: -1, errorType: OAuthException, errorMessage: Invalid OAuth access token signature.}
+01-10 14:32:07.198  1348  1348 E SELinux : avc:  denied  { find } for service=tab pid=4454 uid=10061 scontext=u:r:untrusted_app:s0:c61,c256,c512,c768 tcontext=u:object_r:default_android_service:s0 tclass=service_manager permissive=1
+01-10 14:32:07.793  4479  4479 E viders.calenda: Not starting debugger since process cannot load the jdwp agent.
+01-10 14:32:08.644  3006  4514 E Finsky:background: [130] ltz.accept(444): Error while updating Device-Consistency-Token header - android.content.ReceiverCallNotAllowedException: BroadcastReceiver components are not allowed to bind to services
+01-10 14:32:09.942  3006  4514 E Finsky:background: [130] ltz.accept(444): Error while updating Device-Consistency-Token header - android.content.ReceiverCallNotAllowedException: BroadcastReceiver components are not allowed to bind to services
+01-10 14:32:11.064  4531  4531 E id.defcontaine: Not starting debugger since process cannot load the jdwp agent.
+01-10 14:32:11.511  4454  4515 E eglCodecCommon: glUtilsParamSize: unknow param 0x000087fe
+01-10 14:32:11.637  4454  4515 E EGL_emulation: tid 4515: eglSurfaceAttrib(1493): error 0x3009 (EGL_BAD_MATCH)
+01-10 14:32:12.765  2417  4442 E DCU_ContactsLogService: Failed to mark incremental upload successful [CONTEXT service_id=135 ]
+01-10 14:32:12.765  2417  4442 E DCU_ContactsLogService: java.util.concurrent.ExecutionException: ephg: sync policy is not enabled
+01-10 14:32:12.765  2417  4442 E DCU_ContactsLogService: 	at fokm.j(:com.google.android.gms@254730017@25.47.30 (100800-833691957):21)
+01-10 14:32:12.765  2417  4442 E DCU_ContactsLogService: 	at fokv.u(:com.google.android.gms@254730017@25.47.30 (100800-833691957):71)
+01-10 14:32:12.765  2417  4442 E DCU_ContactsLogService: 	at com.google.android.gms.romanesco.service.ContactsLoggerUploadService.a(:com.google.android.gms@254730017@25.47.30 (100800-833691957):237)
+01-10 14:32:12.765  2417  4442 E DCU_ContactsLogService: 	at cncs.call(:com.google.android.gms@254730017@25.47.30 (100800-833691957):30)
+01-10 14:32:12.765  2417  4442 E DCU_ContactsLogService: 	at java.util.concurrent.FutureTask.run(FutureTask.java:266)
+01-10 14:32:12.765  2417  4442 E DCU_ContactsLogService: 	at bcgx.c(:com.google.android.gms@254730017@25.47.30 (100800-833691957):50)
+01-10 14:32:12.765  2417  4442 E DCU_ContactsLogService: 	at bcgx.run(:com.google.android.gms@254730017@25.47.30 (100800-833691957):73)
+01-10 14:32:12.765  2417  4442 E DCU_ContactsLogService: 	at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1167)
+01-10 14:32:12.765  2417  4442 E DCU_ContactsLogService: 	at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:641)
+01-10 14:32:12.765  2417  4442 E DCU_ContactsLogService: 	at bcmo.run(:com.google.android.gms@254730017@25.47.30 (100800-833691957):8)
+01-10 14:32:12.765  2417  4442 E DCU_ContactsLogService: 	at java.lang.Thread.run(Thread.java:764)
+01-10 14:32:12.765  2417  4442 E DCU_ContactsLogService: Caused by: ephg: sync policy is not enabled
+01-10 14:32:12.765  2417  4442 E DCU_ContactsLogService: 	at epep.a(:com.google.android.gms@254730017@25.47.30 (100800-833691957):167)
+01-10 14:32:12.765  2417  4442 E DCU_ContactsLogService: 	at fggw.a(:com.google.android.gms@254730017@25.47.30 (100800-833691957):13)
+01-10 14:32:12.765  2417  4442 E DCU_ContactsLogService: 	at fokx.d(:com.google.android.gms@254730017@25.47.30 (100800-833691957):3)
+01-10 14:32:12.765  2417  4442 E DCU_ContactsLogService: 	at fokz.run(:com.google.android.gms@254730017@25.47.30 (100800-833691957):38)
+01-10 14:32:12.765  2417  4442 E DCU_ContactsLogService: 	at foml.execute(:com.google.android.gms@254730017@25.47.30 (100800-833691957):1)
+01-10 14:32:12.765  2417  4442 E DCU_ContactsLogService: 	at fokm.f(:com.google.android.gms@254730017@25.47.30 (100800-833691957):1)
+01-10 14:32:12.765  2417  4442 E DCU_ContactsLogService: 	at fokm.m(:com.google.android.gms@254730017@25.47.30 (100800-833691957):99)
+01-10 14:32:12.765  2417  4442 E DCU_ContactsLogService: 	at fokm.q(:com.google.android.gms@254730017@25.47.30 (100800-833691957):13)
+01-10 14:32:12.765  2417  4442 E DCU_ContactsLogService: 	at foky.e(:com.google.android.gms@254730017@25.47.30 (100800-833691957):1)
+01-10 14:32:12.765  2417  4442 E DCU_ContactsLogService: 	at fokz.run(:com.google.android.gms@254730017@25.47.30 (100800-833691957):44)
+01-10 14:32:12.765  2417  4442 E DCU_ContactsLogService: 	at foml.execute(:com.google.android.gms@254730017@25.47.30 (100800-833691957):1)
+01-10 14:32:12.765  2417  4442 E DCU_ContactsLogService: 	at fokm.f(:com.google.android.gms@254730017@25.47.30 (100800-833691957):1)
+01-10 14:32:12.765  2417  4442 E DCU_ContactsLogService: 	at fokm.m(:com.google.android.gms@254730017@25.47.30 (100800-833691957):99)
+01-10 14:32:12.765  2417  4442 E DCU_ContactsLogService: 	at fokm.q(:com.google.android.gms@254730017@25.47.30 (100800-833691957):13)
+01-10 14:32:12.765  2417  4442 E DCU_ContactsLogService: 	at foke.run(:com.google.android.gms@254730017@25.47.30 (100800-833691957):120)
+01-10 14:32:12.765  2417  4442 E DCU_ContactsLogService: 	at foml.execute(:com.google.android.gms@254730017@25.47.30 (100800-833691957):1)
+01-10 14:32:12.765  2417  4442 E DCU_ContactsLogService: 	at fokm.f(:com.google.android.gms@254730017@25.47.30 (100800-833691957):1)
+01-10 14:32:12.765  2417  4442 E DCU_ContactsLogService: 	at fokm.m(:com.google.android.gms@254730017@25.47.30 (100800-833691957):99)
+01-10 14:32:12.765  2417  4442 E DCU_ContactsLogService: 	at fokm.q(:com.google.android.gms@254730017@25.47.30 (100800-833691957):13)
+01-10 14:32:12.765  2417  4442 E DCU_ContactsLogService: 	at foky.e(:com.google.android.gms@254730017@25.47.30 (100800-833691957):1)
+01-10 14:32:12.765  2417  4442 E DCU_ContactsLogService: 	at fokz.run(:com.google.android.gms@254730017@25.47.30 (100800-833691957):44)
+01-10 14:32:12.765  2417  4442 E DCU_ContactsLogService: 	at foml.execute(:com.google.android.gms@254730017@25.47.30 (100800-833691957):1)
+01-10 14:32:12.765  2417  4442 E DCU_ContactsLogService: 	at fokm.f(:com.google.android.gms@254730017@25.47.30 (100800-833691957):1)
+01-10 14:32:12.765  2417  4442 E DCU_ContactsLogService: 	at fokm.m(:com.google.android.gms@254730017@25.47.30 (100800-833691957):99)
+01-10 14:32:12.765  2417  4442 E DCU_ContactsLogService: 	at fokm.q(:com.google.android.gms@254730017@25.47.30 (100800-833691957):13)
+01-10 14:32:12.765  2417  4442 E DCU_ContactsLogService: 	at foky.e(:com.google.android.gms@254730017@25.47.30 (100800-833691957):1)
+01-10 14:32:12.765  2417  4442 E DCU_ContactsLogService: 	at fokz.run(:com.google.android.gms@254730017@25.47.30 (100800-833691957):44)
+01-10 14:32:12.765  2417  4442 E DCU_ContactsLogService: 	at foml.execute(:com.google.android.gms@254730017@25.47.30 (100800-833691957):1)
+01-10 14:32:12.765  2417  4442 E DCU_ContactsLogService: 	at fokm.f(:com.google.android.gms@254730017@25.47.30 (100800-833691957):1)
+01-10 14:32:12.765  2417  4442 E DCU_ContactsLogService: 	at fokm.m(:com.google.android.gms@254730017@25.47.30 (100800-833691957):99)
+01-10 14:32:12.765  2417  4442 E DCU_ContactsLogService: 	at fokm.t(:com.google.android.gms@254730017@25.47.30 (100800-833691957):26)
+01-10 14:32:12.765  2417  4442 E DCU_ContactsLogService: 	at foni.run(:com.google.android.gms@254730017@25.47.30 (100800-833691957):5)
+01-10 14:32:12.765  2417  4442 E DCU_ContactsLogService: 	at foml.execute(:com.google.android.gms@254730017@25.47.30 (100800-833691957):1)
+01-10 14:32:12.765  2417  4442 E DCU_ContactsLogService: 	at fokm.f(:com.google.android.gms@254730017@25.47.30 (100800-833691957):1)
+01-10 14:32:12.765  2417  4442 E DCU_ContactsLogService: 	at fokm.m(:com.google.android.gms@254730017@25.47.30 (100800-833691957):99)
+01-10 14:32:12.765  2417  4442 E DCU_ContactsLogService: 	at fokm.t(:com.google.android.gms@254730017@25.47.30 (100800-833691957):26)
+01-10 14:32:12.765  2417  4442 E DCU_ContactsLogService: 	at foni.run(:com.google.android.gms@254730017@25.47.30 (100800-833691957):5)
+01-10 14:32:12.765  2417  4442 E DCU_ContactsLogService: 	at foml.execute(:com.google.android.gms@254730017@25.47.30 (100800-833691957):1)
+01-10 14:32:12.765  2417  4442 E DCU_ContactsLogService: 	at fokm.f(:com.google.android.gms@254730017@25.47.30 (100800-833691957):1)
+01-10 14:32:12.765  2417  4442 E DCU_ContactsLogService: 	at fokm.m(:com.google.android.gms@254730017@25.47.30 (100800-833691957):99)
+01-10 14:32:12.765  2417  4442 E DCU_ContactsLogService: 	at fokm.t(:com.google.android.gms@254730017@25.47.30 (100800-833691957):26)
+01-10 14:32:12.765  2417  4442 E DCU_ContactsLogService: 	at foow.e(:com.google.android.gms@254730017@25.47.30 (100800-833691957):5)
+01-10 14:32:12.765  2417  4442 E DCU_ContactsLogService: 	at fonx.run(:com.google.android.gms@254730017@25.47.30 (100800-833691957):73)
+01-10 14:32:12.765  2417  4442 E DCU_ContactsLogService: 	at fooy.run(:com.google.android.gms@254730017@25.47.30 (100800-833691957):5)
+01-10 14:32:12.765  2417  4442 E DCU_ContactsLogService: 	at fomu.run(:com.google.android.gms@254730017@25.47.30 (100800-833691957):20)
+01-10 14:32:12.765  2417  4442 E DCU_ContactsLogService: 	... 6 more
+--------- beginning of crash
+01-10 14:32:15.546  4454  4454 E AndroidRuntime: FATAL EXCEPTION: main
+01-10 14:32:15.546  4454  4454 E AndroidRuntime: Process: com.habittracker, PID: 4454
+01-10 14:32:15.546  4454  4454 E AndroidRuntime: java.lang.ArrayIndexOutOfBoundsException: length=0; index=-5
+01-10 14:32:15.546  4454  4454 E AndroidRuntime: 	at androidx.compose.runtime.SlotTableKt.key(SlotTable.kt:3522)
+01-10 14:32:15.546  4454  4454 E AndroidRuntime: 	at androidx.compose.runtime.SlotTableKt.access$key(SlotTable.kt:1)
+01-10 14:32:15.546  4454  4454 E AndroidRuntime: 	at androidx.compose.runtime.SlotReader.groupKey(SlotTable.kt:957)
+01-10 14:32:15.546  4454  4454 E AndroidRuntime: 	at androidx.compose.runtime.ComposerImpl.end(Composer.kt:2357)
+01-10 14:32:15.546  4454  4454 E AndroidRuntime: 	at androidx.compose.runtime.ComposerImpl.endGroup(Composer.kt:1607)
+01-10 14:32:15.546  4454  4454 E AndroidRuntime: 	at androidx.compose.runtime.ComposerImpl.endRoot(Composer.kt:1483)
+01-10 14:32:15.546  4454  4454 E AndroidRuntime: 	at androidx.compose.runtime.ComposerImpl.doCompose(Composer.kt:3317)
+01-10 14:32:15.546  4454  4454 E AndroidRuntime: 	at androidx.compose.runtime.ComposerImpl.composeContent$runtime_release(Composer.kt:3235)
+01-10 14:32:15.546  4454  4454 E AndroidRuntime: 	at androidx.compose.runtime.CompositionImpl.composeContent(Composition.kt:725)
+01-10 14:32:15.546  4454  4454 E AndroidRuntime: 	at androidx.compose.runtime.Recomposer.composeInitial$runtime_release(Recomposer.kt:1071)
+01-10 14:32:15.546  4454  4454 E AndroidRuntime: 	at androidx.compose.runtime.ComposerImpl$CompositionContextImpl.composeInitial$runtime_release(Composer.kt:3599)
+01-10 14:32:15.546  4454  4454 E AndroidRuntime: 	at androidx.compose.runtime.ComposerImpl$CompositionContextImpl.composeInitial$runtime_release(Composer.kt:3599)
+01-10 14:32:15.546  4454  4454 E AndroidRuntime: 	at androidx.compose.runtime.CompositionImpl.composeInitial(Composition.kt:633)
+01-10 14:32:15.546  4454  4454 E AndroidRuntime: 	at androidx.compose.runtime.CompositionImpl.setContent(Composition.kt:619)
+01-10 14:32:15.546  4454  4454 E AndroidRuntime: 	at androidx.compose.ui.layout.LayoutNodeSubcompositionsState.subcomposeInto(SubcomposeLayout.kt:500)
+01-10 14:32:15.546  4454  4454 E AndroidRuntime: 	at androidx.compose.ui.layout.LayoutNodeSubcompositionsState.subcompose(SubcomposeLayout.kt:472)
+01-10 14:32:15.546  4454  4454 E AndroidRuntime: 	at androidx.compose.ui.layout.LayoutNodeSubcompositionsState.subcompose(SubcomposeLayout.kt:463)
+01-10 14:32:15.546  4454  4454 E AndroidRuntime: 	at androidx.compose.ui.layout.LayoutNodeSubcompositionsState.subcompose(SubcomposeLayout.kt:447)
+01-10 14:32:15.546  4454  4454 E AndroidRuntime: 	at androidx.compose.ui.layout.LayoutNodeSubcompositionsState$Scope.subcompose(SubcomposeLayout.kt:872)
+01-10 14:32:15.546  4454  4454 E AndroidRuntime: 	at androidx.compose.foundation.lazy.layout.LazyLayoutMeasureScopeImpl.measure-0kLqBqw(LazyLayoutMeasureScope.kt:125)
+01-10 14:32:15.546  4454  4454 E AndroidRuntime: 	at androidx.compose.foundation.lazy.LazyListMeasuredItemProvider.getAndMeasure(LazyListMeasuredItemProvider.kt:48)
+01-10 14:32:15.546  4454  4454 E AndroidRuntime: 	at androidx.compose.foundation.lazy.LazyListMeasureKt.measureLazyList-5IMabDg(LazyListMeasure.kt:195)
+01-10 14:32:15.546  4454  4454 E AndroidRuntime: 	at androidx.compose.foundation.lazy.LazyListKt$rememberLazyListMeasurePolicy$1$1.invoke-0kLqBqw(LazyList.kt:313)
+01-10 14:32:15.546  4454  4454 E AndroidRuntime: 	at androidx.compose.foundation.lazy.LazyListKt$rememberLazyListMeasurePolicy$1$1.invoke(LazyList.kt:178)
+01-10 14:32:15.546  4454  4454 E AndroidRuntime: 	at androidx.compose.foundation.lazy.layout.LazyLayoutKt$LazyLayout$3$2$1.invoke-0kLqBqw(LazyLayout.kt:107)
+01-10 14:32:15.546  4454  4454 E AndroidRuntime: 	at androidx.compose.foundation.lazy.layout.LazyLayoutKt$LazyLayout$3$2$1.invoke(LazyLayout.kt:100)
+01-10 14:32:15.546  4454  4454 E AndroidRuntime: 	at androidx.compose.ui.layout.LayoutNodeSubcompositionsState$createMeasurePolicy$1.measure-3p2s80s(SubcomposeLayout.kt:709)
+01-10 14:32:15.546  4454  4454 E AndroidRuntime: 	at androidx.compose.ui.node.InnerNodeCoordinator.measure-BRTryo0(InnerNodeCoordinator.kt:126)
+01-10 14:32:15.546  4454  4454 E AndroidRuntime: 	at androidx.compose.ui.graphics.SimpleGraphicsLayerModifier.measure-3p2s80s(GraphicsLayerModifier.kt:646)
+01-10 14:32:15.546  4454  4454 E AndroidRuntime: 	at androidx.compose.ui.node.LayoutModifierNodeCoordinator.measure-BRTryo0(LayoutModifierNodeCoordinator.kt:116)
+01-10 14:32:15.546  4454  4454 E AndroidRuntime: 	at androidx.compose.foundation.layout.FillNode.measure-3p2s80s(Size.kt:699)
+01-10 14:32:15.546  4454  4454 E AndroidRuntime: 	at androidx.compose.ui.node.LayoutModifierNodeCoordinator.measure-BRTryo0(LayoutModifierNodeCoordinator.kt:116)
+01-10 14:32:15.546  4454  4454 E AndroidRuntime: 	at androidx.compose.ui.node.LayoutNodeLayoutDelegate$performMeasureBlock$1.invoke(LayoutNodeLayoutDelegate.kt:252)
+01-10 14:32:15.546  4454  4454 E AndroidRuntime: 	at androidx.compose.ui.node.LayoutNodeLayoutDelegate$performMeasureBlock$1.invoke(LayoutNodeLayoutDelegate.kt:251)
+01-10 14:32:15.546  4454  4454 E AndroidRuntime: 	at androidx.compose.runtime.snapshots.Snapshot$Companion.observe(Snapshot.kt:2303)
+01-10 14:32:15.546  4454  4454 E AndroidRuntime: 	at androidx.compose.runtime.snapshots.SnapshotStateObserver$ObservedScopeMap.observe(SnapshotStateObserver.kt:500)
+01-10 14:32:15.546  4454  4454 E AndroidRuntime: 	at androidx.compose.runtime.snapshots.SnapshotStateObserver.observeReads(SnapshotStateObserver.kt:256)
+01-10 14:32:15.546  4454  4454 E AndroidRuntime: 	at androidx.compose.ui.node.OwnerSnapshotObserver.observeReads$ui_release(OwnerSnapshotObserver.kt:133)
+01-10 14:32:15.546  4454  4454 E AndroidRuntime: 	at androidx.compose.ui.node.OwnerSnapshotObserver.observeMeasureSnapshotReads$ui_release(OwnerSnapshotObserver.kt:113)
+01-10 14:32:15.546  4454  4454 E AndroidRuntime: 	at androidx.compose.ui.node.LayoutNodeLayoutDelegate.performMeasure-BRTryo0(LayoutNodeLayoutDelegate.kt:1617)
+01-10 14:32:15.547  4454  4454 E AndroidRuntime: 	at androidx.compose.ui.node.LayoutNodeLayoutDelegate.access$performMeasure-BRTryo0(LayoutNodeLayoutDelegate.kt:36)
+01-10 14:32:15.547  4454  4454 E AndroidRuntime: 	at androidx.compose.ui.node.LayoutNodeLayoutDelegate$MeasurePassDelegate.remeasure-BRTryo0(LayoutNodeLayoutDelegate.kt:620)
+01-10 14:32:15.547  4454  4454 E AndroidRuntime: 	at androidx.compose.ui.node.LayoutNodeLayoutDelegate$MeasurePassDelegate.measure-BRTryo0(LayoutNodeLayoutDelegate.kt:596)
+01-10 14:32:15.547  4454  4454 E AndroidRuntime: 	at androidx.compose.foundation.layout.BoxMeasurePolicy.measure-3p2s80s(Box.kt:122)
+01-10 14:32:15.547  4454  4454 E AndroidRuntime: 	at androidx.compose.ui.node.InnerNodeCoordinator.measure-BRTryo0(InnerNodeCoordinator.kt:126)
+01-10 14:32:15.547  4454  4454 E AndroidRuntime: 	at androidx.compose.foundation.layout.PaddingValuesModifier.measure-3p2s80s(Padding.kt:455)
+01-10 14:32:15.547  4454  4454 E AndroidRuntime: 	at androidx.compose.ui.node.LayoutModifierNodeCoordinator.measure-BRTryo0(LayoutModifierNodeCoordinator.kt:116)
+01-10 14:32:15.547  4454  4454 E AndroidRuntime: 	at androidx.compose.foundation.layout.FillNode.measure-3p2s80s(Size.kt:699)
+01-10 14:32:15.547  4454  4454 E AndroidRuntime: 	at androidx.compose.ui.node.LayoutModifierNodeCoordinator.measure-BRTryo0(LayoutModifierNodeCoordinator.kt:116)
+01-10 14:32:15.547  4454  4454 E AndroidRuntime: 	at androidx.compose.ui.node.LayoutNodeLayoutDelegate$performMeasureBlock$1.invoke(LayoutNodeLayoutDelegate.kt:252)
+01-10 14:32:15.547  4454  4454 E AndroidRuntime: 	at androidx.compose.ui.node.LayoutNodeLayoutDelegate$performMeasureBlock$1.invoke(LayoutNodeLayoutDelegate.kt:251)
+01-10 14:32:15.547  4454  4454 E AndroidRuntime: 	at androidx.compose.runtime.snapshots.Snapshot$Companion.observe(Snapshot.kt:2303)
+01-10 14:32:15.547  4454  4454 E AndroidRuntime: 	at androidx.compose.runtime.snapshots.SnapshotStateObserver$ObservedScopeMap.observe(SnapshotStateObserver.kt:500)
+01-10 14:32:15.547  4454  4454 E AndroidRuntime: 	at androidx.compose.runtime.snapshots.SnapshotStateObserver.observeReads(SnapshotStateObserver.kt:256)
+01-10 14:32:15.547  4454  4454 E AndroidRuntime: 	at androidx.compose.ui.node.OwnerSnapshotObserver.observeReads$ui_release(OwnerSnapshotObserver.kt:133)
+01-10 14:32:15.547  4454  4454 E AndroidRuntime: 	at androidx.compose.ui.node.OwnerSnapshotObserver.observeMeasureSnapshotReads$ui_release(OwnerSnapshotObserver.kt:113)
+01-10 14:32:15.547  4454  4454 E AndroidRuntime: 	at androidx.compose.ui.node.LayoutNodeLayoutDelegate.performMeasure-BRTryo0(LayoutNodeLayoutDelegate.kt:1617)
+01-10 14:32:15.547  4454  4454 E AndroidRuntime: 	at androidx.compose.ui.node.LayoutNodeLayoutDelegate.access$performMeasure-BRTryo0(LayoutNodeLayoutDelegate.kt:36)
+01-10 14:32:15.547  4454  4454 E AndroidRuntime: 	at androidx.compose.ui.node.LayoutNodeLayoutDelegate$MeasurePassDelegate.remeasure-BRTryo0(LayoutNodeLayoutDelegate.kt:620)
+01-10 14:32:15.547  4454  4454 E AndroidRuntime: 	at androidx.compose.ui.node.LayoutNodeLayoutDelegate$MeasurePassDelegate.measure-BRTryo0(LayoutNodeLayoutDelegate.kt:596)
+01-10 14:32:15.547  4454  4454 E AndroidRuntime: 	at androidx.compose.material3.ScaffoldKt$ScaffoldLayoutWithMeasureFix$1$1.invoke-0kLqBqw(Scaffold.kt:304)
+01-10 14:32:15.547  4454  4454 E AndroidRuntime: 	at androidx.compose.material3.ScaffoldKt$ScaffoldLayoutWithMeasureFix$1$1.invoke(Scaffold.kt:179)
+01-10 14:32:15.547  4454  4454 E AndroidRuntime: 	at androidx.compose.ui.layout.LayoutNodeSubcompositionsState$createMeasurePolicy$1.measure-3p2s80s(SubcomposeLayout.kt:709)
+01-10 14:32:15.547  4454  4454 E AndroidRuntime: 	at androidx.compose.ui.node.InnerNodeCoordinator.measure-BRTryo0(InnerNodeCoordinator.kt:126)
+01-10 14:32:15.547  4454  4454 E AndroidRuntime: 	at androidx.compose.ui.node.LayoutNodeLayoutDelegate$performMeasureBlock$1.invoke(LayoutNodeLayoutDelegate.kt:252)
+01-10 14:32:15.547  4454  4454 E AndroidRuntime: 	at androidx.compose.ui.node.LayoutNodeLayoutDelegate$performMeasureBlock$1.invoke(LayoutNodeLayoutDelegate.kt:251)
+01-10 14:32:15.547  4454  4454 E AndroidRuntime: 	at androidx.compose.runtime.snapshots.Snapshot$Companion.observe(Snapshot.kt:2303)
+01-10 14:32:15.547  4454  4454 E AndroidRuntime: 	at androidx.compose.runtime.snapshots.SnapshotStateObserver$ObservedScopeMap.observe(SnapshotStateObserver.kt:500)
+01-10 14:32:15.547  4454  4454 E AndroidRuntime: 	at androidx.compose.runtime.snapshots.SnapshotStateObserver.observeReads(SnapshotStateObserver.kt:256)
+01-10 14:32:15.547  4454  4454 E AndroidRuntime: 	at androidx.compose.ui.node.OwnerSnapshotObserver.observeReads$ui_release(OwnerSnapshotObserver.kt:133)
+01-10 14:32:15.547  4454  4454 E AndroidRuntime: 	at androidx.compose.ui.node.OwnerSnapshotObserver.observeMeasureSnapshotReads$ui_release(OwnerSnapshotObserver.kt:113)
+01-10 14:32:15.547  4454  4454 E AndroidRuntime: 	at androidx.compose.ui.node.LayoutNodeLayoutDelegate.performMeasure-BRTryo0(LayoutNodeLayoutDelegate.kt:1617)
+01-10 14:32:15.547  4454  4454 E AndroidRuntime: 	at androidx.compose.ui.node.LayoutNodeLayoutDelegate.access$performMeasure-BRTryo0(LayoutNodeLayoutDelegate.kt:36)
+01-10 14:32:15.547  4454  4454 E AndroidRuntime: 	at androidx.compose.ui.node.LayoutNodeLayoutDelegate$MeasurePassDelegate.remeasure-BRTryo0(LayoutNodeLayoutDelegate.kt:620)
+01-10 14:32:15.547  4454  4454 E AndroidRuntime: 	at androidx.compose.ui.node.LayoutNode.remeasure-_Sx5XlM$ui_release(LayoutNode.kt:1145)
+01-10 14:32:15.547  4454  4454 E AndroidRuntime: 	at androidx.compose.ui.node.LayoutNode.remeasure-_Sx5XlM$ui_release$default(LayoutNode.kt:1136)
+01-10 14:32:15.547  4454  4454 E AndroidRuntime: 	at androidx.compose.ui.node.MeasureAndLayoutDelegate.doRemeasure-sdFAvZA(MeasureAndLayoutDelegate.kt:356)
+01-10 14:32:15.548  4454  4454 E AndroidRuntime: 	at androidx.compose.ui.node.MeasureAndLayoutDelegate.remeasureAndRelayoutIfNeeded(MeasureAndLayoutDelegate.kt:514)
+01-10 14:32:15.548  4454  4454 E AndroidRuntime: 	at androidx.compose.ui.node.MeasureAndLayoutDelegate.onlyRemeasureIfScheduled(MeasureAndLayoutDelegate.kt:598)
+01-10 14:32:15.548  4454  4454 E AndroidRuntime: 	at androidx.compose.ui.node.MeasureAndLayoutDelegate.forceMeasureTheSubtreeInternal(MeasureAndLayoutDelegate.kt:624)
+01-10 14:32:15.548  4454  4454 E AndroidRuntime: 	at androidx.compose.ui.node.MeasureAndLayoutDelegate.forceMeasureTheSubtree(MeasureAndLayoutDelegate.kt:587)
+01-10 14:32:15.548  4454  4454 E AndroidRuntime: 	at androidx.compose.ui.platform.AndroidComposeView.forceMeasureTheSubtree(AndroidComposeView.android.kt:993)
+01-10 14:32:15.548  4454  4454 E AndroidRuntime: 	at androidx.compose.ui.node.Owner.forceMeasureTheSubtree$default(Owner.kt:239)
+01-10 14:32:15.548  4454  4454 E AndroidRuntime: 	at androidx.compose.ui.node.LayoutNodeLayoutDelegate$MeasurePassDelegate.remeasure-BRTryo0(LayoutNodeLayoutDelegate.kt:632)
+01-10 14:32:15.548  4454  4454 E AndroidRuntime: 	at androidx.compose.ui.node.LayoutNodeLayoutDelegate$MeasurePassDelegate.measure-BRTryo0(LayoutNodeLayoutDelegate.kt:596)
+01-10 14:32:15.548  4454  4454 E AndroidRuntime: 	at androidx.compose.animation.AnimatedEnterExitMeasurePolicy.measure-3p2s80s(AnimatedVisibility.kt:851)
+01-10 14:32:15.548  4454  4454 E AndroidRuntime: 	at androidx.compose.ui.node.InnerNodeCoordinator.measure-BRTryo0(InnerNodeCoordinator.kt:126)
+01-10 14:32:15.548  4454  4454 E AndroidRuntime: 	at androidx.compose.animation.EnterExitTransitionModifierNode.measure-3p2s80s(EnterExitTransition.kt:1156)
+01-10 14:32:15.548  4454  4454 E AndroidRuntime: 	at androidx.compose.ui.node.LayoutModifierNodeCoordinator.measure-BRTryo0(LayoutModifierNodeCoordinator.kt:116)
+01-10 14:32:15.548  4454  4454 E AndroidRuntime: 	at androidx.compose.ui.graphics.SimpleGraphicsLayerModifier.measure-3p2s80s(GraphicsLayerModifier.kt:646)
+01-10 14:32:15.548  4454  4454 E AndroidRuntime: 	at androidx.compose.ui.node.LayoutModifierNodeCoordinator.measure-BRTryo0(LayoutModifierNodeCoordinator.kt:116)
+01-10 14:32:15.548  4454  4454 E AndroidRuntime: 	at androidx.compose.animation.AnimatedContentKt$AnimatedContent$6$1$1.invoke-3p2s80s(AnimatedContent.kt:733)
+01-10 14:32:15.548  4454  4454 E AndroidRuntime: 	at androidx.compose.animation.AnimatedContentKt$AnimatedContent$6$1$1.invoke(AnimatedContent.kt:732)
+01-10 14:32:15.548  4454  4454 E AndroidRuntime: 	at androidx.compose.ui.layout.LayoutModifierImpl.measure-3p2s80s(LayoutModifier.kt:294)
+01-10 14:32:15.548  4454  4454 E AndroidRuntime: 	at androidx.compose.ui.node.LayoutModifierNodeCoordinator.measure-BRTryo0(LayoutModifierNodeCoordinator.kt:116)
+01-10 14:32:15.548  4454  4454 E AndroidRuntime: 	at androidx.compose.ui.node.LayoutNodeLayoutDelegate$performMeasureBlock$1.invoke(LayoutNodeLayoutDelegate.kt:252)
+01-10 14:32:15.548  4454  4454 E AndroidRuntime: 	at androidx.compose.ui.node.LayoutNodeLayoutDelegate$performMeasureBlock$1.invoke(LayoutNodeLayoutDelegate.kt:251)
+01-10 14:32:15.548  4454  4454 E AndroidRuntime: 	at androidx.compose.runtime.snapshots.Snapshot$Companion.observe(Snapshot.kt:2303)
+01-10 14:32:15.548  4454  4454 E AndroidRuntime: 	at androidx.compose.runtime.snapshots.SnapshotStateObserver$ObservedScopeMap.observe(SnapshotStateObserver.kt:500)
+01-10 14:32:15.548  4454  4454 E AndroidRuntime: 	at androidx.compose.runtime.snapshots.SnapshotStateObserver.observeReads(SnapshotStateObserver.kt:256)
+01-10 14:32:15.548  4454  4454 E AndroidRuntime: 	at androidx.compose.ui.node.OwnerSnapshotObserver.observeReads$ui_release(OwnerSnapshotObserver.kt:133)
+01-10 14:32:15.548  4454  4454 E AndroidRuntime: 	at androidx.compose.ui.node.OwnerSnapshotObserver.observeMeasureSnapshotReads$ui_release(OwnerSnapshotObserver.kt:113)
+01-10 14:32:15.548  4454  4454 E AndroidRuntime: 	at androidx.compose.ui.node.LayoutNodeLayoutDelegate.performMeasure-BRTryo0(LayoutNodeLayoutDelegate.kt:1617)
+01-10 14:32:15.548  4454  4454 E AndroidRuntime: 	at androidx.compose.ui.node.LayoutNodeLayoutDelegate.access$performMeasure-BRTryo0(LayoutNodeLayoutDelegate.kt:36)
+01-10 14:32:15.548  4454  4454 E AndroidRuntime: 	at androidx.compose.ui.node.LayoutNodeLayoutDelegate$MeasurePassDelegate.remeasure-BRTryo0(LayoutNodeLayoutDelegate.kt:620)
+01-10 14:32:15.548  4454  4454 E AndroidRuntime: 	at androidx.compose.ui.node.LayoutNode.remeasure-_Sx5XlM$ui_release(LayoutNode.kt:1145)
+01-10 14:32:15.548  4454  4454 E AndroidRuntime: 	at androidx.compose.ui.node.LayoutNode.remeasure-_Sx5XlM$ui_release$default(LayoutNode.kt:1136)
+01-10 14:32:15.548  4454  4454 E AndroidRuntime: 	at androidx.compose.ui.node.MeasureAndLayoutDelegate.doRemeasure-sdFAvZA(MeasureAndLayoutDelegate.kt:356)
+01-10 14:32:15.548  4454  4454 E AndroidRuntime: 	at androidx.compose.ui.node.MeasureAndLayoutDelegate.remeasureAndRelayoutIfNeeded(MeasureAndLayoutDelegate.kt:514)
+01-10 14:32:15.548  4454  4454 E AndroidRuntime: 	at androidx.compose.ui.node.MeasureAndLayoutDelegate.remeasureAndRelayoutIfNeeded$default(MeasureAndLayoutDelegate.kt:491)
+01-10 14:32:15.548  4454  4454 E AndroidRuntime: 	at androidx.compose.ui.node.MeasureAndLayoutDelegate.measureAndLayout(MeasureAndLayoutDelegate.kt:377)
+01-10 14:32:15.548  4454  4454 E AndroidRuntime: 	at androidx.compose.ui.platform.AndroidComposeView.measureAndLayout(AndroidComposeView.android.kt:971)
+01-10 14:32:15.548  4454  4454 E AndroidRuntime: 	at androidx.compose.ui.node.Owner.measureAndLayout$default(Owner.kt:228)
+01-10 14:32:15.548  4454  4454 E AndroidRuntime: 	at androidx.compose.ui.platform.AndroidComposeView.dispatchDraw(AndroidComposeView.android.kt:1224)
+01-10 14:32:15.549  4454  4454 E AndroidRuntime: 	at android.view.View.draw(View.java:20224)
+01-10 14:32:15.549  4454  4454 E AndroidRuntime: 	at android.view.View.updateDisplayListIfDirty(View.java:19096)
+01-10 14:32:15.549  4454  4454 E AndroidRuntime: 	at android.view.ViewGroup.recreateChildDisplayList(ViewGroup.java:4349)
+01-10 14:32:15.549  4454  4454 E AndroidRuntime: 	at android.view.ViewGroup.dispatchGetDisplayList(ViewGroup.java:4322)
+01-10 14:32:15.549  4454  4454 E AndroidRuntime: 	at android.view.View.updateDisplayListIfDirty(View.java:19056)
+01-10 14:32:15.549  4454  4454 E AndroidRuntime: 	at android.view.ViewGroup.recreateChildDisplayList(ViewGroup.java:4349)
+01-10 14:32:15.549  4454  4454 E AndroidRuntime: 	at android.view.ViewGroup.dispatchGetDisplayList(ViewGroup.java:4322)
+01-10 14:32:15.549  4454  4454 E AndroidRuntime: 	at android.view.View.updateDisplayListIfDirty(View.java:19056)
+01-10 14:32:15.549  4454  4454 E AndroidRuntime: 	at android.view.ViewGroup.recreateChildDisplayList(ViewGroup.java:4349)
+01-10 14:32:15.549  4454  4454 E AndroidRuntime: 	at android.view.ViewGroup.dispatchGetDisplayList(ViewGroup.java:4322)
+01-10 14:32:15.549  4454  4454 E AndroidRuntime: 	at android.view.View.updateDisplayListIfDirty(View.java:19056)
+01-10 14:32:15.549  4454  4454 E AndroidRuntime: 	at android.view.ViewGroup.recreateChildDisplayList(ViewGroup.java:4349)
+01-10 14:32:15.549  4454  4454 E AndroidRuntime: 	at android.view.ViewGroup.dispatchGetDisplayList(ViewGroup.java:4322)
+01-10 14:32:15.549  4454  4454 E AndroidRuntime: 	at android.view.View.updateDisplayListIfDirty(View.java:19056)
+01-10 14:32:15.549  4454  4454 E AndroidRuntime: 	at android.view.ThreadedRenderer.updateViewTreeDisplayList(ThreadedRenderer.java:686)
+01-10 14:32:15.549  4454  4454 E AndroidRuntime: 	at android.view.ThreadedRenderer.updateRootDisplayList(ThreadedRenderer.java:692)
+01-10 14:32:15.549  4454  4454 E AndroidRuntime: 	at android.view.ThreadedRenderer.draw(ThreadedRenderer.java:801)
+01-10 14:32:15.549  4454  4454 E AndroidRuntime: 	at android.view.ViewRootImpl.draw(ViewRootImpl.java:3318)
+01-10 14:32:15.549  4454  4454 E AndroidRuntime: 	at android.view.ViewRootImpl.performDraw(ViewRootImpl.java:3122)
+01-10 14:32:15.549  4454  4454 E AndroidRuntime: 	at android.view.ViewRootImpl.performTraversals(ViewRootImpl.java:2481)
+01-10 14:32:15.549  4454  4454 E AndroidRuntime: 	at android.view.ViewRootImpl.doTraversal(ViewRootImpl.java:1463)
+01-10 14:32:15.549  4454  4454 E AndroidRuntime: 	at android.view.ViewRootImpl$TraversalRunnable.run(ViewRootImpl.java:7190)
+01-10 14:32:15.549  4454  4454 E AndroidRuntime: 	at android.view.Choreographer$CallbackRecord.run(Choreographer.java:949)
+01-10 14:32:15.549  4454  4454 E AndroidRuntime: 	at android.view.Choreographer.doCallbacks(Choreographer.java:761)
+01-10 14:32:15.549  4454  4454 E AndroidRuntime: 	at android.view.Choreographer.doFrame(Choreographer.java:696)
+01-10 14:32:15.549  4454  4454 E AndroidRuntime: 	at android.view.Choreographer$FrameDisplayEventReceiver.run(Choreographer.java:935)
+01-10 14:32:15.549  4454  4454 E AndroidRuntime: 	at android.os.Handler.handleCallback(Handler.java:873)
+01-10 14:32:15.549  4454  4454 E AndroidRuntime: 	at android.os.Handler.dispatchMessage(Handler.java:99)
+01-10 14:32:15.549  4454  4454 E AndroidRuntime: 	at android.os.Looper.loop(Looper.java:193)
+01-10 14:32:15.549  4454  4454 E AndroidRuntime: 	at android.app.ActivityThread.main(ActivityThread.java:6840)
+01-10 14:32:15.549  4454  4454 E AndroidRuntime: 	at java.lang.reflect.Method.invoke(Native Method)
+01-10 14:32:15.549  4454  4454 E AndroidRuntime: 	at com.android.internal.os.RuntimeInit$MethodAndArgsCaller.run(RuntimeInit.java:493)
+01-10 14:32:15.549  4454  4454 E AndroidRuntime: 	at com.android.internal.os.ZygoteInit.main(ZygoteInit.java:860)
+01-10 14:32:16.032  2656  2806 E EGL_emulation: tid 2806: eglSurfaceAttrib(1493): error 0x3009 (EGL_BAD_MATCH)
+01-10 14:32:18.886  1583  1844 E         : Couldn't opendir /data/app/vmdl1538399893.tmp: No such file or directory
+01-10 14:32:18.886  1583  1844 E installd: Failed to delete /data/app/vmdl1538399893.tmp: No such file or directory
+01-10 14:32:20.557  3681  3975 E memtrack: Couldn't load memtrack module
+01-10 14:32:20.582  4592  4592 E ndroid.keychai: Not starting debugger since process cannot load the jdwp agent.
+01-10 14:32:20.608  4597  4597 E droid.gallery3: Not starting debugger since process cannot load the jdwp agent.
+01-10 14:32:26.246  4660  4692 E HostConnection: /data/local/cfg-yhind/gl_force format error! com.ncsoft.lineagen gl
+01-10 14:32:26.246  4660  4692 E HostConnection: /data/local/cfg-yhind/gl_force format error! com.vng.thiennhaiminhnguyetdaovng gl
+01-10 14:32:26.246  4660  4692 E HostConnection: /data/local/cfg-yhind/gl_force format error! com.proximabeta.tdm.kr gl
+01-10 14:32:26.246  4660  4692 E HostConnection: /data/local/cfg-yhind/gl_force format error! com.proximabeta.tdm.kr.cloud gl
+01-10 14:32:26.246  4660  4692 E HostConnection: /data/local/cfg-yhind/gl_force format error! com.proximabeta.tdm.kr.onestore gl
+01-10 14:32:26.246  4660  4692 E HostConnection: /data/local/cfg-yhind/gl_force format error! com.tencent.tmgp.wuxia gl
+01-10 14:32:26.246  4660  4692 E HostConnection: /data/local/cfg-yhind/gl_force format error! com.qqsy.gundam.ld gl
+01-10 14:32:26.246  4660  4692 E HostConnection: /data/local/cfg-yhind/gl_force format error! com.qqsy.gundam gl
+01-10 14:32:26.246  4660  4692 E HostConnection: /data/local/cfg-yhind/gl_force format error! com.gravity.cute.tw.testand gl
+01-10 14:32:26.246  4660  4692 E HostConnection: /data/local/cfg-yhind/gl_force format error! com.cayenne.gvl gl
+01-10 14:32:26.246  4660  4692 E HostConnection: /data/local/cfg-yhind/gl_force format error! com.netmarble.tskgb gl
+01-10 14:32:26.246  4660  4692 E HostConnection: /data/local/cfg-yhind/gl_force format error! com.longe.racehmt gl
+01-10 14:32:26.246  4660  4692 E HostConnection: /data/local/cfg-yhind/gl_force format error! com.gvi.robegins.aos gl
+01-10 14:32:26.246  4660  4692 E HostConnection: /data/local/cfg-yhind/gl_force format error! com.studiocodedragon.projectss gl
+01-10 14:32:26.246  4660  4692 E HostConnection: /data/local/cfg-yhind/gl_force format error! com.jingxiu.hygd gl
+01-10 14:32:26.246  4660  4692 E HostConnection: /data/local/cfg-yhind/gl_force format error! com.playwith.nsealm.tw.googl gl
+01-10 14:32:26.246  4660  4692 E HostConnection: /data/local/cfg-yhind/gl_force format error! com.playwith.sealm.kr.googl gl
+01-10 14:32:26.246  4660  4692 E HostConnection: /data/local/cfg-yhind/gl_force format error! com.gravity.cute.tw.and gl
+01-10 14:32:26.246  4660  4692 E HostConnection: /data/local/cfg-yhind/gl_force format error! com.forgefun.redcovenant gl
+01-10 14:32:26.246  4660  4692 E HostConnection: /data/local/cfg-yhind/gl_force format error! com.silkroad.mb gl
+01-10 14:32:26.246  4660  4692 E HostConnection: /data/local/cfg-yhind/gl_force format error! com.vortexgravity.bealive.ld gl
+01-10 14:32:26.246  4660  4692 E HostConnection: /data/local/cfg-yhind/gl_force format error! com.com2usholdings.soulstrike.android.google.global.normal gl
+01-10 14:32:26.246  4660  4692 E HostConnection: /data/local/cfg-yhind/gl_force format error! com.cobby.lonelysurvivor gl
+01-10 14:32:26.246  4660  4692 E HostConnection: /data/local/cfg-yhind/gl_force format error! com.cmge.ltqrc gl
+01-10 14:32:26.246  4660  4692 E HostConnection: /data/local/cfg-yhind/gl_force format error! com.cmge.ltqrc.ld gl
+01-10 14:32:26.246  4660  4692 E HostConnection: /data/local/cfg-yhind/gl_force format error! com.seasun.jxqy0.jsgf.xsj gl
+01-10 14:32:26.246  4660  4692 E HostConnection: /data/local/cfg-yhind/gl_force format error! com.seasun.jxqy0.huawei gl
+01-10 14:32:26.246  4660  4692 E HostConnection: /data/local/cfg-yhind/gl_force format error! com.mobigame.tt12 gl
+01-10 14:32:26.246  4660  4692 E HostConnection: /data/local/cfg-yhind/gl_force format error! com.kaneten.client.and gl
+01-10 14:32:26.246  4660  4692 E HostConnection: /data/local/cfg-yhind/gl_force format error! com.playwith.rohan2.kr gl
+01-10 14:32:26.246  4660  4692 E HostConnection: /data/local/cfg-yhind/gl_force format error! com.linecorp.LGATF gl
+01-10 14:32:26.246  4660  4692 E HostConnection: /data/local/cfg-yhind/gl_force format error! com.atknsyl.weaponmaster gl
+01-10 14:32:26.246  4660  4692 E HostConnection: /data/local/cfg-yhind/gl_force format error! com.blizzard.diablo.immortal gl
+01-10 14:32:26.246  4660  4692 E HostConnection: /data/local/cfg-yhind/gl_force format error! com.netease.dfjssea gl
+01-10 14:32:26.246  4660  4692 E HostConnection: /data/local/cfg-yhind/gl_force format error! com.netease.dfjsjp gl
+01-10 14:32:26.246  4660  4692 E HostConnection: /data/local/cfg-yhind/gl_force format error! com.netease.dfjskr gl
+01-10 14:32:26.246  4660  4692 E HostConnection: /data/local/cfg-yhind/gl_force format error! jp.co.applibot.chiikawapocketgl gl
+01-10 14:32:26.246  4660  4692 E HostConnection: /data/local/cfg-yhind/gl_force format error! jp.co.applibot.chiikawapocket gl
+01-10 14:32:26.246  4660  4692 E HostConnection: /data/local/cfg-yhind/gl_force format error! com.kakaogames.pcr gl
+01-10 14:32:26.246  4660  4692 E HostConnection: /data/local/cfg-yhind/gl_force format error! com.kakaogames.eversoul gl
+01-10 14:32:26.246  4660  4692 E HostConnection: /data/local/cfg-yhind/gl_force format error! com.kakaogames.eversouljp gl
+01-10 14:32:26.246  4660  4692 E HostConnection: /data/local/cfg-yhind/gl_force format error! com.ntrance.dkr.and gl
+01-10 14:32:26.246  4660  4692 E HostConnection: /data/local/cfg-yhind/gl_force format error! com.zlongame.eversoul gl
+01-10 14:32:26.246  4660  4692 E HostConnection: /data/local/cfg-yhind/gl_force format error! com.Chillgaming.oneState gl
+01-10 14:32:26.246  4660  4692 E HostConnection: /data/local/cfg-yhind/gl_force format error! com.activision.callofduty.shooter gl
+01-10 14:32:26.246  4660  4692 E HostConnection: /data/local/cfg-yhind/gl_force format error! com.garena.game.codm gl
+01-10 14:32:26.246  4660  4692 E HostConnection: /data/local/cfg-yhind/gl_force format error! com.vng.codmvn gl
+01-10 14:32:26.246  4660  4692 E HostConnection: /data/local/cfg-yhind/gl_force format error! com.VIIBYTE.RivalisAcademiaNexus gl
+01-10 14:32:26.246  4660  4692 E HostConnection: /data/local/cfg-yhind/gl_force format error! com.qjsjqy.ld gl
+01-10 14:32:26.246  4660  4692 E HostConnection: /data/local/cfg-yhind/gl_force format error! com.dragonli.projectsnow gl
+01-10 14:32:26.246  4660  4692 E HostConnection: /data/local/cfg-yhind/gl_force format error! com.netmarble.kofafk gl
+01-10 14:32:26.246  4660  4692 E HostConnection: /data/local/cfg-yhind/gl_force format error! com.greenmushroom.boomblitz.gp gl
+01-10 14:32:26.246  4660  4692 E HostConnection: /data/local/cfg-yhind/gl_force format error! com.hermes.p6gameos gl
+01-10 14:32:26.246  4660  4692 E HostConnection: /data/local/cfg-yhind/gl_force format error! com.crystal.usad gl
+01-10 14:32:26.246  4660  4692 E HostConnection: /data/local/cfg-yhind/gl_force format error! com.jingxiu.yanwu gl
+01-10 14:32:26.246  4660  4692 E HostConnection: /data/local/cfg-yhind/gl_force format error! com.playhardlab.heroes gl
+01-10 14:32:26.246  4660  4692 E HostConnection: /data/local/cfg-yhind/gl_force format error! com.topgamestudio.americanblocksnipersurvival.jf gl
+01-10 14:32:26.246  4660  4692 E HostConnection: /data/local/cfg-yhind/gl_force format error! vng.games.gs1.phongthan.mobile.com gl
+01-10 14:32:26.246  4660  4692 E HostConnection: /data/local/cfg-yhind/gl_force format error! com.userjoy.szm gl
+01-10 14:32:26.246  4660  4692 E HostConnection: /data/local/cfg-yhind/gl_force format error! com.netease.yzs gl
+01-10 14:32:26.246  4660  4692 E HostConnection: /data/local/cfg-yhind/gl_force format error! com.korea.tamamonkr.google gl
+01-10 14:32:26.246  4660  4692 E HostConnection: /data/local/cfg-yhind/gl_force format error! com.huanxi.datulong gl
+01-10 14:32:26.246  4660  4692 E HostConnection: /data/local/cfg-yhind/gl_force format error! com.com2us.legendsummoner.android.google.global.normal gl
+01-10 14:32:26.246  4660  4692 E HostConnection: /data/local/cfg-yhind/gl_force format error! com.metek.atm2 gl
+01-10 14:32:26.246  4660  4692 E HostConnection: /data/local/cfg-yhind/gl_force format error! com.huiqi.mrby gl
+01-10 14:32:26.246  4660  4692 E HostConnection: /data/local/cfg-yhind/gl_force format error! com.tencent.wlfz gl
+01-10 14:32:26.246  4660  4692 E HostConnection: /data/local/cfg-yhind/gl_force format error! com.yh.hunter4.firstformal gl
+01-10 14:32:26.246  4660  4692 E HostConnection: /data/local/cfg-yhind/gl_force format error! com.phonecoolgame.sanguo gl
+01-10 14:32:26.246  4660  4692 E HostConnection: /data/local/cfg-yhind/gl_force format error! com.epidgames.trickcalrevive gl
+01-10 14:32:26.246  4660  4692 E HostConnection: /data/local/cfg-yhind/gl_force format error! com.tanle.sycq gl
+01-10 14:32:26.246  4660  4692 E HostConnection: /data/local/cfg-yhind/gl_force format error! com.youzu.djlw gl
+01-10 14:32:26.246  4660  4692 E HostConnection: /data/local/cfg-yhind/gl_force format error! com.happyelements.rxr gl
+01-10 14:32:26.246  4660  4692 E HostConnection: /data/local/cfg-yhind/gl_force format error! com.tencent.zd gl
+01-10 14:32:26.246  4660  4692 E HostConnection: /data/local/cfg-yhind/gl_force format error! com.leisure.tw gl
+01-10 14:32:26.246  4660  4692 E HostConnection: /data/local/cfg-yhind/gl_force format error! aos.playpark.ygc gl
+01-10 14:32:26.247  4660  4692 E HostConnection: /data/local/cfg-yhind/gl_force format error! com.zhuyue.dungeon4 gl
+01-10 14:32:26.247  4660  4692 E HostConnection: /data/local/cfg-yhind/gl_force format error! com.sunking.as3d gl
+01-10 14:32:26.247  4660  4692 E HostConnection: /data/local/cfg-yhind/gl_force format error! com.ncsoft.bsh gl
+01-10 14:32:26.247  4660  4692 E HostConnection: /data/local/cfg-yhind/gl_force format error! com.zengame.hlmjhdj gl
+01-10 14:32:26.247  4660  4692 E HostConnection: /data/local/cfg-yhind/gl_force format error! com.zengame.zjscmj gl
+01-10 14:32:26.247  4660  4692 E HostConnection: /data/local/cfg-yhind/gl_force format error! com.leduo.zjscmj gl
+01-10 14:32:26.247  4660  4692 E HostConnection: /data/local/cfg-yhind/gl_force format error! com.tencent.tmgp.scmjxzddnew gl
+01-10 14:32:26.247  4660  4692 E HostConnection: /data/local/cfg-yhind/gl_force format error! com.drivezone.car.race.game gl
+01-10 14:32:26.247  4660  4692 E HostConnection: /data/local/cfg-yhind/gl_force format error! com.game.sgzzqtxsy gl
+01-10 14:32:26.247  4660  4692 E HostConnection: /data/local/cfg-yhind/gl_force format error! com.leduo.ttmjdjb gl
+01-10 14:32:26.247  4660  4692 E HostConnection: /data/local/cfg-yhind/gl_force format error! com.hygame.mhxy.tw.gp gl
+01-10 14:32:26.247  4660  4692 E HostConnection: /data/local/cfg-yhind/gl_force format error! com.hxen.ld gl
+01-10 14:32:26.247  4660  4692 E HostConnection: /data/local/cfg-yhind/gl_force format error! com.leduo.ttmjdjb.p234 gl
+01-10 14:32:26.247  4660  4692 E HostConnection: /data/local/cfg-yhind/gl_force format error! com.kt.ld gl
+01-10 14:32:26.247  4660  4692 E HostConnection: /data/local/cfg-yhind/gl_force format error! gg.maxion.knt.and gl
+01-10 14:32:26.247  4660  4692 E HostConnection: /data/local/cfg-yhind/gl_force format error! com.wwjd.ld gl
+01-10 14:32:26.247  4660  4692 E HostConnection: /data/local/cfg-yhind/gl_force format error! com.uwocn.aos gl
+01-10 14:32:26.247  4660  4692 E HostConnection: /data/local/cfg-yhind/gl_force format error! com.joycrit.wac.and.ru.ld gl
+01-10 14:32:26.247  4660  4692 E HostConnection: /data/local/cfg-yhind/gl_force format error! com.hx.interactive gl
+01-10 14:32:26.247  4660  4692 E HostConnection: /data/local/cfg-yhind/gl_force format error! com.chinesegamer.xqj gl
+01-10 14:32:26.286  4660  4692 E eglCodecCommon: glUtilsParamSize: unknow param 0x000082da
+01-10 14:32:26.286  4660  4692 E eglCodecCommon: glUtilsParamSize: unknow param 0x000082e5
+01-10 14:32:26.293  4660  4692 E eglCodecCommon: glUtilsParamSize: unknow param 0x00008c29
+01-10 14:32:26.294  4660  4692 E eglCodecCommon: glUtilsParamSize: unknow param 0x000087fe
+01-10 14:32:26.387  4660  4692 E EGL_emulation: tid 4692: eglSurfaceAttrib(1493): error 0x3009 (EGL_BAD_MATCH)
+01-10 14:32:29.105  1591  1651 E storaged: getDiskStats failed with result NOT_SUPPORTED and size 0
+01-10 14:32:31.937  4660  4660 E AndroidRuntime: FATAL EXCEPTION: main
+01-10 14:32:31.937  4660  4660 E AndroidRuntime: Process: com.habittracker, PID: 4660
+01-10 14:32:31.937  4660  4660 E AndroidRuntime: java.lang.ArrayIndexOutOfBoundsException: length=0; index=-5
+01-10 14:32:31.937  4660  4660 E AndroidRuntime: 	at androidx.compose.runtime.SlotTableKt.key(SlotTable.kt:3522)
+01-10 14:32:31.937  4660  4660 E AndroidRuntime: 	at androidx.compose.runtime.SlotTableKt.access$key(SlotTable.kt:1)
+01-10 14:32:31.937  4660  4660 E AndroidRuntime: 	at androidx.compose.runtime.SlotReader.groupKey(SlotTable.kt:957)
+01-10 14:32:31.937  4660  4660 E AndroidRuntime: 	at androidx.compose.runtime.ComposerImpl.end(Composer.kt:2357)
+01-10 14:32:31.937  4660  4660 E AndroidRuntime: 	at androidx.compose.runtime.ComposerImpl.endGroup(Composer.kt:1607)
+01-10 14:32:31.937  4660  4660 E AndroidRuntime: 	at androidx.compose.runtime.ComposerImpl.endRoot(Composer.kt:1483)
+01-10 14:32:31.937  4660  4660 E AndroidRuntime: 	at androidx.compose.runtime.ComposerImpl.doCompose(Composer.kt:3317)
+01-10 14:32:31.937  4660  4660 E AndroidRuntime: 	at androidx.compose.runtime.ComposerImpl.composeContent$runtime_release(Composer.kt:3235)
+01-10 14:32:31.937  4660  4660 E AndroidRuntime: 	at androidx.compose.runtime.CompositionImpl.composeContent(Composition.kt:725)
+01-10 14:32:31.937  4660  4660 E AndroidRuntime: 	at androidx.compose.runtime.Recomposer.composeInitial$runtime_release(Recomposer.kt:1071)
+01-10 14:32:31.937  4660  4660 E AndroidRuntime: 	at androidx.compose.runtime.ComposerImpl$CompositionContextImpl.composeInitial$runtime_release(Composer.kt:3599)
+01-10 14:32:31.937  4660  4660 E AndroidRuntime: 	at androidx.compose.runtime.ComposerImpl$CompositionContextImpl.composeInitial$runtime_release(Composer.kt:3599)
+01-10 14:32:31.937  4660  4660 E AndroidRuntime: 	at androidx.compose.runtime.CompositionImpl.composeInitial(Composition.kt:633)
+01-10 14:32:31.937  4660  4660 E AndroidRuntime: 	at androidx.compose.runtime.CompositionImpl.setContent(Composition.kt:619)
+01-10 14:32:31.937  4660  4660 E AndroidRuntime: 	at androidx.compose.ui.layout.LayoutNodeSubcompositionsState.subcomposeInto(SubcomposeLayout.kt:500)
+01-10 14:32:31.937  4660  4660 E AndroidRuntime: 	at androidx.compose.ui.layout.LayoutNodeSubcompositionsState.subcompose(SubcomposeLayout.kt:472)
+01-10 14:32:31.937  4660  4660 E AndroidRuntime: 	at androidx.compose.ui.layout.LayoutNodeSubcompositionsState.subcompose(SubcomposeLayout.kt:463)
+01-10 14:32:31.937  4660  4660 E AndroidRuntime: 	at androidx.compose.ui.layout.LayoutNodeSubcompositionsState.subcompose(SubcomposeLayout.kt:447)
+01-10 14:32:31.937  4660  4660 E AndroidRuntime: 	at androidx.compose.ui.layout.LayoutNodeSubcompositionsState$Scope.subcompose(SubcomposeLayout.kt:872)
+01-10 14:32:31.937  4660  4660 E AndroidRuntime: 	at androidx.compose.foundation.lazy.layout.LazyLayoutMeasureScopeImpl.measure-0kLqBqw(LazyLayoutMeasureScope.kt:125)
+01-10 14:32:31.937  4660  4660 E AndroidRuntime: 	at androidx.compose.foundation.lazy.LazyListMeasuredItemProvider.getAndMeasure(LazyListMeasuredItemProvider.kt:48)
+01-10 14:32:31.937  4660  4660 E AndroidRuntime: 	at androidx.compose.foundation.lazy.LazyListMeasureKt.measureLazyList-5IMabDg(LazyListMeasure.kt:195)
+01-10 14:32:31.937  4660  4660 E AndroidRuntime: 	at androidx.compose.foundation.lazy.LazyListKt$rememberLazyListMeasurePolicy$1$1.invoke-0kLqBqw(LazyList.kt:313)
+01-10 14:32:31.937  4660  4660 E AndroidRuntime: 	at androidx.compose.foundation.lazy.LazyListKt$rememberLazyListMeasurePolicy$1$1.invoke(LazyList.kt:178)
+01-10 14:32:31.937  4660  4660 E AndroidRuntime: 	at androidx.compose.foundation.lazy.layout.LazyLayoutKt$LazyLayout$3$2$1.invoke-0kLqBqw(LazyLayout.kt:107)
+01-10 14:32:31.937  4660  4660 E AndroidRuntime: 	at androidx.compose.foundation.lazy.layout.LazyLayoutKt$LazyLayout$3$2$1.invoke(LazyLayout.kt:100)
+01-10 14:32:31.937  4660  4660 E AndroidRuntime: 	at androidx.compose.ui.layout.LayoutNodeSubcompositionsState$createMeasurePolicy$1.measure-3p2s80s(SubcomposeLayout.kt:709)
+01-10 14:32:31.937  4660  4660 E AndroidRuntime: 	at androidx.compose.ui.node.InnerNodeCoordinator.measure-BRTryo0(InnerNodeCoordinator.kt:126)
+01-10 14:32:31.937  4660  4660 E AndroidRuntime: 	at androidx.compose.ui.graphics.SimpleGraphicsLayerModifier.measure-3p2s80s(GraphicsLayerModifier.kt:646)
+01-10 14:32:31.937  4660  4660 E AndroidRuntime: 	at androidx.compose.ui.node.LayoutModifierNodeCoordinator.measure-BRTryo0(LayoutModifierNodeCoordinator.kt:116)
+01-10 14:32:31.937  4660  4660 E AndroidRuntime: 	at androidx.compose.foundation.layout.FillNode.measure-3p2s80s(Size.kt:699)
+01-10 14:32:31.937  4660  4660 E AndroidRuntime: 	at androidx.compose.ui.node.LayoutModifierNodeCoordinator.measure-BRTryo0(LayoutModifierNodeCoordinator.kt:116)
+01-10 14:32:31.937  4660  4660 E AndroidRuntime: 	at androidx.compose.ui.node.LayoutNodeLayoutDelegate$performMeasureBlock$1.invoke(LayoutNodeLayoutDelegate.kt:252)
+01-10 14:32:31.937  4660  4660 E AndroidRuntime: 	at androidx.compose.ui.node.LayoutNodeLayoutDelegate$performMeasureBlock$1.invoke(LayoutNodeLayoutDelegate.kt:251)
+01-10 14:32:31.937  4660  4660 E AndroidRuntime: 	at androidx.compose.runtime.snapshots.Snapshot$Companion.observe(Snapshot.kt:2303)
+01-10 14:32:31.937  4660  4660 E AndroidRuntime: 	at androidx.compose.runtime.snapshots.SnapshotStateObserver$ObservedScopeMap.observe(SnapshotStateObserver.kt:500)
+01-10 14:32:31.937  4660  4660 E AndroidRuntime: 	at androidx.compose.runtime.snapshots.SnapshotStateObserver.observeReads(SnapshotStateObserver.kt:256)
+01-10 14:32:31.937  4660  4660 E AndroidRuntime: 	at androidx.compose.ui.node.OwnerSnapshotObserver.observeReads$ui_release(OwnerSnapshotObserver.kt:133)
+01-10 14:32:31.937  4660  4660 E AndroidRuntime: 	at androidx.compose.ui.node.OwnerSnapshotObserver.observeMeasureSnapshotReads$ui_release(OwnerSnapshotObserver.kt:113)
+01-10 14:32:31.937  4660  4660 E AndroidRuntime: 	at androidx.compose.ui.node.LayoutNodeLayoutDelegate.performMeasure-BRTryo0(LayoutNodeLayoutDelegate.kt:1617)
+01-10 14:32:31.937  4660  4660 E AndroidRuntime: 	at androidx.compose.ui.node.LayoutNodeLayoutDelegate.access$performMeasure-BRTryo0(LayoutNodeLayoutDelegate.kt:36)
+01-10 14:32:31.937  4660  4660 E AndroidRuntime: 	at androidx.compose.ui.node.LayoutNodeLayoutDelegate$MeasurePassDelegate.remeasure-BRTryo0(LayoutNodeLayoutDelegate.kt:620)
+01-10 14:32:31.937  4660  4660 E AndroidRuntime: 	at androidx.compose.ui.node.LayoutNodeLayoutDelegate$MeasurePassDelegate.measure-BRTryo0(LayoutNodeLayoutDelegate.kt:596)
+01-10 14:32:31.937  4660  4660 E AndroidRuntime: 	at androidx.compose.foundation.layout.BoxMeasurePolicy.measure-3p2s80s(Box.kt:122)
+01-10 14:32:31.937  4660  4660 E AndroidRuntime: 	at androidx.compose.ui.node.InnerNodeCoordinator.measure-BRTryo0(InnerNodeCoordinator.kt:126)
+01-10 14:32:31.937  4660  4660 E AndroidRuntime: 	at androidx.compose.foundation.layout.PaddingValuesModifier.measure-3p2s80s(Padding.kt:455)
+01-10 14:32:31.937  4660  4660 E AndroidRuntime: 	at androidx.compose.ui.node.LayoutModifierNodeCoordinator.measure-BRTryo0(LayoutModifierNodeCoordinator.kt:116)
+01-10 14:32:31.937  4660  4660 E AndroidRuntime: 	at androidx.compose.foundation.layout.FillNode.measure-3p2s80s(Size.kt:699)
+01-10 14:32:31.937  4660  4660 E AndroidRuntime: 	at androidx.compose.ui.node.LayoutModifierNodeCoordinator.measure-BRTryo0(LayoutModifierNodeCoordinator.kt:116)
+01-10 14:32:31.937  4660  4660 E AndroidRuntime: 	at androidx.compose.ui.node.LayoutNodeLayoutDelegate$performMeasureBlock$1.invoke(LayoutNodeLayoutDelegate.kt:252)
+01-10 14:32:31.937  4660  4660 E AndroidRuntime: 	at androidx.compose.ui.node.LayoutNodeLayoutDelegate$performMeasureBlock$1.invoke(LayoutNodeLayoutDelegate.kt:251)
+01-10 14:32:31.937  4660  4660 E AndroidRuntime: 	at androidx.compose.runtime.snapshots.Snapshot$Companion.observe(Snapshot.kt:2303)
+01-10 14:32:31.937  4660  4660 E AndroidRuntime: 	at androidx.compose.runtime.snapshots.SnapshotStateObserver$ObservedScopeMap.observe(SnapshotStateObserver.kt:500)
+01-10 14:32:31.937  4660  4660 E AndroidRuntime: 	at androidx.compose.runtime.snapshots.SnapshotStateObserver.observeReads(SnapshotStateObserver.kt:256)
+01-10 14:32:31.937  4660  4660 E AndroidRuntime: 	at androidx.compose.ui.node.OwnerSnapshotObserver.observeReads$ui_release(OwnerSnapshotObserver.kt:133)
+01-10 14:32:31.937  4660  4660 E AndroidRuntime: 	at androidx.compose.ui.node.OwnerSnapshotObserver.observeMeasureSnapshotReads$ui_release(OwnerSnapshotObserver.kt:113)
+01-10 14:32:31.937  4660  4660 E AndroidRuntime: 	at androidx.compose.ui.node.LayoutNodeLayoutDelegate.performMeasure-BRTryo0(LayoutNodeLayoutDelegate.kt:1617)
+01-10 14:32:31.937  4660  4660 E AndroidRuntime: 	at androidx.compose.ui.node.LayoutNodeLayoutDelegate.access$performMeasure-BRTryo0(LayoutNodeLayoutDelegate.kt:36)
+01-10 14:32:31.937  4660  4660 E AndroidRuntime: 	at androidx.compose.ui.node.LayoutNodeLayoutDelegate$MeasurePassDelegate.remeasure-BRTryo0(LayoutNodeLayoutDelegate.kt:620)
+01-10 14:32:31.937  4660  4660 E AndroidRuntime: 	at androidx.compose.ui.node.LayoutNodeLayoutDelegate$MeasurePassDelegate.measure-BRTryo0(LayoutNodeLayoutDelegate.kt:596)
+01-10 14:32:31.937  4660  4660 E AndroidRuntime: 	at androidx.compose.material3.ScaffoldKt$ScaffoldLayoutWithMeasureFix$1$1.invoke-0kLqBqw(Scaffold.kt:304)
+01-10 14:32:31.937  4660  4660 E AndroidRuntime: 	at androidx.compose.material3.ScaffoldKt$ScaffoldLayoutWithMeasureFix$1$1.invoke(Scaffold.kt:179)
+01-10 14:32:31.937  4660  4660 E AndroidRuntime: 	at androidx.compose.ui.layout.LayoutNodeSubcompositionsState$createMeasurePolicy$1.measure-3p2s80s(SubcomposeLayout.kt:709)
+01-10 14:32:31.937  4660  4660 E AndroidRuntime: 	at androidx.compose.ui.node.InnerNodeCoordinator.measure-BRTryo0(InnerNodeCoordinator.kt:126)
+01-10 14:32:31.937  4660  4660 E AndroidRuntime: 	at androidx.compose.ui.node.LayoutNodeLayoutDelegate$performMeasureBlock$1.invoke(LayoutNodeLayoutDelegate.kt:252)
+01-10 14:32:31.937  4660  4660 E AndroidRuntime: 	at androidx.compose.ui.node.LayoutNodeLayoutDelegate$performMeasureBlock$1.invoke(LayoutNodeLayoutDelegate.kt:251)
+01-10 14:32:31.937  4660  4660 E AndroidRuntime: 	at androidx.compose.runtime.snapshots.Snapshot$Companion.observe(Snapshot.kt:2303)
+01-10 14:32:31.937  4660  4660 E AndroidRuntime: 	at androidx.compose.runtime.snapshots.SnapshotStateObserver$ObservedScopeMap.observe(SnapshotStateObserver.kt:500)
+01-10 14:32:31.937  4660  4660 E AndroidRuntime: 	at androidx.compose.runtime.snapshots.SnapshotStateObserver.observeReads(SnapshotStateObserver.kt:256)
+01-10 14:32:31.937  4660  4660 E AndroidRuntime: 	at androidx.compose.ui.node.OwnerSnapshotObserver.observeReads$ui_release(OwnerSnapshotObserver.kt:133)
+01-10 14:32:31.937  4660  4660 E AndroidRuntime: 	at androidx.compose.ui.node.OwnerSnapshotObserver.observeMeasureSnapshotReads$ui_release(OwnerSnapshotObserver.kt:113)
+01-10 14:32:31.937  4660  4660 E AndroidRuntime: 	at androidx.compose.ui.node.LayoutNodeLayoutDelegate.performMeasure-BRTryo0(LayoutNodeLayoutDelegate.kt:1617)
+01-10 14:32:31.937  4660  4660 E AndroidRuntime: 	at androidx.compose.ui.node.LayoutNodeLayoutDelegate.access$performMeasure-BRTryo0(LayoutNodeLayoutDelegate.kt:36)
+01-10 14:32:31.937  4660  4660 E AndroidRuntime: 	at androidx.compose.ui.node.LayoutNodeLayoutDelegate$MeasurePassDelegate.remeasure-BRTryo0(LayoutNodeLayoutDelegate.kt:620)
+01-10 14:32:31.937  4660  4660 E AndroidRuntime: 	at androidx.compose.ui.node.LayoutNode.remeasure-_Sx5XlM$ui_release(LayoutNode.kt:1145)
+01-10 14:32:31.937  4660  4660 E AndroidRuntime: 	at androidx.compose.ui.node.LayoutNode.remeasure-_Sx5XlM$ui_release$default(LayoutNode.kt:1136)
+01-10 14:32:31.937  4660  4660 E AndroidRuntime: 	at androidx.compose.ui.node.MeasureAndLayoutDelegate.doRemeasure-sdFAvZA(MeasureAndLayoutDelegate.kt:356)
+01-10 14:32:31.937  4660  4660 E AndroidRuntime: 	at androidx.compose.ui.node.MeasureAndLayoutDelegate.remeasureAndRelayoutIfNeeded(MeasureAndLayoutDelegate.kt:514)
+01-10 14:32:31.937  4660  4660 E AndroidRuntime: 	at androidx.compose.ui.node.MeasureAndLayoutDelegate.onlyRemeasureIfScheduled(MeasureAndLayoutDelegate.kt:598)
+01-10 14:32:31.937  4660  4660 E AndroidRuntime: 	at androidx.compose.ui.node.MeasureAndLayoutDelegate.forceMeasureTheSubtreeInternal(MeasureAndLayoutDelegate.kt:624)
+01-10 14:32:31.937  4660  4660 E AndroidRuntime: 	at androidx.compose.ui.node.MeasureAndLayoutDelegate.forceMeasureTheSubtree(MeasureAndLayoutDelegate.kt:587)
+01-10 14:32:31.937  4660  4660 E AndroidRuntime: 	at androidx.compose.ui.platform.AndroidComposeView.forceMeasureTheSubtree(AndroidComposeView.android.kt:993)
+01-10 14:32:31.937  4660  4660 E AndroidRuntime: 	at androidx.compose.ui.node.Owner.forceMeasureTheSubtree$default(Owner.kt:239)
+01-10 14:32:31.937  4660  4660 E AndroidRuntime: 	at androidx.compose.ui.node.LayoutNodeLayoutDelegate$MeasurePassDelegate.remeasure-BRTryo0(LayoutNodeLayoutDelegate.kt:632)
+01-10 14:32:31.937  4660  4660 E AndroidRuntime: 	at androidx.compose.ui.node.LayoutNodeLayoutDelegate$MeasurePassDelegate.measure-BRTryo0(LayoutNodeLayoutDelegate.kt:596)
+01-10 14:32:31.937  4660  4660 E AndroidRuntime: 	at androidx.compose.animation.AnimatedEnterExitMeasurePolicy.measure-3p2s80s(AnimatedVisibility.kt:851)
+01-10 14:32:31.937  4660  4660 E AndroidRuntime: 	at androidx.compose.ui.node.InnerNodeCoordinator.measure-BRTryo0(InnerNodeCoordinator.kt:126)
+01-10 14:32:31.937  4660  4660 E AndroidRuntime: 	at androidx.compose.animation.EnterExitTransitionModifierNode.measure-3p2s80s(EnterExitTransition.kt:1156)
+01-10 14:32:31.937  4660  4660 E AndroidRuntime: 	at androidx.compose.ui.node.LayoutModifierNodeCoordinator.measure-BRTryo0(LayoutModifierNodeCoordinator.kt:116)
+01-10 14:32:31.937  4660  4660 E AndroidRuntime: 	at androidx.compose.ui.graphics.SimpleGraphicsLayerModifier.measure-3p2s80s(GraphicsLayerModifier.kt:646)
+01-10 14:32:31.937  4660  4660 E AndroidRuntime: 	at androidx.compose.ui.node.LayoutModifierNodeCoordinator.measure-BRTryo0(LayoutModifierNodeCoordinator.kt:116)
+01-10 14:32:31.937  4660  4660 E AndroidRuntime: 	at androidx.compose.animation.AnimatedContentKt$AnimatedContent$6$1$1.invoke-3p2s80s(AnimatedContent.kt:733)
+01-10 14:32:31.937  4660  4660 E AndroidRuntime: 	at androidx.compose.animation.AnimatedContentKt$AnimatedContent$6$1$1.invoke(AnimatedContent.kt:732)
+01-10 14:32:31.937  4660  4660 E AndroidRuntime: 	at androidx.compose.ui.layout.LayoutModifierImpl.measure-3p2s80s(LayoutModifier.kt:294)
+01-10 14:32:31.937  4660  4660 E AndroidRuntime: 	at androidx.compose.ui.node.LayoutModifierNodeCoordinator.measure-BRTryo0(LayoutModifierNodeCoordinator.kt:116)
+01-10 14:32:31.937  4660  4660 E AndroidRuntime: 	at androidx.compose.ui.node.LayoutNodeLayoutDelegate$performMeasureBlock$1.invoke(LayoutNodeLayoutDelegate.kt:252)
+01-10 14:32:31.937  4660  4660 E AndroidRuntime: 	at androidx.compose.ui.node.LayoutNodeLayoutDelegate$performMeasureBlock$1.invoke(LayoutNodeLayoutDelegate.kt:251)
+01-10 14:32:31.937  4660  4660 E AndroidRuntime: 	at androidx.compose.runtime.snapshots.Snapshot$Companion.observe(Snapshot.kt:2303)
+01-10 14:32:31.937  4660  4660 E AndroidRuntime: 	at androidx.compose.runtime.snapshots.SnapshotStateObserver$ObservedScopeMap.observe(SnapshotStateObserver.kt:500)
+01-10 14:32:31.937  4660  4660 E AndroidRuntime: 	at androidx.compose.runtime.snapshots.SnapshotStateObserver.observeReads(SnapshotStateObserver.kt:256)
+01-10 14:32:31.937  4660  4660 E AndroidRuntime: 	at androidx.compose.ui.node.OwnerSnapshotObserver.observeReads$ui_release(OwnerSnapshotObserver.kt:133)
+01-10 14:32:31.937  4660  4660 E AndroidRuntime: 	at androidx.compose.ui.node.OwnerSnapshotObserver.observeMeasureSnapshotReads$ui_release(OwnerSnapshotObserver.kt:113)
+01-10 14:32:31.937  4660  4660 E AndroidRuntime: 	at androidx.compose.ui.node.LayoutNodeLayoutDelegate.performMeasure-BRTryo0(LayoutNodeLayoutDelegate.kt:1617)
+01-10 14:32:31.937  4660  4660 E AndroidRuntime: 	at androidx.compose.ui.node.LayoutNodeLayoutDelegate.access$performMeasure-BRTryo0(LayoutNodeLayoutDelegate.kt:36)
+01-10 14:32:31.937  4660  4660 E AndroidRuntime: 	at androidx.compose.ui.node.LayoutNodeLayoutDelegate$MeasurePassDelegate.remeasure-BRTryo0(LayoutNodeLayoutDelegate.kt:620)
+01-10 14:32:31.937  4660  4660 E AndroidRuntime: 	at androidx.compose.ui.node.LayoutNode.remeasure-_Sx5XlM$ui_release(LayoutNode.kt:1145)
+01-10 14:32:31.937  4660  4660 E AndroidRuntime: 	at androidx.compose.ui.node.LayoutNode.remeasure-_Sx5XlM$ui_release$default(LayoutNode.kt:1136)
+01-10 14:32:31.937  4660  4660 E AndroidRuntime: 	at androidx.compose.ui.node.MeasureAndLayoutDelegate.doRemeasure-sdFAvZA(MeasureAndLayoutDelegate.kt:356)
+01-10 14:32:31.937  4660  4660 E AndroidRuntime: 	at androidx.compose.ui.node.MeasureAndLayoutDelegate.remeasureAndRelayoutIfNeeded(MeasureAndLayoutDelegate.kt:514)
+01-10 14:32:31.937  4660  4660 E AndroidRuntime: 	at androidx.compose.ui.node.MeasureAndLayoutDelegate.remeasureAndRelayoutIfNeeded$default(MeasureAndLayoutDelegate.kt:491)
+01-10 14:32:31.937  4660  4660 E AndroidRuntime: 	at androidx.compose.ui.node.MeasureAndLayoutDelegate.measureAndLayout(MeasureAndLayoutDelegate.kt:377)
+01-10 14:32:31.937  4660  4660 E AndroidRuntime: 	at androidx.compose.ui.platform.AndroidComposeView.measureAndLayout(AndroidComposeView.android.kt:971)
+01-10 14:32:31.937  4660  4660 E AndroidRuntime: 	at androidx.compose.ui.node.Owner.measureAndLayout$default(Owner.kt:228)
+01-10 14:32:31.937  4660  4660 E AndroidRuntime: 	at androidx.compose.ui.platform.AndroidComposeView.dispatchDraw(AndroidComposeView.android.kt:1224)
+01-10 14:32:31.938  4660  4660 E AndroidRuntime: 	at android.view.View.draw(View.java:20224)
+01-10 14:32:31.938  4660  4660 E AndroidRuntime: 	at android.view.View.updateDisplayListIfDirty(View.java:19096)
+01-10 14:32:31.938  4660  4660 E AndroidRuntime: 	at android.view.ViewGroup.recreateChildDisplayList(ViewGroup.java:4349)
+01-10 14:32:31.938  4660  4660 E AndroidRuntime: 	at android.view.ViewGroup.dispatchGetDisplayList(ViewGroup.java:4322)
+01-10 14:32:31.938  4660  4660 E AndroidRuntime: 	at android.view.View.updateDisplayListIfDirty(View.java:19056)
+01-10 14:32:31.938  4660  4660 E AndroidRuntime: 	at android.view.ViewGroup.recreateChildDisplayList(ViewGroup.java:4349)
+01-10 14:32:31.938  4660  4660 E AndroidRuntime: 	at android.view.ViewGroup.dispatchGetDisplayList(ViewGroup.java:4322)
+01-10 14:32:31.938  4660  4660 E AndroidRuntime: 	at android.view.View.updateDisplayListIfDirty(View.java:19056)
+01-10 14:32:31.938  4660  4660 E AndroidRuntime: 	at android.view.ViewGroup.recreateChildDisplayList(ViewGroup.java:4349)
+01-10 14:32:31.938  4660  4660 E AndroidRuntime: 	at android.view.ViewGroup.dispatchGetDisplayList(ViewGroup.java:4322)
+01-10 14:32:31.938  4660  4660 E AndroidRuntime: 	at android.view.View.updateDisplayListIfDirty(View.java:19056)
+01-10 14:32:31.938  4660  4660 E AndroidRuntime: 	at android.view.ViewGroup.recreateChildDisplayList(ViewGroup.java:4349)
+01-10 14:32:31.938  4660  4660 E AndroidRuntime: 	at android.view.ViewGroup.dispatchGetDisplayList(ViewGroup.java:4322)
+01-10 14:32:31.938  4660  4660 E AndroidRuntime: 	at android.view.View.updateDisplayListIfDirty(View.java:19056)
+01-10 14:32:31.938  4660  4660 E AndroidRuntime: 	at android.view.ThreadedRenderer.updateViewTreeDisplayList(ThreadedRenderer.java:686)
+01-10 14:32:31.938  4660  4660 E AndroidRuntime: 	at android.view.ThreadedRenderer.updateRootDisplayList(ThreadedRenderer.java:692)
+01-10 14:32:31.938  4660  4660 E AndroidRuntime: 	at android.view.ThreadedRenderer.draw(ThreadedRenderer.java:801)
+01-10 14:32:31.938  4660  4660 E AndroidRuntime: 	at android.view.ViewRootImpl.draw(ViewRootImpl.java:3318)
+01-10 14:32:31.938  4660  4660 E AndroidRuntime: 	at android.view.ViewRootImpl.performDraw(ViewRootImpl.java:3122)
+01-10 14:32:31.938  4660  4660 E AndroidRuntime: 	at android.view.ViewRootImpl.performTraversals(ViewRootImpl.java:2481)
+01-10 14:32:31.938  4660  4660 E AndroidRuntime: 	at android.view.ViewRootImpl.doTraversal(ViewRootImpl.java:1463)
+01-10 14:32:31.938  4660  4660 E AndroidRuntime: 	at android.view.ViewRootImpl$TraversalRunnable.run(ViewRootImpl.java:7190)
+01-10 14:32:31.938  4660  4660 E AndroidRuntime: 	at android.view.Choreographer$CallbackRecord.run(Choreographer.java:949)
+01-10 14:32:31.938  4660  4660 E AndroidRuntime: 	at android.view.Choreographer.doCallbacks(Choreographer.java:761)
+01-10 14:32:31.938  4660  4660 E AndroidRuntime: 	at android.view.Choreographer.doFrame(Choreographer.java:696)
+01-10 14:32:31.938  4660  4660 E AndroidRuntime: 	at android.view.Choreographer$FrameDisplayEventReceiver.run(Choreographer.java:935)
+01-10 14:32:31.938  4660  4660 E AndroidRuntime: 	at android.os.Handler.handleCallback(Handler.java:873)
+01-10 14:32:31.938  4660  4660 E AndroidRuntime: 	at android.os.Handler.dispatchMessage(Handler.java:99)
+01-10 14:32:31.938  4660  4660 E AndroidRuntime: 	at android.os.Looper.loop(Looper.java:193)
+01-10 14:32:31.938  4660  4660 E AndroidRuntime: 	at android.app.ActivityThread.main(ActivityThread.java:6840)
+01-10 14:32:31.938  4660  4660 E AndroidRuntime: 	at java.lang.reflect.Method.invoke(Native Method)
+01-10 14:32:31.938  4660  4660 E AndroidRuntime: 	at com.android.internal.os.RuntimeInit$MethodAndArgsCaller.run(RuntimeInit.java:493)
+01-10 14:32:31.938  4660  4660 E AndroidRuntime: 	at com.android.internal.os.ZygoteInit.main(ZygoteInit.java:860)
+01-10 14:32:32.613  2656  2806 E EGL_emulation: tid 2806: eglSurfaceAttrib(1493): error 0x3009 (EGL_BAD_MATCH)
+01-10 14:32:33.033  1759  1759 E NotificationService: Muting recently noisy 0|com.android.server.telecom|1337|null|1000
+01-10 14:32:36.584  2417  2483 E Pay     : NfcAdapter is null while obtaining CardEmulation instance. [CONTEXT service_id=198 ]
+01-10 14:32:36.584  2417  2483 E Pay     : CardEmulation is null while checking aid registration. [CONTEXT service_id=198 ]
+01-10 14:32:36.594  2417  2483 E Pay     : NfcAdapter is null while obtaining CardEmulation instance. [CONTEXT service_id=198 ]
+01-10 14:32:36.594  2417  2483 E Pay     : CardEmulation is null while trying to register AIDs. [CONTEXT service_id=198 ]
+01-10 14:32:36.602  2417  2483 E Pay     : HCE service enablement failed: FAILED_CARD_EMULATION [CONTEXT service_id=198 ]
+01-10 14:32:51.940  1759  1792 E memtrack: Couldn't load memtrack module
+01-10 14:32:55.290  1759  1792 E memtrack: Couldn't load memtrack module
+01-10 14:32:55.305  1759  1792 E memtrack: Couldn't load memtrack module
+01-10 14:33:00.006  1759  1792 E memtrack: Couldn't load memtrack module
+01-10 14:33:01.340  2259  4734 E NFC     : could not retrieve NFC service
+01-10 14:33:02.820  1759  1792 E memtrack: Couldn't load memtrack module
+01-10 14:33:02.837  1759  1792 E memtrack: Couldn't load memtrack module
+01-10 14:33:02.852  1759  1792 E memtrack: Couldn't load memtrack module
+01-10 14:33:21.655  1759  1792 E memtrack: Couldn't load memtrack module
+01-10 14:33:21.666  1759  1792 E memtrack: Couldn't load memtrack module
+01-10 14:33:29.112  1591  1651 E storaged: getDiskStats failed with result NOT_SUPPORTED and size 0
+01-10 14:33:37.874  2417  2483 E Pay     : NfcAdapter is null while obtaining CardEmulation instance. [CONTEXT service_id=198 ]
+01-10 14:33:37.875  2417  2483 E Pay     : CardEmulation is null while checking aid registration. [CONTEXT service_id=198 ]
+01-10 14:33:37.888  2417  2483 E Pay     : NfcAdapter is null while obtaining CardEmulation instance. [CONTEXT service_id=198 ]
+01-10 14:33:37.888  2417  2483 E Pay     : CardEmulation is null while trying to register AIDs. [CONTEXT service_id=198 ]
+01-10 14:33:37.895  2417  2483 E Pay     : HCE service enablement failed: FAILED_CARD_EMULATION [CONTEXT service_id=198 ]
+01-10 14:33:51.087  2417  2483 E memtrack: Couldn't load memtrack module
+01-10 14:34:00.023  1759  1792 E memtrack: Couldn't load memtrack module
+01-10 14:34:17.390  1759  1792 E memtrack: Couldn't load memtrack module
+01-10 14:34:29.137  1591  1651 E storaged: getDiskStats failed with result NOT_SUPPORTED and size 0
+01-10 14:35:00.005  1759  1792 E memtrack: Couldn't load memtrack module
+01-10 14:35:29.139  1591  1651 E storaged: getDiskStats failed with result NOT_SUPPORTED and size 0
+01-10 14:35:53.119  1759  1792 E memtrack: Couldn't load memtrack module
+01-10 14:35:53.343  2259  4774 E NFC     : could not retrieve NFC service
+01-10 14:35:53.441  2417  2483 E Pay     : NfcAdapter is null while obtaining CardEmulation instance. [CONTEXT service_id=198 ]
+01-10 14:35:53.441  2417  2483 E Pay     : CardEmulation is null while checking aid registration. [CONTEXT service_id=198 ]
+01-10 14:35:53.452  2417  2483 E Pay     : NfcAdapter is null while obtaining CardEmulation instance. [CONTEXT service_id=198 ]
+01-10 14:35:53.452  2417  2483 E Pay     : CardEmulation is null while trying to register AIDs. [CONTEXT service_id=198 ]
+01-10 14:35:53.473  2417  2483 E Pay     : HCE service enablement failed: FAILED_CARD_EMULATION [CONTEXT service_id=198 ]
+01-10 14:36:24.434  3272  3272 E fb4a.SlowAppComponent: 0ms: LollipopUploadService instantiating…
+01-10 14:36:24.435  3272  3272 E fb4a.SlowAppComponent: Main thread was blocked for 27ms in the background starting with LollipopUploadService
+01-10 14:36:29.144  1591  1651 E storaged: getDiskStats failed with result NOT_SUPPORTED and size 0

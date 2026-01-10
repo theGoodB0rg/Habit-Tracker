@@ -58,7 +58,10 @@ class TimerActionCoordinator @Inject constructor(
         
         // Confirmation tracking
         val pendingConfirmHabitId: Long? = null,  // Habit with open confirmation dialog
-        val pendingConfirmType: ConfirmType? = null  // Type of confirmation being shown
+        val pendingConfirmType: ConfirmType? = null,  // Type of confirmation being shown
+        
+        // Overtime tracking (Phase UIX-11)
+        val overtimeMs: Long = 0L
     ) {
         // Backwards-compatible alias for existing code
         @Deprecated("Use isLoading instead", ReplaceWith("isLoading"))
@@ -429,6 +432,7 @@ class TimerActionCoordinator @Inject constructor(
                     target = event.targetMs,  // Phase 1: Set targetMs
                     paused = false
                 )
+                _state.value = _state.value.copy(overtimeMs = 0L)
             }
             is TimerEvent.Tick -> {
                 remainingByHabit[event.habitId] = event.remainingMs
@@ -463,6 +467,7 @@ class TimerActionCoordinator @Inject constructor(
                     }.onFailure { emitUiEvent(UiEvent.Snackbar("Failed to mark complete: ${'$'}{it.message}")) }
                 }
                 markCompleted(event.habitId)
+                _state.value = _state.value.copy(overtimeMs = 0L)
                 emitUiEvent(UiEvent.Completed(event.habitId))
             }
             is TimerEvent.Error -> {
@@ -476,7 +481,8 @@ class TimerActionCoordinator @Inject constructor(
                         timerState = TimerState.IDLE,
                         remainingMs = 0L,
                         targetMs = 0L,
-                        paused = false
+                        paused = false,
+                        overtimeMs = 0L
                     )
                     inFlightIntent = null
                     inFlightHabitId = null
@@ -507,6 +513,11 @@ class TimerActionCoordinator @Inject constructor(
                     habitId = event.habitId,
                     message = "Timer finished! Tap to complete."
                 ))
+            }
+            is TimerEvent.Overtime -> {
+                if (_state.value.trackedHabitId == event.habitId) {
+                    _state.value = _state.value.copy(overtimeMs = event.overtimeMs)
+                }
             }
             is TimerEvent.AutoPaused -> {
                 // Phase 1: Track the auto-paused habit for switch sheet display
@@ -556,7 +567,8 @@ class TimerActionCoordinator @Inject constructor(
                 timerState = TimerState.IDLE,
                 remainingMs = 0L,
                 targetMs = 0L,
-                paused = false
+                paused = false,
+                overtimeMs = 0L
             )
             inFlightIntent = null
             inFlightHabitId = null

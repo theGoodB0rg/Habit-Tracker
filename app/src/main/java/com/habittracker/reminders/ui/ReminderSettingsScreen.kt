@@ -5,6 +5,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
+import androidx.compose.material.icons.automirrored.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -49,7 +50,7 @@ fun ReminderSettingsScreen(
             verticalAlignment = Alignment.CenterVertically
         ) {
             IconButton(onClick = onNavigateBack) {
-                Icon(Icons.Default.ArrowBack, contentDescription = "Back")
+                Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
             }
             Text(
                 text = "Reminder Settings",
@@ -259,7 +260,7 @@ private fun GlobalReminderSettingsCard(
                 }
             }
             
-            Divider(modifier = Modifier.padding(vertical = 8.dp))
+            HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
             
             // Sound Toggle
             Row(
@@ -268,7 +269,7 @@ private fun GlobalReminderSettingsCard(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
-                    Icon(Icons.Default.VolumeUp, contentDescription = null)
+                    Icon(Icons.AutoMirrored.Filled.VolumeUp, contentDescription = null)
                     Spacer(modifier = Modifier.width(8.dp))
                     Text(
                         text = "Sound",

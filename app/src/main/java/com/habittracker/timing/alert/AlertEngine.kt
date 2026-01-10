@@ -216,7 +216,16 @@ class AlertEngineImpl @Inject constructor(
     }
 
     private fun vibrate(type: AlertType) {
-        val vib = context.getSystemService(Context.VIBRATOR_SERVICE) as Vibrator
+        val vib = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            val manager = context.getSystemService(Context.VIBRATOR_MANAGER_SERVICE) as? android.os.VibratorManager
+            manager?.defaultVibrator
+        } else {
+            @Suppress("DEPRECATION")
+            context.getSystemService(Context.VIBRATOR_SERVICE) as? Vibrator
+        }
+        
+        if (vib == null) return
+
         val pattern = when (type) {
             AlertType.START -> longArrayOf(0, 40)
             AlertType.MIDPOINT -> longArrayOf(0, 30, 60, 30)
