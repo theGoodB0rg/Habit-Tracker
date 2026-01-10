@@ -12,6 +12,7 @@ import com.habittracker.domain.model.HabitStreak
 import com.habittracker.ui.models.HabitUiModel
 import com.habittracker.ui.models.toUiModelWithTiming
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -86,10 +87,17 @@ class HabitViewModel @Inject constructor(
         }
     }
 
+    // Trigger to force refresh of hydrated habits (e.g., when timing data changes)
+    private val _refreshTrigger = MutableSharedFlow<Unit>(replay = 1).apply { tryEmit(Unit) }
+
     // Phase 2: Build HabitUiModel list with timing, active session, and suggestions
     private fun hydrateHabitsWithTiming() {
         viewModelScope.launch {
-            habitRepository.getAllHabits().collectLatest { entities ->
+            kotlinx.coroutines.flow.combine(
+                habitRepository.getAllHabits(),
+                _refreshTrigger
+            ) { entities, _ -> entities }
+            .collectLatest { entities ->
                 _habitsState.value = entities
                 val models = entities.map { entity ->
                     val timing = habitRepository.getHabitTiming(entity.id)
@@ -154,6 +162,7 @@ class HabitViewModel @Inject constructor(
                         timerEnabled = timerEnabled
                     )
                     habitRepository.saveHabitTiming(habitId, timing)
+                    _refreshTrigger.tryEmit(Unit)
                 }
                 
                 refreshStreaks()
@@ -232,22 +241,7 @@ class HabitViewModel @Inject constructor(
             try {
                 habitRepository.saveHabitTiming(habitId, timing)
                 // Refresh hydrated models so UI reflects new timing config
-                try {
-                    val entities = habitRepository.getAllHabits().first()
-                    val models = entities.map { entity ->
-                        val t = habitRepository.getHabitTiming(entity.id)
-                        val session = habitRepository.getActiveTimerSession(entity.id)
-                        val suggestions = habitRepository.getSmartSuggestions(entity.id)
-                        val metrics = habitRepository.getCompletionMetrics(entity.id).first()
-                        entity.toUiModelWithTiming(
-                            timing = t,
-                            timerSession = session,
-                            smartSuggestions = suggestions,
-                            completionMetrics = metrics
-                        )
-                    }
-                    _hydratedHabits.value = models
-                } catch (_: Exception) { /* best-effort */ }
+                _refreshTrigger.tryEmit(Unit)
                 _uiState.value = _uiState.value.copy(successMessage = "Timing updated")
             } catch (e: Exception) {
                 _uiState.value = _uiState.value.copy(errorMessage = "Failed to update timing: ${e.message}")
