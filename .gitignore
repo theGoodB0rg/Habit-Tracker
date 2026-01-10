@@ -143,7 +143,7 @@ scripts/
 # Keep important documentation
 !README.md
 !*.md
-!docs/**
+docs/
 !app/src/main/assets/**
 
 # Keep gradle wrapper (essential for builds)

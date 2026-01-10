@@ -66,6 +66,15 @@ fun HabitDetailScreen(
     val habitUiModel = remember(hydrated, habitId) { 
         hydrated.find { it.id == habitId } 
     }
+
+    val isDataLoaded by viewModel.isDataLoaded.collectAsStateWithLifecycle(initialValue = false)
+    
+    // Handle deletion: If data is loaded but habit is gone, navigate back
+    LaunchedEffect(isDataLoaded, habit) {
+        if (isDataLoaded && habit == null) {
+            onNavigateBack()
+        }
+    }
     
     Scaffold(
         topBar = {
@@ -140,7 +149,7 @@ fun HabitDetailScreen(
                     ) {
                         CircularProgressIndicator()
                         Spacer(modifier = Modifier.height(16.dp))
-                        Text("Loading habit details...")
+                        Text(if (isDataLoaded) "Habit not found" else "Loading habit details...")
                     }
                 }
                 else -> {

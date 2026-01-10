@@ -45,6 +45,10 @@ class HabitViewModel @Inject constructor(
     // Phase 2: Hydrated Habit UI models (with timing data)
     private val _hydratedHabits = MutableStateFlow<List<HabitUiModel>>(emptyList())
     val hydratedHabits: StateFlow<List<HabitUiModel>> = _hydratedHabits.asStateFlow()
+
+    // Track if initial data load has occurred to distinguish "Loading" from "Empty/Deleted"
+    private val _isDataLoaded = MutableStateFlow(false)
+    val isDataLoaded: StateFlow<Boolean> = _isDataLoaded.asStateFlow()
     
     init {
         loadInitialData()
@@ -98,6 +102,7 @@ class HabitViewModel @Inject constructor(
                     )
                 }
                 _hydratedHabits.value = models
+                _isDataLoaded.value = true
             }
         }
     }

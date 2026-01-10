@@ -65,6 +65,11 @@ import com.habittracker.ui.components.EmptyStateComponent
 import com.habittracker.ui.components.simple.SimpleHabitCard
 import com.habittracker.ui.components.simple.SimpleMiniSessionBar
 import com.habittracker.ui.components.simple.SimpleTimerSwitcherSheet
+import com.habittracker.ui.components.simple.BelowMinDurationDialog
+import com.habittracker.ui.components.simple.DiscardSessionSheet
+import com.habittracker.ui.components.simple.EndPomodoroEarlyDialog
+import com.habittracker.ui.components.simple.CompleteWithoutTimerDialog
+import com.habittracker.timerux.TimerCompletionInteractor.ConfirmType
 import com.habittracker.ui.models.HabitUiModel
 import kotlinx.coroutines.launch
 import java.time.LocalDate
@@ -127,6 +132,12 @@ fun SimpleMainScreen(
     
     // Timer switcher sheet state
     var showTimerSwitcher by remember { mutableStateOf(false) }
+
+    // Confirmation dialog states
+    var confirmBelowMin by remember { mutableStateOf<Pair<Long, Int>?>(null) } // habitId, minSec
+    var confirmDiscardSession by remember { mutableStateOf<Pair<Long, Int>?>(null) } // habitId, elapsedSec
+    var confirmEndPomodoroEarly by remember { mutableStateOf<Long?>(null) } // habitId
+    var confirmCompleteWithoutTimer by remember { mutableStateOf<Long?>(null) } // habitId
     
     // Show timer switcher when there's a paused habit
     LaunchedEffect(coordinatorState.pausedHabitId) {
@@ -163,6 +174,22 @@ fun SimpleMainScreen(
                 }
                 is TimerActionCoordinator.UiEvent.Completed -> {
                     // Habits auto-refresh via Flow collection
+                }
+                is TimerActionCoordinator.UiEvent.Confirm -> {
+                    when (event.type) {
+                        ConfirmType.BelowMinDuration -> {
+                            confirmBelowMin = event.habitId to (event.payload as? Int ?: 0)
+                        }
+                        ConfirmType.DiscardNonZeroSession -> {
+                            confirmDiscardSession = event.habitId to (event.payload as? Int ?: 0)
+                        }
+                        ConfirmType.EndPomodoroEarly -> {
+                            confirmEndPomodoroEarly = event.habitId
+                        }
+                        ConfirmType.CompleteWithoutTimer -> {
+                            confirmCompleteWithoutTimer = event.habitId
+                        }
+                    }
                 }
                 else -> { /* Other events handled elsewhere */ }
             }
@@ -375,6 +402,106 @@ fun SimpleMainScreen(
                 modifier = Modifier
                     .align(Alignment.BottomCenter)
                     .padding(horizontal = 16.dp, vertical = 88.dp)
+            )
+        }
+
+        // --- Confirmation Dialogs ---
+
+        confirmBelowMin?.let { (habitId, minSec) ->
+            BelowMinDurationDialog(
+                minSeconds = minSec,
+                elapsedSeconds = ((coordinatorState.targetMs - coordinatorState.remainingMs) / 1000).toInt().coerceAtLeast(0), // Approx elapsed
+                onDismiss = {
+                    confirmBelowMin = null
+                    timerActionHandler?.clearPendingConfirmation()
+                },
+                onComplete = {
+                    confirmBelowMin = null
+                    timerActionHandler?.clearPendingConfirmation()
+                    timerActionHandler?.handle(
+                        TimerIntent.Done,
+                        habitId,
+                        TimerActionCoordinator.DecisionContext(
+                            confirmation = TimerActionCoordinator.ConfirmationOverride.COMPLETE_BELOW_MINIMUM
+                        )
+                    )
+                },
+                onLogPartial = {
+                    confirmBelowMin = null
+                    timerActionHandler?.clearPendingConfirmation()
+                    timerActionHandler?.handle(
+                        TimerIntent.StopWithoutComplete,
+                        habitId,
+                        TimerActionCoordinator.DecisionContext(
+                            confirmation = TimerActionCoordinator.ConfirmationOverride.LOG_PARTIAL_BELOW_MINIMUM
+                        )
+                    )
+                }
+            )
+        }
+
+        confirmDiscardSession?.let { (habitId, elapsedSec) ->
+            DiscardSessionSheet(
+                elapsedSeconds = elapsedSec,
+                onDismiss = {
+                    confirmDiscardSession = null
+                    timerActionHandler?.clearPendingConfirmation()
+                },
+                onKeep = {
+                    confirmDiscardSession = null
+                    timerActionHandler?.clearPendingConfirmation()
+                },
+                onDiscard = {
+                    confirmDiscardSession = null
+                    timerActionHandler?.clearPendingConfirmation()
+                    timerActionHandler?.handle(
+                        TimerIntent.StopWithoutComplete,
+                        habitId,
+                        TimerActionCoordinator.DecisionContext(
+                            confirmation = TimerActionCoordinator.ConfirmationOverride.DISCARD_SESSION
+                        )
+                    )
+                }
+            )
+        }
+
+        confirmEndPomodoroEarly?.let { habitId ->
+            EndPomodoroEarlyDialog(
+                onDismiss = {
+                    confirmEndPomodoroEarly = null
+                    timerActionHandler?.clearPendingConfirmation()
+                },
+                onComplete = {
+                    confirmEndPomodoroEarly = null
+                    timerActionHandler?.clearPendingConfirmation()
+                    timerActionHandler?.handle(
+                        TimerIntent.Done,
+                        habitId,
+                        TimerActionCoordinator.DecisionContext(
+                            confirmation = TimerActionCoordinator.ConfirmationOverride.END_POMODORO_EARLY
+                        )
+                    )
+                }
+            )
+        }
+
+        confirmCompleteWithoutTimer?.let { habitId ->
+            CompleteWithoutTimerDialog(
+                onDismiss = {
+                    confirmCompleteWithoutTimer = null
+                    timerActionHandler?.clearPendingConfirmation()
+                },
+                onComplete = {
+                    confirmCompleteWithoutTimer = null
+                    timerActionHandler?.clearPendingConfirmation()
+                    timerActionHandler?.handle(
+                        TimerIntent.Done,
+                        habitId,
+                        TimerActionCoordinator.DecisionContext(
+                            confirmation = TimerActionCoordinator.ConfirmationOverride.COMPLETE_WITHOUT_TIMER
+                        )
+                    )
+                }
             )
         }
         
