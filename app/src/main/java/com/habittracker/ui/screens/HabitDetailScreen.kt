@@ -87,7 +87,10 @@ fun HabitDetailScreen(
                 },
                 actions = {
                     if (habit != null) {
-                        IconButton(onClick = onNavigateToEdit) {
+                        IconButton(onClick = {
+                            viewModel.clearMessages()
+                            onNavigateToEdit()
+                        }) {
                             Icon(Icons.Filled.Edit, contentDescription = "Edit habit")
                         }
                     }
