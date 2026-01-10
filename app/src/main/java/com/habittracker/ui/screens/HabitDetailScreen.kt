@@ -11,6 +11,9 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.horizontalScroll
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material.icons.automirrored.filled.TrendingUp
@@ -42,9 +45,7 @@ import java.util.*
 import kotlinx.coroutines.launch
 // Removed Canvas-based sparkline imports (using simple bar sparkline)
 
-// ...existing code...
-
-@OptIn(ExperimentalMaterial3Api::class, ExperimentalAnimationApi::class)
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HabitDetailScreen(
     habitId: Long,
@@ -52,50 +53,11 @@ fun HabitDetailScreen(
     onNavigateBack: () -> Unit,
     onNavigateToEdit: () -> Unit
 ) {
-    // Add safety check for invalid habitId
-    if (habitId <= 0L) {
-        // Invalid habitId, show error screen
-        Scaffold(
-            topBar = {
-                TopAppBar(
-                    title = { Text("Habit Details") },
-                    navigationIcon = {
-                        IconButton(onClick = onNavigateBack) {
-                            Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
-                        }
-                    }
-                )
-            }
-        ) { paddingValues ->
-            Box(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(paddingValues),
-                contentAlignment = Alignment.Center
-            ) {
-                Column(
-                    horizontalAlignment = Alignment.CenterHorizontally
-                ) {
-                    Icon(
-                        Icons.Filled.Error,
-                        contentDescription = "Error",
-                        tint = MaterialTheme.colorScheme.error,
-                        modifier = Modifier.size(48.dp)
-                    )
-                    Spacer(modifier = Modifier.height(16.dp))
-                    Text("Invalid habit ID")
-                    Spacer(modifier = Modifier.height(8.dp))
-                    Button(onClick = onNavigateBack) {
-                        Text("Go Back")
-                    }
-                }
-            }
-        }
-        return
-    }
-    
+    // Move all ViewModel and state collection to top level to avoid SlotTable corruption
+    val profileVm: com.habittracker.ui.viewmodels.timing.AlertProfilesViewModel = hiltViewModel()
+    val analyticsVm: HabitTimingAnalyticsViewModel = hiltViewModel()
+
     val habits by viewModel.habits.collectAsStateWithLifecycle(initialValue = emptyList())
-    // Hydrated UI models include analytics/timing; used for Analytics section below
     val hydrated by viewModel.hydratedHabits.collectAsStateWithLifecycle(initialValue = emptyList())
     
     val habit = remember(habits, habitId) { 
@@ -105,77 +67,40 @@ fun HabitDetailScreen(
         hydrated.find { it.id == habitId } 
     }
     
-    if (habit == null) {
-        // Show loading or error if habit not found
-        Scaffold(
-            topBar = {
-                TopAppBar(
-                    title = { Text("Habit Details") },
-                    navigationIcon = {
-                        IconButton(onClick = onNavigateBack) {
-                            Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
-                        }
-                    }
-                )
-            }
-        ) { paddingValues ->
-            Box(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(paddingValues),
-                contentAlignment = Alignment.Center
-            ) {
-                Column(
-                    horizontalAlignment = Alignment.CenterHorizontally
-                ) {
-                    CircularProgressIndicator()
-                    Spacer(modifier = Modifier.height(16.dp))
-                    Text("Loading habit details...")
-                }
-            }
-        }
-        return
-    }
-    
-    val completedThisPeriod = isCompletedThisPeriod(habit.frequency, habit.lastCompletedDate)
-    
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text(habit.name) },
+                title = { Text(habit?.name ?: "Habit Details") },
                 navigationIcon = {
                     IconButton(onClick = onNavigateBack) {
                         Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
                     }
                 },
                 actions = {
-                    IconButton(onClick = onNavigateToEdit) {
-                        Icon(Icons.Filled.Edit, contentDescription = "Edit habit")
+                    if (habit != null) {
+                        IconButton(onClick = onNavigateToEdit) {
+                            Icon(Icons.Filled.Edit, contentDescription = "Edit habit")
+                        }
                     }
                 }
             )
         },
         floatingActionButton = {
-            FloatingActionButton(
-                onClick = {
-                    if (!completedThisPeriod) {
-                        viewModel.markHabitComplete(habitId)
-                    }
-                },
-                containerColor = if (completedThisPeriod) {
-                    MaterialTheme.colorScheme.primary
-                } else {
-                    MaterialTheme.colorScheme.primaryContainer
-                }
-            ) {
-                AnimatedContent(
-                    targetState = completedThisPeriod,
-                    transitionSpec = {
-                        scaleIn() togetherWith scaleOut()
+            if (habit != null) {
+                val completedThisPeriod = isCompletedThisPeriod(habit.frequency, habit.lastCompletedDate)
+                FloatingActionButton(
+                    onClick = {
+                        if (!completedThisPeriod) {
+                            viewModel.markHabitComplete(habitId)
+                        }
                     },
-                    label = "fab_animation"
-                ) { completed ->
-                    if (completed) {
+                    containerColor = if (completedThisPeriod) {
+                        MaterialTheme.colorScheme.primary
+                    } else {
+                        MaterialTheme.colorScheme.primaryContainer
+                    }
+                ) {
+                    if (completedThisPeriod) {
                         Icon(
                             Icons.Filled.CheckCircle,
                             contentDescription = "Mark incomplete",
@@ -192,72 +117,90 @@ fun HabitDetailScreen(
             }
         }
     ) { paddingValues ->
-        LazyColumn(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(paddingValues),
-            contentPadding = PaddingValues(16.dp),
-            verticalArrangement = Arrangement.spacedBy(16.dp)
-        ) {
+        Box(modifier = Modifier.fillMaxSize().padding(paddingValues)) {
+            when {
+                habitId <= 0L -> {
+                    Column(
+                        modifier = Modifier.fillMaxSize(),
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.Center
+                    ) {
+                        Icon(Icons.Filled.Error, contentDescription = null, tint = MaterialTheme.colorScheme.error, modifier = Modifier.size(48.dp))
+                        Spacer(modifier = Modifier.height(16.dp))
+                        Text("Invalid habit ID")
+                        Spacer(modifier = Modifier.height(8.dp))
+                        Button(onClick = onNavigateBack) { Text("Go Back") }
+                    }
+                }
+                habit == null -> {
+                    Column(
+                        modifier = Modifier.fillMaxSize(),
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.Center
+                    ) {
+                        CircularProgressIndicator()
+                        Spacer(modifier = Modifier.height(16.dp))
+                        Text("Loading habit details...")
+                    }
+                }
+                else -> {
+                    // DEBUG: Partially restored UI
+                    val completedThisPeriod = isCompletedThisPeriod(habit.frequency, habit.lastCompletedDate)
+                    Column(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .verticalScroll(rememberScrollState())
+                            .padding(16.dp),
+                        verticalArrangement = Arrangement.spacedBy(16.dp)
+                    ) {
             // Habit Header Card
-            item(key = "header") {
-                HabitHeaderCard(habit = habit, completedThisPeriod = completedThisPeriod)
-            }
+            HabitHeaderCard(habit = habit, completedThisPeriod = completedThisPeriod)
             
             // Streak Statistics
-            item(key = "streak") {
-                StreakStatisticsCard(habit = habit)
-            }
+            StreakStatisticsCard(habit = habit)
             
             // Analytics Overview (Slice 3)
-            item(key = "analytics") {
-                AnalyticsOverviewCard(metrics = habitUiModel?.completionMetrics)
-            }
+            AnalyticsOverviewCard(metrics = habitUiModel?.completionMetrics)
 
             // UIX-6: Per-habit alert profile selector
-            item(key = "alert_profile") {
-                AlertProfileSelectorCard(
-                    currentProfileId = habit.alertProfileId,
-                    onChange = { newId -> viewModel.setHabitAlertProfile(habitId, newId) }
-                )
-            }
+            AlertProfileSelectorCard(
+                currentProfileId = habit.alertProfileId,
+                onChange = { newId -> viewModel.setHabitAlertProfile(habitId, newId) },
+                profileVm = profileVm
+            )
 
             // Phase UIX-8: Timing Analytics (sparkline & averages)
-            item(key = "timing_analytics") {
-                TimingSessionAnalyticsCard(habitId = habitId)
-            }
+            TimingSessionAnalyticsCard(habitId = habitId, analyticsVm = analyticsVm)
             
             // Weekly Calendar View
-            item(key = "weekly") {
-                WeeklyProgressCard(habit = habit, onDateClick = { _ ->
-                    // Future: Handle date-specific actions like showing details or editing
-                })
-            }
+            WeeklyProgressCard(habit = habit, onDateClick = { _ ->
+                // Future: Handle date-specific actions like showing details or editing
+            })
             
             // Monthly Overview
-            item(key = "monthly") {
-                MonthlyOverviewCard(habit = habit)
-            }
+            MonthlyOverviewCard(habit = habit)
             
             // Activity Log
-            item(key = "activity") {
-                ActivityLogCard(habit = habit)
-            }
+            ActivityLogCard(habit = habit)
             
             // Add some space at the bottom for FAB
-            item(key = "spacer") {
-                Spacer(modifier = Modifier.height(80.dp))
+            Spacer(modifier = Modifier.height(80.dp))
+                    }
+                }
             }
         }
     }
 }
 
+
+
+
 @Composable
 private fun AlertProfileSelectorCard(
     currentProfileId: String?,
-    onChange: (String?) -> Unit
+    onChange: (String?) -> Unit,
+    profileVm: com.habittracker.ui.viewmodels.timing.AlertProfilesViewModel
 ) {
-    val profileVm: com.habittracker.ui.viewmodels.timing.AlertProfilesViewModel = androidx.hilt.navigation.compose.hiltViewModel()
     val ui by profileVm.ui.collectAsStateWithLifecycle()
     var showDialog by remember { mutableStateOf(false) }
 
@@ -323,6 +266,7 @@ private fun AlertProfileSelectorCard(
 @Composable
 private fun TimingSessionAnalyticsCard(
     habitId: Long,
+    analyticsVm: HabitTimingAnalyticsViewModel,
     sessionsToShow: Int = 14
 ) {
     // Add safety check for valid habitId
@@ -341,7 +285,6 @@ private fun TimingSessionAnalyticsCard(
         return
     }
     
-    val analyticsVm: HabitTimingAnalyticsViewModel = hiltViewModel()
     var hasLoadingError by remember { mutableStateOf(false) }
     
     LaunchedEffect(habitId) { 
@@ -647,10 +590,13 @@ private fun WeeklyProgressCard(
             val startOfWeek = today.minusDays(today.dayOfWeek.value.toLong() - 1)
             val weekDays = (0..6).map { startOfWeek.plusDays(it.toLong()) }
             
-            LazyRow(
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .horizontalScroll(rememberScrollState()),
                 horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-                items(weekDays) { date ->
+                weekDays.forEach { date ->
                     WeekDayItem(
                         date = date,
                         isCompleted = isDateCompleted(habit, date),
@@ -919,50 +865,49 @@ private fun AnalyticsOverviewCard(
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
-                return@Column
+            } else {
+                // Row of three key insights
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceEvenly
+                ) {
+                    // Consistency %
+                    InsightStat(
+                        icon = Icons.AutoMirrored.Filled.TrendingUp,
+                        label = "Consistency",
+                        value = "${(metrics.consistencyScore * 100).toInt()}%",
+                        color = MaterialTheme.colorScheme.primary,
+                        contentDescription = "Consistency ${(metrics.consistencyScore * 100).toInt()} percent"
+                    )
+
+                    // Avg Session Duration
+                    val avgDur = metrics.averageSessionDuration
+                    InsightStat(
+                        icon = Icons.Filled.Timer,
+                        label = "Avg session",
+                        value = formatDurationShort(avgDur),
+                        color = MaterialTheme.colorScheme.secondary,
+                        contentDescription = avgDur?.let { "Average session ${formatDurationShort(it)}" } ?: "Average session duration not available"
+                    )
+
+                    // Best Time Band
+                    val bestSlot = metrics.optimalTimeSlots.maxWithOrNull(compareBy<com.habittracker.ui.models.timing.TimeSlot>({ it.successRate }, { it.sampleSize }))
+                    InsightStat(
+                        icon = Icons.Filled.Schedule,
+                        label = "Best time",
+                        value = bestSlot?.let { formatTimeBand(it.startTime, it.endTime) } ?: "—",
+                        color = MaterialTheme.colorScheme.tertiary,
+                        contentDescription = bestSlot?.let { "Best time ${formatTimeBand(it.startTime, it.endTime)}" } ?: "Best time not available"
+                    )
+                }
+
+                Spacer(modifier = Modifier.height(8.dp))
+                Text(
+                    text = "Consistency reflects how regularly you complete this habit around the same times.",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
             }
-
-            // Row of three key insights
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceEvenly
-            ) {
-                // Consistency %
-                InsightStat(
-                    icon = Icons.AutoMirrored.Filled.TrendingUp,
-                    label = "Consistency",
-                    value = "${(metrics.consistencyScore * 100).toInt()}%",
-                    color = MaterialTheme.colorScheme.primary,
-                    contentDescription = "Consistency ${(metrics.consistencyScore * 100).toInt()} percent"
-                )
-
-                // Avg Session Duration
-                val avgDur = metrics.averageSessionDuration
-                InsightStat(
-                    icon = Icons.Filled.Timer,
-                    label = "Avg session",
-                    value = formatDurationShort(avgDur),
-                    color = MaterialTheme.colorScheme.secondary,
-                    contentDescription = avgDur?.let { "Average session ${formatDurationShort(it)}" } ?: "Average session duration not available"
-                )
-
-                // Best Time Band
-                val bestSlot = metrics.optimalTimeSlots.maxWithOrNull(compareBy<com.habittracker.ui.models.timing.TimeSlot>({ it.successRate }, { it.sampleSize }))
-                InsightStat(
-                    icon = Icons.Filled.Schedule,
-                    label = "Best time",
-                    value = bestSlot?.let { formatTimeBand(it.startTime, it.endTime) } ?: "—",
-                    color = MaterialTheme.colorScheme.tertiary,
-                    contentDescription = bestSlot?.let { "Best time ${formatTimeBand(it.startTime, it.endTime)}" } ?: "Best time not available"
-                )
-            }
-
-            Spacer(modifier = Modifier.height(8.dp))
-            Text(
-                text = "Consistency reflects how regularly you complete this habit around the same times.",
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
-            )
         }
     }
 }
