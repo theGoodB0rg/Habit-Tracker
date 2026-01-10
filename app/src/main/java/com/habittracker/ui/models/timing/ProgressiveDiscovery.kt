@@ -94,22 +94,22 @@ class FeatureGradualizer {
     fun getNextLevelBenefits(currentLevel: UserEngagementLevel): List<String> {
         return when (currentLevel) {
             UserEngagementLevel.Casual -> listOf(
-                "🎯 One-tap timers to stay focused",
-                "⏰ Track how long habits actually take",
-                "📈 See your productivity patterns"
+                "One-tap timers to stay focused",
+                "Track how long habits actually take",
+                "See your productivity patterns"
             )
             
             UserEngagementLevel.Interested -> listOf(
-                "💡 AI suggestions for optimal timing",
-                "📅 Smart schedule optimization",
-                "🔗 Habit stacking recommendations"
+                "AI suggestions for optimal timing",
+                "Smart schedule optimization",
+                "Habit stacking recommendations"
             )
             
             UserEngagementLevel.Engaged -> listOf(
-                "🧠 Advanced energy optimization",
-                "🌤️ Context-aware suggestions",
-                "📊 Detailed analytics and insights",
-                "🎵 Focus enhancement features"
+                "Advanced energy optimization",
+                "Context-aware suggestions",
+                "Detailed analytics and insights",
+                "Focus enhancement features"
             )
             
             UserEngagementLevel.PowerUser -> emptyList()
@@ -174,13 +174,13 @@ data class LevelUpNotification(
         private fun generateCongratsMessage(from: UserEngagementLevel, to: UserEngagementLevel): String {
             return when (to) {
                 UserEngagementLevel.Interested -> 
-                    "🎉 You're building consistent habits! Unlock timing features to boost your productivity."
+                    "You're building consistent habits! Unlock timing features to boost your productivity."
                     
                 UserEngagementLevel.Engaged -> 
-                    "🚀 You're a timing pro! Unlock smart suggestions and schedule optimization."
+                    "You're a timing pro! Unlock smart suggestions and schedule optimization."
                     
                 UserEngagementLevel.PowerUser -> 
-                    "⭐ Welcome to Power User status! All advanced features are now available."
+                    "Welcome to Power User status! All advanced features are now available."
                     
                 UserEngagementLevel.Casual -> ""
             }

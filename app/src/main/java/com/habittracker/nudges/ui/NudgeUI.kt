@@ -416,10 +416,11 @@ private fun EmptyNudgesState(modifier: Modifier = Modifier) {
         
         Spacer(modifier = Modifier.height(16.dp))
         
-        Text(
-            text = "🎉",
-            style = MaterialTheme.typography.displaySmall,
-            textAlign = TextAlign.Center
+        Icon(
+            imageVector = Icons.Default.Celebration,
+            contentDescription = null,
+            modifier = Modifier.size(48.dp),
+            tint = MaterialTheme.colorScheme.primary
         )
     }
 }

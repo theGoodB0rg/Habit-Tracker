@@ -324,11 +324,20 @@ fun FeatureDiscoveryBanner(
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Text(
-                        text = "🚀 Unlock More Features",
-                        style = MaterialTheme.typography.titleSmall,
-                        fontWeight = FontWeight.Medium
-                    )
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Icon(
+                            imageVector = Icons.Default.RocketLaunch,
+                            contentDescription = null,
+                            modifier = Modifier.size(20.dp),
+                            tint = MaterialTheme.colorScheme.primary
+                        )
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text(
+                            text = "Unlock More Features",
+                            style = MaterialTheme.typography.titleSmall,
+                            fontWeight = FontWeight.Medium
+                        )
+                    }
                     
                     IconButton(
                         onClick = {

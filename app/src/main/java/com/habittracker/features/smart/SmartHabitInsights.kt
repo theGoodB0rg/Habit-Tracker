@@ -54,7 +54,7 @@ fun SmartTimingInsights(
                 )
                 Spacer(modifier = Modifier.width(8.dp))
                 Text(
-                    text = "🧠 Smart Timing",
+                    text = "Smart Timing",
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.Bold
                 )
@@ -69,11 +69,22 @@ fun SmartTimingInsights(
             )
             
             Text(
-                text = "💡 Your best days: ${insights.bestDays.joinToString(", ")}",
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                modifier = Modifier.padding(top = 4.dp)
-            )
+                modifier = Modifier.padding(top = 4.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Icon(
+                    imageVector = Icons.Default.Lightbulb,
+                    contentDescription = null,
+                    modifier = Modifier.size(16.dp),
+                    tint = MaterialTheme.colorScheme.primary
+                )
+                Spacer(modifier = Modifier.width(4.dp))
+                Text(
+                    text = "Your best days: ${insights.bestDays.joinToString(", ")}",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
         }
     }
 }
@@ -105,7 +116,7 @@ fun HabitStackSuggestions(
                 )
                 Spacer(modifier = Modifier.width(8.dp))
                 Text(
-                    text = "🔗 Smart Stacking",
+                    text = "Smart Stacking",
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.Bold
                 )
@@ -161,7 +172,7 @@ fun FailurePrevention(
                     )
                     Spacer(modifier = Modifier.width(8.dp))
                     Text(
-                        text = "⚠️ Risk Alert",
+                        text = "Risk Alert",
                         style = MaterialTheme.typography.titleMedium,
                         fontWeight = FontWeight.Bold,
                         color = MaterialTheme.colorScheme.onErrorContainer
@@ -213,7 +224,7 @@ fun SocialAccountability(
                 )
                 Spacer(modifier = Modifier.width(8.dp))
                 Text(
-                    text = "👥 Accountability",
+                    text = "Accountability",
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.Bold
                 )
@@ -227,12 +238,22 @@ fun SocialAccountability(
                 style = MaterialTheme.typography.bodyMedium
             )
             
-            Text(
-                text = "💪 You're both crushing it!",
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                modifier = Modifier.padding(top = 4.dp)
-            )
+                modifier = Modifier.padding(top = 4.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Icon(
+                    imageVector = Icons.Default.FitnessCenter,
+                    contentDescription = null,
+                    modifier = Modifier.size(16.dp),
+                    tint = MaterialTheme.colorScheme.primary
+                )
+                Spacer(modifier = Modifier.width(4.dp))
+                Text(
+                    text = "You're both crushing it!",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
             
             Spacer(modifier = Modifier.height(8.dp))
             
@@ -273,26 +294,29 @@ fun ContextualInsights(
         Column(
             modifier = Modifier.padding(16.dp)
         ) {
-            Text(
-                text = "🌍 Smart Context",
-                style = MaterialTheme.typography.titleMedium,
-                fontWeight = FontWeight.Bold
-            )
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Icon(Icons.Default.Public, contentDescription = null, tint = MaterialTheme.colorScheme.primary)
+                Spacer(modifier = Modifier.width(8.dp))
+                Text(
+                    text = "Smart Context",
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.Bold
+                )
+            }
             
             Spacer(modifier = Modifier.height(12.dp))
             
-            when (context.type) {
                 ContextType.RAINY_DAY -> {
-                    Text("🌧️ Perfect day for indoor habits! Try meditation or reading.")
+                    LabelWithIcon(Icons.Default.WaterDrop, "Perfect day for indoor habits! Try meditation or reading.")
                 }
                 ContextType.FREE_TIME -> {
-                    Text("📅 You have 30 min free. Great time for your exercise habit!")
+                    LabelWithIcon(Icons.Default.AccessTime, "You have 30 min free. Great time for your exercise habit!")
                 }
                 ContextType.STRESSFUL_DAY -> {
-                    Text("😰 Detected high stress. Consider skipping intense habits today.")
+                    LabelWithIcon(Icons.Default.SelfImprovement, "Detected high stress. Consider skipping intense habits today.")
                 }
                 ContextType.TRAVEL -> {
-                    Text("✈️ Traveling? Here are habit modifications for your trip.")
+                    LabelWithIcon(Icons.Default.Flight, "Traveling? Here are habit modifications for your trip.")
                 }
             }
         }
@@ -383,5 +407,12 @@ fun HabitStackItem(suggestion: HabitSuggestion) {
             style = MaterialTheme.typography.bodySmall,
             color = MaterialTheme.colorScheme.primary
         )
+    }
+@Composable
+private fun LabelWithIcon(icon: androidx.compose.ui.graphics.vector.ImageVector, text: String) {
+    Row(verticalAlignment = Alignment.CenterVertically) {
+        Icon(icon, contentDescription = null, modifier = Modifier.size(20.dp), tint = MaterialTheme.colorScheme.primary)
+        Spacer(Modifier.width(8.dp))
+        Text(text, style = MaterialTheme.typography.bodyMedium)
     }
 }

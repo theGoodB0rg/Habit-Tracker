@@ -220,7 +220,7 @@ object AppTooltips {
     // Progressive timing feature discovery tooltips
     val timerButtonTooltip = TooltipConfig(
         id = "timer_button",
-        title = "🆕 Timer Unlocked!",
+        title = "Timer Unlocked!",
         description = "You've unlocked habit timers! Tap to start a focused session with countdown alerts.",
         targetComposableKey = "timer_start_button",
         position = TooltipPosition.TOP
@@ -228,7 +228,7 @@ object AppTooltips {
     
     val smartSuggestionTooltip = TooltipConfig(
         id = "smart_suggestion",
-        title = "🧠 Smart Suggestions",
+        title = "Smart Suggestions",
         description = "Based on your patterns, we suggest optimal times for this habit. Tap to accept!",
         targetComposableKey = "smart_suggestion_chip",
         position = TooltipPosition.BOTTOM
