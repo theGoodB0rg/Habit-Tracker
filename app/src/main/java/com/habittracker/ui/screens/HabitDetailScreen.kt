@@ -57,8 +57,8 @@ fun HabitDetailScreen(
     val profileVm: com.habittracker.ui.viewmodels.timing.AlertProfilesViewModel = hiltViewModel()
     val analyticsVm: HabitTimingAnalyticsViewModel = hiltViewModel()
 
-    val habits by viewModel.habits.collectAsStateWithLifecycle(initialValue = emptyList())
-    val hydrated by viewModel.hydratedHabits.collectAsStateWithLifecycle(initialValue = emptyList())
+    val habits by viewModel.habits.collectAsStateWithLifecycle()
+    val hydrated by viewModel.hydratedHabits.collectAsStateWithLifecycle()
     
     val habit = remember(habits, habitId) { 
         habits.find { it.id == habitId }
@@ -67,7 +67,7 @@ fun HabitDetailScreen(
         hydrated.find { it.id == habitId } 
     }
 
-    val isDataLoaded by viewModel.isDataLoaded.collectAsStateWithLifecycle(initialValue = false)
+    val isDataLoaded by viewModel.isDataLoaded.collectAsStateWithLifecycle()
     
     // Handle deletion: If data is loaded but habit is gone, navigate back
     LaunchedEffect(isDataLoaded, habit) {

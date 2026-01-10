@@ -40,7 +40,8 @@ class HabitViewModel @Inject constructor(
     private val _todayCompletions = MutableStateFlow<Map<Long, Boolean>>(emptyMap())
     val todayCompletions: StateFlow<Map<Long, Boolean>> = _todayCompletions.asStateFlow()
     
-    val habits = habitRepository.getAllHabits()
+    private val _habitsState = MutableStateFlow<List<HabitEntity>>(emptyList())
+    val habits: StateFlow<List<HabitEntity>> = _habitsState.asStateFlow()
 
     // Phase 2: Hydrated Habit UI models (with timing data)
     private val _hydratedHabits = MutableStateFlow<List<HabitUiModel>>(emptyList())
@@ -89,6 +90,7 @@ class HabitViewModel @Inject constructor(
     private fun hydrateHabitsWithTiming() {
         viewModelScope.launch {
             habitRepository.getAllHabits().collectLatest { entities ->
+                _habitsState.value = entities
                 val models = entities.map { entity ->
                     val timing = habitRepository.getHabitTiming(entity.id)
                     val session = habitRepository.getActiveTimerSession(entity.id)

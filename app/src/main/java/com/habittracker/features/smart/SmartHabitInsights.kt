@@ -68,7 +68,7 @@ fun SmartTimingInsights(
                 style = MaterialTheme.typography.bodyMedium
             )
             
-            Text(
+            Row(
                 modifier = Modifier.padding(top = 4.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
@@ -238,6 +238,7 @@ fun SocialAccountability(
                 style = MaterialTheme.typography.bodyMedium
             )
             
+            Row(
                 modifier = Modifier.padding(top = 4.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
@@ -306,6 +307,7 @@ fun ContextualInsights(
             
             Spacer(modifier = Modifier.height(12.dp))
             
+            when (context.type) {
                 ContextType.RAINY_DAY -> {
                     LabelWithIcon(Icons.Default.WaterDrop, "Perfect day for indoor habits! Try meditation or reading.")
                 }
@@ -319,9 +321,10 @@ fun ContextualInsights(
                     LabelWithIcon(Icons.Default.Flight, "Traveling? Here are habit modifications for your trip.")
                 }
             }
+            }
         }
     }
-}
+
 
 // Data classes for the smart features
 data class TimingInsight(
@@ -408,6 +411,7 @@ fun HabitStackItem(suggestion: HabitSuggestion) {
             color = MaterialTheme.colorScheme.primary
         )
     }
+}
 @Composable
 private fun LabelWithIcon(icon: androidx.compose.ui.graphics.vector.ImageVector, text: String) {
     Row(verticalAlignment = Alignment.CenterVertically) {
