@@ -372,7 +372,7 @@ class TimerActionCoordinator @Inject constructor(
         }
     }
 
-    private fun dispatchActions(actions: List<TimerAction>, habitId: Long) {
+    private suspend fun dispatchActions(actions: List<TimerAction>, habitId: Long) {
         actions.forEach { action ->
             when (action) {
                 is TimerAction.StartTimer -> {
@@ -380,7 +380,16 @@ class TimerActionCoordinator @Inject constructor(
                     timerController.start(action.habitId, duration = overrideDuration)
                 }
                 is TimerAction.PauseTimer -> timerController.pause()
-                is TimerAction.ResumeTimer -> timerController.resume()
+                is TimerAction.ResumeTimer -> {
+                    // Fix: Ensure we resume the specific habit's session, enabling context switching
+                    // If we just call resume(), it resumes the currently active service session (which might be the wrong habit)
+                    val session = timingRepository.getActiveTimerSession(action.habitId)
+                    if (session != null) {
+                        timerController.resumeSession(session.id)
+                    } else {
+                        timerController.resume()
+                    }
+                }
                 is TimerAction.CompleteToday -> {
                     if (action.persistDirectly) {
                         // No timer event expected; persist immediately and surface UI event

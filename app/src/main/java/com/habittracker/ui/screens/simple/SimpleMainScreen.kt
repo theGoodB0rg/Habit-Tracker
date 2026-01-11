@@ -258,7 +258,10 @@ fun SimpleMainScreen(
         },
         floatingActionButton = {
             FloatingActionButton(
-                onClick = onNavigateToAddHabit,
+                onClick = {
+                    viewModel.clearMessages()
+                    onNavigateToAddHabit()
+                },
                 containerColor = MaterialTheme.colorScheme.primaryContainer,
                 contentColor = MaterialTheme.colorScheme.onPrimaryContainer
             ) {
@@ -291,7 +294,10 @@ fun SimpleMainScreen(
                         title = "No habits yet",
                         description = "Start building positive habits by adding your first one",
                         actionText = "Add Habit",
-                        onAction = onNavigateToAddHabit,
+                        onAction = {
+                            viewModel.clearMessages()
+                            onNavigateToAddHabit()
+                        },
                         modifier = Modifier.fillMaxSize()
                     )
                 } else {
