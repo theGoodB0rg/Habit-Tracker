@@ -263,7 +263,11 @@ fun SocialAccountability(
                     onClick = { /* Send encouragement */ },
                     modifier = Modifier.weight(1f)
                 ) {
-                    Text("Send 👏")
+                    Row( verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.Center) {
+                       Icon(Icons.Default.ThumbUp, contentDescription = null, modifier = Modifier.size(16.dp))
+                       Spacer(Modifier.width(8.dp))
+                       Text("Encourage")
+                    }
                 }
                 
                 Spacer(modifier = Modifier.width(8.dp))

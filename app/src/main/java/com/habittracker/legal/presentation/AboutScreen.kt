@@ -491,21 +491,44 @@ private fun AdditionalInfoSection() {
             
             Spacer(modifier = Modifier.height(12.dp))
             
-            Text(
-                text = """
-                    Habit Tracker is a privacy-first, fully offline habit tracking application designed to help you build and maintain positive habits.
-                    
-                    • 🔒 Complete privacy - all data stays on your device
-                    • 📱 Beautiful, modern interface
-                    • 🎯 Smart streak tracking and motivation
-                    • 🌙 Dark and light themes
-                    • 🔔 Customizable reminders
-                    • 📊 Progress analytics
-                    • 📤 Export your data
-                """.trimIndent(),
-                style = MaterialTheme.typography.bodyMedium,
-                lineHeight = MaterialTheme.typography.bodyMedium.lineHeight * 1.4
-            )
+            Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
+                Text(
+                    text = "Habit Tracker is a privacy-first, fully offline habit tracking application designed to help you build and maintain positive habits.",
+                    style = MaterialTheme.typography.bodyMedium,
+                    lineHeight = MaterialTheme.typography.bodyMedium.lineHeight * 1.4
+                )
+                
+                Divider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
+                
+                FeatureRow(Icons.Default.Lock, "Complete privacy - all data stays on your device")
+                FeatureRow(Icons.Default.Smartphone, "Beautiful, modern interface")
+                FeatureRow(Icons.Default.TrackChanges, "Smart streak tracking and motivation") // Using TrackChanges as 'Target' proxy
+                FeatureRow(Icons.Default.DarkMode, "Dark and light themes") // Using DarkMode as Moon proxy
+                FeatureRow(Icons.Default.Notifications, "Customizable reminders")
+                FeatureRow(Icons.Default.Analytics, "Progress analytics")
+                FeatureRow(Icons.Default.ExitToApp, "Export your data")
+            }
         }
+    }
+}
+
+@Composable
+private fun FeatureRow(icon: ImageVector, text: String) {
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        verticalAlignment = Alignment.Top
+    ) {
+        Icon(
+            imageVector = icon,
+            contentDescription = null,
+            tint = MaterialTheme.colorScheme.primary,
+            modifier = Modifier.size(20.dp)
+        )
+        Spacer(modifier = Modifier.width(12.dp))
+        Text(
+            text = text,
+            style = MaterialTheme.typography.bodyMedium,
+            color = MaterialTheme.colorScheme.onSurface
+        )
     }
 }

@@ -315,7 +315,7 @@ class HabitViewModel @Inject constructor(
                 _todayCompletions.value = currentCompletions
                 
                 _uiState.value = _uiState.value.copy(
-                    successMessage = "Habit completed! Current streak: ${streak.currentStreak} 🔥"
+                    successMessage = "Habit completed! Current streak: ${streak.currentStreak}"
                 )
 
                 // Refresh hydrated models so analytics appear immediately on detail screen
