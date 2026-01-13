@@ -146,7 +146,38 @@ class TimerActionCoordinator @Inject constructor(
 
     init {
         appScope.launch {
-            TimerBus.events.collect(::onTimerEvent)
+            // Priority 1: Observe real-time events (may be empty initially)
+            launch {
+                TimerBus.events.collect(::onTimerEvent)
+            }
+            
+            // Priority 2: Sync with persistent state (DB) to handle cold starts/restarts
+            // where Service might not be running yet or TimerBus is empty.
+            try {
+                // Fetch active sessions from DB
+                val sessions = timingRepository.listActiveTimerSessions()
+                val runningSession = sessions.find { it.isRunning }
+                val pausedSessionIds = sessions.filter { !it.isRunning }.map { it.habitId }.toSet()
+                
+                // Only update if we haven't received a more recent event from TimerBus (race condition check)
+                while (true) {
+                    val current = _state.value
+                    val next = if (current.trackedHabitId == null) {
+                        current.copy(
+                            trackedHabitId = runningSession?.habitId,
+                            paused = runningSession == null && pausedSessionIds.isNotEmpty() && runningSession?.habitId == null,
+                            pausedHabits = current.pausedHabits + pausedSessionIds
+                        )
+                    } else {
+                        // Just merge paused habits if safe
+                        current.copy(pausedHabits = current.pausedHabits + pausedSessionIds)
+                    }
+                    if (_state.compareAndSet(current, next)) break
+                }
+            } catch (e: Exception) {
+                // Fallback to TimerBus events
+                e.printStackTrace()
+            }
         }
     }
     
