@@ -332,10 +332,15 @@ class TimerService : Service() {
 
     private fun handleResumeSpecific(intent: Intent) {
         val resumeSid = intent.getLongExtra(EXTRA_SESSION_ID, -1L)
+        val habitIdArgs = intent.getLongExtra(EXTRA_HABIT_ID, 0L)
         if (resumeSid <= 0L) return
         scope.launch {
             try {
-                val session = timingRepository.getTimerSessionById(resumeSid) ?: return@launch
+                val session = timingRepository.getTimerSessionById(resumeSid)
+                if (session == null) {
+                    TimerBus.emit(TimerEvent.Error(habitId = habitIdArgs, message = "Session not found"))
+                    return@launch
+                }
                 // Stop any current ticker and switch runtime state to this session
                 tickJob?.cancel()
                 sessionId = session.id

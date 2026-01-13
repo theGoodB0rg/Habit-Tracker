@@ -28,10 +28,11 @@ class TimerController(private val context: Context) {
     fun subtractOneMinute() = send(TimerService.ACTION_SUB_1M)
     fun stop() = send(TimerService.ACTION_STOP)
 
-    fun resumeSession(sessionId: Long) {
+    fun resumeSession(habitId: Long, sessionId: Long) {
         val i = Intent(context, TimerService::class.java).apply {
             action = TimerService.ACTION_RESUME_SESSION
             putExtra(TimerService.EXTRA_SESSION_ID, sessionId)
+            putExtra(TimerService.EXTRA_HABIT_ID, habitId)
         }
         context.startForegroundService(i)
     }

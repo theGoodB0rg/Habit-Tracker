@@ -131,7 +131,7 @@ habit_tracker_screenshot.png
 # Exclude development/testing files
 Phase*.kt
 validate_*.kts
-*Test*.kt
+
 Compilation
 Get
 Run

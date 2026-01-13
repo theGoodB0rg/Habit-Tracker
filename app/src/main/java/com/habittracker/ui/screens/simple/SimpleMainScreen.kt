@@ -321,8 +321,23 @@ fun SimpleMainScreen(
                         hydrated.forEach { habit ->
                             val isCompleted = isCompletedThisPeriod(habit.frequency, habit.lastCompletedDate)
                             val isTimerActive = activeHabitId == habit.id
-                            val isPaused = isTimerActive && timerPaused
+                            val isPaused = coordinatorState.pausedHabits.contains(habit.id)
+                            val activeHabitId = coordinatorState.trackedHabitId
+                            val pausedHabits = coordinatorState.pausedHabits
+                            val isTimerPaused = coordinatorState.paused
                             
+                            val isStrictlyRunning = activeHabitId != null && !isTimerPaused
+                            val isMyHabit = (activeHabitId == habit.id) || (pausedHabits.contains(habit.id))
+                            val isBusy = activeHabitId != null || pausedHabits.isNotEmpty()
+                            
+                            val isBlocked = if (isStrictlyRunning) {
+                                activeHabitId != habit.id // Block everyone else if one is running
+                            } else {
+                                isBusy && !isMyHabit // Block new habits if we have paused ones, allow existing paused
+                            }
+                            
+                            val isTimerFinished = isTimerActive && timerRemainingMs <= 0 && timerTargetMs > 0
+
                             SimpleHabitCard(
                                 habit = habit,
                                 isCompleted = isCompleted,
@@ -331,12 +346,16 @@ fun SimpleMainScreen(
                                 remainingMs = if (isTimerActive) timerRemainingMs else 0L,
                                 targetMs = if (isTimerActive) timerTargetMs else 0L,
                                 isLoading = isTimerActive && timerLoading,
+                                isBlocked = isBlocked,
+                                isFinished = isTimerFinished,
                                 onCardClick = {
                                     // Delay navigation to next frame to avoid SlotTable corruption
                                     // during LazyList measurement (known Compose bug)
                                     scope.launch {
                                         kotlinx.coroutines.delay(16) // One full frame at 60fps
-                                        onNavigateToHabitDetail(habit.id)
+                                        if (!isBlocked) {
+                                            onNavigateToHabitDetail(habit.id)
+                                        }
                                     }
                                 },
                                 onCompleteClick = {
@@ -351,7 +370,9 @@ fun SimpleMainScreen(
                                 },
                                 onStartTimer = {
                                     scope.launch {
-                                        timerActionHandler?.handle(TimerIntent.Start, habit.id)
+                                        if (!isBlocked) {
+                                            timerActionHandler?.handle(TimerIntent.Start, habit.id)
+                                        }
                                     }
                                 },
                                 onPauseTimer = {

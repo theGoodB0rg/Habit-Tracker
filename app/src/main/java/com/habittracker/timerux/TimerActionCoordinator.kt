@@ -61,7 +61,10 @@ class TimerActionCoordinator @Inject constructor(
         val pendingConfirmType: ConfirmType? = null,  // Type of confirmation being shown
         
         // Overtime tracking (Phase UIX-11)
-        val overtimeMs: Long = 0L
+        val overtimeMs: Long = 0L,
+        
+        // Multi-timer support: Track all paused habits
+        val pausedHabits: Set<Long> = emptySet()
     ) {
         // Backwards-compatible alias for existing code
         @Deprecated("Use isLoading instead", ReplaceWith("isLoading"))
@@ -198,6 +201,29 @@ class TimerActionCoordinator @Inject constructor(
 
             val isRunning = remaining > 0 && !isPaused
             val askToCompleteWithoutTimer = timingPreferencesRepository.preferences().firstOrNull()?.askToCompleteWithoutTimer ?: true
+
+            val trackedId = _state.value.trackedHabitId
+            val isStrictlyRunning = trackedId != null && !_state.value.paused
+            
+            // 1. If currently running, ONLY allow the running habit. Block everything else (even paused ones).
+            if (isStrictlyRunning && trackedId != habitId && (intent == TimerIntent.Start || intent == TimerIntent.Resume)) {
+                return TimerActionDecision(
+                    resolvedIntent = intent,
+                    outcome = TimerOutcome.Disallow("Finish your running habit first!")
+                )
+            }
+
+            // 2. If not strictly running (e.g. paused), allow switching between PAUSED habits, 
+            // but block NEW habits (Start) to enforce "Finish what you started".
+            val isMyHabit = (trackedId == habitId) || (_state.value.pausedHabits.contains(habitId))
+            val isBusy = trackedId != null || _state.value.pausedHabits.isNotEmpty()
+            
+            if (!isStrictlyRunning && isBusy && !isMyHabit && (intent == TimerIntent.Start || intent == TimerIntent.Resume)) {
+                 return TimerActionDecision(
+                    resolvedIntent = intent,
+                    outcome = TimerOutcome.Disallow("Finish your paused habits first!")
+                )
+            }
 
             val redirectedIntent = when {
                 intent == TimerIntent.Start && (isRunning || session?.isRunning == true) -> TimerIntent.Resume
@@ -385,7 +411,7 @@ class TimerActionCoordinator @Inject constructor(
                     // If we just call resume(), it resumes the currently active service session (which might be the wrong habit)
                     val session = timingRepository.getActiveTimerSession(action.habitId)
                     if (session != null) {
-                        timerController.resumeSession(session.id)
+                        timerController.resumeSession(action.habitId, session.id)
                     } else {
                         timerController.resume()
                     }
@@ -442,6 +468,7 @@ class TimerActionCoordinator @Inject constructor(
                     paused = false
                 )
                 _state.value = _state.value.copy(overtimeMs = 0L)
+                updatePausedHabitsList()
             }
             is TimerEvent.Tick -> {
                 remainingByHabit[event.habitId] = event.remainingMs
@@ -457,6 +484,7 @@ class TimerActionCoordinator @Inject constructor(
                     timerState = TimerState.PAUSED,
                     paused = true
                 )
+                updatePausedHabitsList()
             }
             is TimerEvent.Resumed -> {
                 pausedByHabit[event.habitId] = false
@@ -466,6 +494,7 @@ class TimerActionCoordinator @Inject constructor(
                     timerState = TimerState.RUNNING,
                     paused = false
                 )
+                updatePausedHabitsList()
             }
             is TimerEvent.Completed -> {
                 remainingByHabit.remove(event.habitId)
@@ -478,6 +507,13 @@ class TimerActionCoordinator @Inject constructor(
                 markCompleted(event.habitId)
                 _state.value = _state.value.copy(overtimeMs = 0L)
                 emitUiEvent(UiEvent.Completed(event.habitId))
+                
+                // Reminder: inactive paused habits
+                val others = pausedByHabit.filter { it.value && it.key != event.habitId }
+                if (others.isNotEmpty()) {
+                    emitUiEvent(UiEvent.Snackbar("Nice job! You have ${others.size} other paused habit(s)."))
+                }
+                updatePausedHabitsList()
             }
             is TimerEvent.Error -> {
                 if (_state.value.trackedHabitId == event.habitId) {
@@ -536,6 +572,7 @@ class TimerActionCoordinator @Inject constructor(
                     pausedHabitId = event.pausedHabitId,
                     pausedRemainingMs = pausedRemaining
                 )
+                updatePausedHabitsList()
             }
             else -> Unit
         }
@@ -630,6 +667,11 @@ class TimerActionCoordinator @Inject constructor(
      */
     fun clearError() {
         _state.value = _state.value.copy(lastError = null)
+    }
+
+    private fun updatePausedHabitsList() {
+        val paused = pausedByHabit.filter { it.value }.keys.toSet()
+        _state.value = _state.value.copy(pausedHabits = paused)
     }
 
     companion object {

@@ -331,7 +331,7 @@ fun MainScreen(
                             duration = androidx.compose.material3.SnackbarDuration.Short
                         ).let { result ->
                             if (result == androidx.compose.material3.SnackbarResult.ActionPerformed) {
-                                timerController.resumeSession(evt.pausedSessionId)
+                                timerController.resumeSession(evt.pausedHabitId, evt.pausedSessionId)
                             }
                         }
                     }
@@ -351,8 +351,8 @@ fun MainScreen(
             onSwitchToPaused = {
                 // Pause current, resume paused
                 timerController.pause()
-                timerSwitcherState.pausedSession?.sessionId?.let { sessionId ->
-                    timerController.resumeSession(sessionId)
+                timerSwitcherState.pausedSession?.let { paused ->
+                    timerController.resumeSession(paused.habitId, paused.sessionId)
                 }
                 timerSwitcherState.dismiss()
             },

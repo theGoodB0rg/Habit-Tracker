@@ -16,6 +16,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Check
+import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material.icons.filled.Pause
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.outlined.Timer
@@ -27,8 +28,12 @@ import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
+import androidx.compose.animation.core.*
+import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.draw.scale
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -58,6 +63,8 @@ fun HabitTimerSection(
     targetMs: Long,
     targetDuration: Duration?,
     isLoading: Boolean = false,
+    isBlocked: Boolean = false,
+    isFinished: Boolean = false,
     onStart: () -> Unit,
     onPause: () -> Unit,
     onResume: () -> Unit,
@@ -87,6 +94,7 @@ fun HabitTimerSection(
                     remainingMs = remainingMs,
                     targetMs = targetMs,
                     isPaused = isPaused,
+                    isFinished = isFinished,
                     isLoading = isLoading,
                     onPause = onPause,
                     onResume = onResume,
@@ -95,6 +103,8 @@ fun HabitTimerSection(
             } else {
                 TimerCollapsedState(
                     targetDuration = targetDuration,
+                    isPaused = isPaused,
+                    isBlocked = isBlocked,
                     onStart = onStart
                 )
             }
@@ -105,27 +115,54 @@ fun HabitTimerSection(
 @Composable
 private fun TimerCollapsedState(
     targetDuration: Duration?,
+    isPaused: Boolean,
+    isBlocked: Boolean,
     onStart: () -> Unit
 ) {
-    val durationText = targetDuration?.let {
-        val minutes = it.toMinutes()
-        "Start ${minutes}m"
-    } ?: "Start timer"
+    val durationText = when {
+        isBlocked -> "Blocked"
+        isPaused -> "Resume"
+        else -> targetDuration?.let {
+            val minutes = it.toMinutes()
+            "Start ${minutes}m"
+        } ?: "Start timer"
+    }
+    
+    val icon = when {
+        isBlocked -> Icons.Default.Lock
+        isPaused -> Icons.Default.PlayArrow
+        else -> Icons.Outlined.Timer
+    }
+    
+    val containerColor = when {
+        isBlocked -> MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
+        isPaused -> MaterialTheme.colorScheme.primaryContainer
+        else -> MaterialTheme.colorScheme.surfaceVariant
+    }
+    
+    val contentColor = when {
+        isBlocked -> MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f)
+        isPaused -> MaterialTheme.colorScheme.onPrimaryContainer
+        else -> MaterialTheme.colorScheme.onSurfaceVariant
+    }
     
     Row(verticalAlignment = Alignment.CenterVertically) {
         AssistChip(
-            onClick = onStart,
+            onClick = if (isBlocked) { {} } else onStart,
             label = { Text(durationText) },
             leadingIcon = {
                 Icon(
-                    imageVector = Icons.Outlined.Timer,
+                    imageVector = icon,
                     contentDescription = null,
                     modifier = Modifier.size(18.dp)
                 )
             },
             colors = AssistChipDefaults.assistChipColors(
-                containerColor = MaterialTheme.colorScheme.surfaceVariant
-            )
+                containerColor = containerColor,
+                labelColor = contentColor,
+                leadingIconContentColor = contentColor
+            ),
+            enabled = !isBlocked
         )
     }
 }
@@ -135,6 +172,7 @@ private fun TimerExpandedState(
     remainingMs: Long,
     targetMs: Long,
     isPaused: Boolean,
+    isFinished: Boolean,
     isLoading: Boolean,
     onPause: () -> Unit,
     onResume: () -> Unit,
@@ -168,7 +206,7 @@ private fun TimerExpandedState(
                     // Pause/Resume button
                     FilledIconButton(
                         onClick = if (isPaused) onResume else onPause,
-                        enabled = !isLoading,
+                        enabled = !isLoading && !isFinished,
                         modifier = Modifier.size(40.dp),
                         colors = IconButtonDefaults.filledIconButtonColors(
                             containerColor = MaterialTheme.colorScheme.secondaryContainer,
@@ -182,19 +220,27 @@ private fun TimerExpandedState(
                     }
                     
                     // Complete button
-                    FilledIconButton(
-                        onClick = onComplete,
-                        enabled = !isLoading,
-                        modifier = Modifier.size(40.dp),
-                        colors = IconButtonDefaults.filledIconButtonColors(
-                            containerColor = MaterialTheme.colorScheme.primary,
-                            contentColor = MaterialTheme.colorScheme.onPrimary
+                    if (isFinished) {
+                        PulsingCompleteButton(
+                            onClick = onComplete,
+                            enabled = !isLoading,
+                            modifier = Modifier.size(40.dp)
                         )
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.Check,
-                            contentDescription = "Complete"
-                        )
+                    } else {
+                        FilledIconButton(
+                            onClick = onComplete,
+                            enabled = !isLoading,
+                            modifier = Modifier.size(40.dp),
+                            colors = IconButtonDefaults.filledIconButtonColors(
+                                containerColor = MaterialTheme.colorScheme.primary,
+                                contentColor = MaterialTheme.colorScheme.onPrimary
+                            )
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.Check,
+                                contentDescription = "Complete"
+                            )
+                        }
                     }
                 }
             }
@@ -212,7 +258,7 @@ private fun TimerExpandedState(
                     .fillMaxWidth()
                     .height(4.dp)
                     .clip(RoundedCornerShape(2.dp)),
-                color = MaterialTheme.colorScheme.primary,
+                color = if (isFinished) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.primary,
                 trackColor = MaterialTheme.colorScheme.outline.copy(alpha = 0.3f)
             )
             
@@ -247,4 +293,49 @@ private fun formatTime(ms: Long): String {
     val minutes = totalSeconds / 60
     val seconds = totalSeconds % 60
     return "%d:%02d".format(minutes, seconds)
+}
+
+@Composable
+private fun PulsingCompleteButton(
+    onClick: () -> Unit,
+    enabled: Boolean,
+    modifier: Modifier = Modifier
+) {
+    val infiniteTransition = rememberInfiniteTransition(label = "pulse")
+    val scale by infiniteTransition.animateFloat(
+        initialValue = 1f,
+        targetValue = 1.15f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(800, easing = FastOutSlowInEasing),
+            repeatMode = RepeatMode.Reverse
+        ),
+        label = "scale"
+    )
+    
+    val alpha by infiniteTransition.animateFloat(
+        initialValue = 1f,
+        targetValue = 0.7f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(800, easing = FastOutSlowInEasing),
+            repeatMode = RepeatMode.Reverse
+        ),
+        label = "alpha"
+    )
+
+    FilledIconButton(
+        onClick = onClick,
+        enabled = enabled,
+        modifier = modifier
+            .scale(scale)
+            .alpha(alpha),
+        colors = IconButtonDefaults.filledIconButtonColors(
+            containerColor = MaterialTheme.colorScheme.primary,
+            contentColor = MaterialTheme.colorScheme.onPrimary
+        )
+    ) {
+        Icon(
+            imageVector = Icons.Default.Check,
+            contentDescription = "Complete"
+        )
+    }
 }
