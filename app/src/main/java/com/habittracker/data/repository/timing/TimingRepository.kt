@@ -206,11 +206,22 @@ class TimingRepositoryImpl @Inject constructor(
     
     override suspend fun resumeTimerSession(sessionId: Long) {
         withContext(Dispatchers.IO) {
-            timerSessionDao.updateSessionPausedState(
-                sessionId = sessionId,
-                isPaused = false,
-                pausedTime = null
-            )
+            val session = timerSessionDao.getSessionById(sessionId)
+            if (session != null && session.isPaused && session.pausedTime != null) {
+                // Shift start time forward by the duration of the pause
+                // This preserves the 'active' duration relative to wall clock time
+                val now = System.currentTimeMillis()
+                val pauseDuration = now - session.pausedTime!!
+                val currentStart = session.startTime ?: now
+                val newStart = currentStart + pauseDuration
+                timerSessionDao.resumeSessionWithTimeShift(sessionId, newStart)
+            } else {
+                timerSessionDao.updateSessionPausedState(
+                    sessionId = sessionId,
+                    isPaused = false,
+                    pausedTime = null
+                )
+            }
         }
     }
     

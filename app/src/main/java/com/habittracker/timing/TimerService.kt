@@ -151,7 +151,7 @@ class TimerService : Service() {
                     startMs = active.startTime?.atZone(java.time.ZoneId.systemDefault())?.toInstant()?.toEpochMilli()
                         ?: System.currentTimeMillis()
                     pausedAtMs = active.pausedTime?.atZone(java.time.ZoneId.systemDefault())?.toInstant()?.toEpochMilli()
-                    // Fix: Reset pausedAccumMs for new sessions to prevent timer display bugs
+                    // Reverted: PausedAccumMs is 0 because startTime is now shifted in DB on resume
                     pausedAccumMs = 0L
 
                     val timing = timingRepository.getHabitTiming(habitId)
@@ -313,8 +313,13 @@ class TimerService : Service() {
     private fun handleResume() {
         val sid = sessionId ?: return
         pausedAtMs?.let { pausedAt ->
-            pausedAccumMs += (System.currentTimeMillis() - pausedAt)
+            // Fix: Use time shift strategy (mirrors DB behavior)
+            // Shift startMs forward by pause duration instead of accumulating pausedAccumMs
+            val now = System.currentTimeMillis()
+            val pauseDuration = now - pausedAt
+            startMs += pauseDuration
             pausedAtMs = null
+            // pausedAccumMs stays 0 since we shifted startMs
             scope.launch {
                 try {
                     timingRepository.resumeTimerSession(sid)
@@ -336,20 +341,35 @@ class TimerService : Service() {
         if (resumeSid <= 0L) return
         scope.launch {
             try {
-                val session = timingRepository.getTimerSessionById(resumeSid)
-                if (session == null) {
+                // Fix: Check session exists first (without reading startTime yet)
+                val preSession = timingRepository.getTimerSessionById(resumeSid)
+                if (preSession == null) {
                     TimerBus.emit(TimerEvent.Error(habitId = habitIdArgs, message = "Session not found"))
                     return@launch
                 }
-                // Stop any current ticker and switch runtime state to this session
+                
+                // Stop any current ticker
                 tickJob?.cancel()
+                
+                // Fix: Call resumeTimerSession FIRST to shift startTime in DB
+                // This must happen before we read the session to get correct startTime
+                timingRepository.resumeTimerSession(resumeSid)
+                
+                // NOW read the session with the shifted startTime
+                val session = timingRepository.getTimerSessionById(resumeSid)
+                if (session == null) {
+                    TimerBus.emit(TimerEvent.Error(habitId = habitIdArgs, message = "Session lost after resume"))
+                    return@launch
+                }
+                
+                // Initialize runtime state with the SHIFTED startTime
                 sessionId = session.id
                 habitId = session.habitId
                 currentTimerType = session.type
                 startMs = session.startTime?.atZone(java.time.ZoneId.systemDefault())?.toInstant()?.toEpochMilli()
                     ?: System.currentTimeMillis()
-                pausedAtMs = session.pausedTime?.atZone(java.time.ZoneId.systemDefault())?.toInstant()?.toEpochMilli()
-                pausedAccumMs = session.actualDuration.toMillis()
+                pausedAtMs = null  // Session is no longer paused
+                pausedAccumMs = 0L  // Using time shift, no accumulator needed
 
                 val timing = timingRepository.getHabitTiming(habitId)
                 val targetMinutes = timing?.estimatedDuration?.toMinutes() ?: DEFAULT_MINUTES
@@ -365,14 +385,13 @@ class TimerService : Service() {
                 cumulativeElapsedMs = 0L
                 startTicker()
 
-                timingRepository.resumeTimerSession(resumeSid)
                 TimerBus.emit(TimerEvent.Resumed(resumeSid, habitId))
                 // Analytics: timer_resume
                 scope.launch { trackTimerEvent("timer_resume", habitId = habitId, sessionId = resumeSid, extra = mapOf("resumeSpecific" to true)) }
             } catch (e: Exception) {
                 val msg = "Resume session failed"
                 updateErrorNotification(msg)
-                TimerBus.emit(TimerEvent.Error(habitId = habitId, message = msg))
+                TimerBus.emit(TimerEvent.Error(habitId = habitIdArgs, message = msg))
             }
         }
     }

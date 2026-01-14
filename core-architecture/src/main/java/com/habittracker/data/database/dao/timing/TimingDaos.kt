@@ -93,6 +93,9 @@ interface TimerSessionDao {
     
     @Query("UPDATE timer_sessions SET is_paused = :isPaused, paused_time = :pausedTime WHERE id = :sessionId")
     suspend fun updateSessionPausedState(sessionId: Long, isPaused: Boolean, pausedTime: Long?)
+
+    @Query("UPDATE timer_sessions SET start_time = :newStartTime, is_paused = 0, paused_time = NULL WHERE id = :sessionId")
+    suspend fun resumeSessionWithTimeShift(sessionId: Long, newStartTime: Long)
     
     @Query("UPDATE timer_sessions SET end_time = :endTime, actual_duration_minutes = :actualDurationMinutes, is_running = 0 WHERE id = :sessionId")
     suspend fun completeSession(sessionId: Long, endTime: Long, actualDurationMinutes: Int)
